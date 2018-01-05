@@ -241,7 +241,7 @@ if global.server_processing_cycle mod 2 == 0 {
             var allow_access = false;
             
             var get_door_map = global.map_saved_constructions[? string(map_entity_id) ];
-            if is_undefined(get_door_map) == false and ds_exists(get_door_map,ds_type_map) {
+            if scr_ds_map_verify(get_door_map) {
                 //door has ANY level of security, including staff!
                 var security_list = get_door_map[? "security_clearance"];
             
@@ -249,7 +249,7 @@ if global.server_processing_cycle mod 2 == 0 {
                     var get_ply_ent = colcheck.entity_id;
                     var get_ply_map = obj_server.list_entities[| string(get_ply_ent)];
                     
-                    if is_undefined(get_ply_map) == false and ds_exists(get_ply_map,ds_type_map) {
+                    if scr_ds_map_verify(get_ply_map) {
                         var get_ply_sec = get_ply_map[? "security_clearance"];
                         
                         if is_undefined(get_ply_sec) == false and ds_list_size(get_ply_sec) &gt; 0 {

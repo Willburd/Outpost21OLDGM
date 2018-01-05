@@ -845,7 +845,7 @@ if async_load[? "type"] == network_type_data {
                 //load from containing object!
                 var storage_ent = ply_map[? "inside_of_id"];
                 if storage_ent != -1 {
-                        if is_undefined(list_entities[| storage_ent]) == false and ds_exists(list_entities[| storage_ent],ds_type_map) {
+                        if scr_ds_map_verify(list_entities[| storage_ent]) {
                         var storageent_map = list_entities[| storage_ent];
                         
                         if asset_get_index(storageent_map[? "object_index"]) == obj_puppet_arrivalshuttle {
@@ -912,8 +912,7 @@ if async_load[? "type"] == network_type_data {
                 
                 var get_hostent = ply_map[? "inside_of_id"];
                 
-                if is_undefined(get_hostent) == false and get_hostent != -1 
-                and scr_ds_map_verify(list_entities[| get_hostent]) {
+                if is_undefined(get_hostent) == false and scr_ds_map_verify(list_entities[| get_hostent]) {
                     var host_map = list_entities[| get_hostent];
                     
                     //entity exists!
@@ -976,7 +975,7 @@ if async_load[? "type"] == network_type_data {
                         //update all players, tell them to unload
                         for (var i=0; i&lt;global.max_server_players; i+=1)
                         {
-                            if is_undefined(list_sockets[| i]) == false and list_sockets[| i] != -1 {
+                            if scr_socket_verify( i) {
                                 if ds_exists(map_load_queues[i],ds_type_queue) == false map_load_queues[i] = ds_queue_create();
                                 ds_queue_enqueue( map_load_queues[i], k); //tell all players to unload this
                                 show_debug_message(" -queued map entity to player socket: " + string(i));
@@ -1029,7 +1028,7 @@ if async_load[? "type"] == network_type_data {
                     //update all players, tell them to load
                     for (var i=0; i&lt;global.max_server_players; i+=1)
                     {
-                        if is_undefined(list_sockets[| i]) == false and list_sockets[| i] != -1 {
+                        if scr_socket_verify( i) {
                             if ds_exists(map_load_queues[i],ds_type_queue) == false map_load_queues[i] = ds_queue_create();
                             ds_queue_enqueue( map_load_queues[i], get_index); //tell all players to load this
                             show_debug_message(" -queued map entity to player socket: " + string(i));
@@ -1051,7 +1050,7 @@ if async_load[? "type"] == network_type_data {
                 //update all players, tell them to unload
                 for (var i=0; i&lt;global.max_server_players; i+=1)
                 {
-                    if is_undefined(list_sockets[| i]) == false and list_sockets[| i] != -1 {
+                    if scr_socket_verify( i) {
                         if ds_exists(map_load_queues[i],ds_type_queue) == false map_load_queues[i] = ds_queue_create();
                         ds_queue_enqueue( map_load_queues[i], get_mapentity); //tell all players to unload this
                         show_debug_message(" -queued map entity to player socket: " + string(i));
@@ -1088,7 +1087,7 @@ if async_load[? "type"] == network_type_data {
             
             //update clearances
             var get_socket_player = list_sockets[| connection_id];
-            if is_undefined(get_socket_player) == false and get_socket_player != -1 {
+            if scr_socket_verify(get_socket_player) {
             
                 var get_ply_entity = list_player[| get_socket_player];
                 if is_undefined(get_ply_entity) == false and get_ply_entity != -1 {
@@ -1335,14 +1334,14 @@ if async_load[? "type"] == network_type_data {
             show_debug_message("=== Player released object from grab: " + string(connection_id));
             //remove from this players grab
             var get_socket_player = list_sockets[| connection_id];
-            if is_undefined(get_socket_player) == false and get_socket_player != -1 {
+            if scr_socket_verify( get_socket_player) {
             
                 var get_ply_entity = list_player[| get_socket_player];
                 if is_undefined(get_ply_entity) == false and get_ply_entity != -1 {
                     
                 
                     var get_ply_map = list_entities[| get_ply_entity];
-                    if is_undefined(get_ply_map) == false and ds_exists(get_ply_map,ds_type_map) {
+                    if scr_ds_map_verify(get_ply_map) {
                         //remove grab
                         show_debug_message(" -Entity: " + string(get_ply_map[? "entity_number"]) + " released grab.");
                         get_ply_map[? "grabbing_entity"] = -1; 
@@ -1375,14 +1374,14 @@ if async_load[? "type"] == network_type_data {
             
             //remove from this players grab
             var get_socket_player = list_sockets[| connection_id];
-            if is_undefined(get_socket_player) == false and get_socket_player != -1 {
+            if scr_socket_verify(get_socket_player) {
             
                 var get_ply_entity = list_player[| get_socket_player];
                 if is_undefined(get_ply_entity) == false and get_ply_entity != -1 {
                     
                 
                     var get_ply_map = list_entities[| get_ply_entity];
-                    if is_undefined(get_ply_map) == false and ds_exists(get_ply_map,ds_type_map) {
+                    if scr_ds_map_verify(get_ply_map) {
                         //remove grab
                         show_debug_message(" -Entity: " + string(get_ply_map[? "entity_number"]) + " released grab.");
                         get_ply_map[? "grabbing_entity"] = -1; 
@@ -1435,7 +1434,7 @@ if async_load[? "type"] == network_type_data {
                 
                 //if object is a player update it on thier end!
                 var get_socket = found_map[? "player_socket"];
-                if is_undefined(get_socket) == false and get_socket != -1 {
+                if scr_socket_verify(get_socket) {
                     //manipulate as needed
                     var getx = found_map[? "x"]; 
                     var gety = found_map[? "y"]; 
@@ -1667,13 +1666,13 @@ if async_load[? "type"] == network_type_data {
                         var power_per_shot = 2;
                         var get_inventory = found_map[? "contains_map"];
                         
-                        if is_undefined(get_inventory) == false and ds_exists(get_inventory,ds_type_map) == true {
+                        if scr_ds_map_verify(get_inventory) {
                             var bat_ent = ds_map_find_first(get_inventory); //only one slot in here anyway.
                             
                             if is_undefined( bat_ent) == false {
                                 var bat_map = list_entities[| bat_ent];
                                 
-                                if is_undefined( bat_map) == false and ds_exists( bat_map,ds_type_map) == true {
+                                if scr_ds_map_verify( bat_map) {
                                     //if all of this exists, now check if it's actually a battery
                                     if asset_get_index(bat_map[? "object_index"]) == obj_puppet_powercell {
                                         if input_control_states == 0 {

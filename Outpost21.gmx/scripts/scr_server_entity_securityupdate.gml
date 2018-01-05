@@ -1,7 +1,7 @@
 ///scr_server_entity_securityupdate( entity);
 var entity_number = argument0;
 var found_map = list_entities[| entity_number];
-if is_undefined(found_map) == false and ds_exists(found_map,ds_type_map) {
+if scr_ds_map_verify(found_map) {
     var get_inventory_map = found_map[? "contains_map"];
     var inv_size = ds_map_size(get_inventory_map);
     
@@ -17,7 +17,7 @@ if is_undefined(found_map) == false and ds_exists(found_map,ds_type_map) {
     ds_list_clear( clearance_list);
 
     //populate list, if it was removed then the cached one is already cleared anyway!
-    if is_undefined(clearance_list) == false and ds_exists(clearance_list,ds_type_list) {
+    if scr_ds_map_verify(clearance_list) {
         if is_undefined(found_map[? "player_socket"]) == false and found_map[? "player_socket"] != -1 {
             //clear out current data for a reload!
             ds_list_clear(clearance_list);

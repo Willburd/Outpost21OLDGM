@@ -23,7 +23,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
             //drop to all clients, multiple times as a sanity check!
             for (var i=0; i<global.max_server_players; i+=1)
             {
-                if is_undefined(list_sockets[| i]) == false and list_sockets[| i] != -1 {
+                if scr_socket_verify( i) {
                     show_debug_message("garbage collection: Dropped entity: " + string(argument0));
                     scr_cpacket_entity_drop(i,argument0);
                 }
@@ -68,7 +68,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
                                 
                                 //inform player of grab change if it's a player!!
                                 var get_socket = get_map[? "player_socket"];
-                                if is_undefined(get_socket) == false and get_socket != -1 {
+                                if scr_socket_verify( get_socket) {
                                     scr_cpacket_entity_grab_update(get_socket,-1);
                                 }
                             }
@@ -79,7 +79,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
                                 get_dragged_map[? "y"] += lengthdir_y(get_dis/2,dir_to_grab); 
                                 
                                 var get_socket = get_dragged_map[? "player_socket"];
-                                if is_undefined(get_socket) == false and get_socket != -1 {
+                                if scr_socket_verify( get_socket) {
                                     //pull player around!
                                     var getx = get_dragged_map[? "x"]; 
                                     var gety = get_dragged_map[? "y"]; 
@@ -100,7 +100,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
                                 get_dragged_map[? "y"] -= lengthdir_y(get_dis*1.2,dir_to_grab);
                                 
                                 var get_socket = get_dragged_map[? "player_socket"];
-                                if is_undefined(get_socket) == false and get_socket != -1 {
+                                if scr_socket_verify( get_socket) {
                                     //pull player around!
                                     var getx = get_dragged_map[? "x"]; 
                                     var gety = get_dragged_map[? "y"]; 
@@ -121,7 +121,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
                             
                             //inform player of grab change if it's a player!!
                             var get_socket = get_map[? "player_socket"];
-                            if is_undefined(get_socket) == false and get_socket != -1 {
+                            if scr_socket_verify( get_socket) {
                                 scr_cpacket_entity_grab_update(get_socket,-1);
                             }
                         }
@@ -134,7 +134,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
                         
                         //inform player of grab change if it's a player!!
                         var get_socket = get_map[? "player_socket"];
-                        if is_undefined(get_socket) == false and get_socket != -1 {
+                        if scr_socket_verify( get_socket) {
                             scr_cpacket_entity_grab_update(get_socket,-1);
                         }
                     }
@@ -383,7 +383,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
                                 //update players to turn off their lights
                                 var t = 0;
                                 while t < global.max_server_players {
-                                    if is_undefined(list_sockets[| t]) == false and list_sockets[| t] != -1 {
+                                    if scr_socket_verify( t) {
                                         scr_cpacket_entity_reply(t,argument0,obj_machine_indoorlamp,TXbase64,0,enum_entity_reply.is_object);
                                     }
                                     t += 1;
@@ -556,7 +556,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
             //standard update proceedure. see if in range of player, and then update if so!
             for (var i=0; i<global.max_server_players; i+=1)
             {
-                if is_undefined(list_sockets[| i]) == false and list_sockets[| i] != -1 {
+                if scr_socket_verify( i) {
                     //get if our host object is updating
                     var host_entity_wants_update = false;
                     if ds_exists(host_update_list,ds_type_list) {

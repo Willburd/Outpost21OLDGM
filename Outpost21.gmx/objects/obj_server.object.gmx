@@ -1090,7 +1090,7 @@ if async_load[? "type"] == network_type_data {
             if scr_socket_verify(get_socket_player) {
             
                 var get_ply_entity = list_player[| get_socket_player];
-                if is_undefined(get_ply_entity) == false and get_ply_entity != -1 {
+                if scr_entityslot_is_valid(get_ply_entity) {
                     scr_server_entity_securityupdate(get_ply_entity);
                 }
             }
@@ -1337,7 +1337,7 @@ if async_load[? "type"] == network_type_data {
             if scr_socket_verify( get_socket_player) {
             
                 var get_ply_entity = list_player[| get_socket_player];
-                if is_undefined(get_ply_entity) == false and get_ply_entity != -1 {
+                if scr_entityslot_is_valid(get_ply_entity) {
                     
                 
                     var get_ply_map = list_entities[| get_ply_entity];
@@ -1377,7 +1377,7 @@ if async_load[? "type"] == network_type_data {
             if scr_socket_verify(get_socket_player) {
             
                 var get_ply_entity = list_player[| get_socket_player];
-                if is_undefined(get_ply_entity) == false and get_ply_entity != -1 {
+                if scr_entityslot_is_valid(get_ply_entity) {
                     
                 
                     var get_ply_map = list_entities[| get_ply_entity];

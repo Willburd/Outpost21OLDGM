@@ -1,13 +1,15 @@
 ///scr_server_entity_remove( entity id)
 //send to the abyss
 var deletemap = list_entities[| argument0];
-if is_undefined(deletemap) == false and ds_exists(deletemap,ds_type_map) {
+if scr_ds_map_verify(deletemap) {
     //remove me from storages
     var get_storage_index = deletemap[? "inside_of_id"];
-    if is_undefined(get_storage_index) == false and get_storage_index != -1 {
+    
+    if scr_entityslot_is_valid(get_storage_index) {
         //remove data from entity
         var get_storage_map = list_entities[| get_storage_index]
-        if is_undefined(get_storage_map) == false and ds_exists(get_storage_map,ds_type_map) {
+        
+        if scr_ds_map_verify(get_storage_map) {
             //remove from the host storage object
             var get_storage_inventory_map = get_storage_map[? "contains_map"];
             ds_map_delete(get_storage_inventory_map,string(argument0)); //remove from entity

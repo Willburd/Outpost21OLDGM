@@ -18,7 +18,7 @@ if scr_ds_map_verify(found_map) {
 
     //populate list, if it was removed then the cached one is already cleared anyway!
     if scr_ds_map_verify(clearance_list) {
-        if is_undefined(found_map[? "player_socket"]) == false and found_map[? "player_socket"] != -1 {
+        if scr_socket_verify(found_map[? "player_socket"]) {
             //clear out current data for a reload!
             ds_list_clear(clearance_list);
         

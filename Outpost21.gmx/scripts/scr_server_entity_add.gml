@@ -3,7 +3,7 @@
 var found_slot = false;
 var slotid = 0;
 while found_slot == false {
-    if slotid > ds_list_size(list_entities) or is_undefined(list_entities[| slotid]) or ds_exists(list_entities[| slotid],ds_type_map) == false {
+    if slotid > ds_list_size(list_entities) or scr_ds_map_verify(list_entities[| slotid]) == false { //end of list, or no ds_map in this entity slot!
         //add to the main entity list
         list_entities[| slotid] = argument0;
         argument0[? "entity_number"] = slotid;

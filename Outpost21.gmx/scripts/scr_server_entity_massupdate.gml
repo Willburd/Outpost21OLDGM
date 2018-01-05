@@ -50,8 +50,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
             if getx > item_abyss_pos and gety > item_abyss_pos {
             
                 //drag entity with me!
-                if is_undefined(get_map[? "grabbing_entity"]) == false 
-                and get_map[? "grabbing_entity"] != -1 {
+                if scr_entityslot_is_valid(get_map[? "grabbing_entity"]) {
                     var get_dragged_map = list_entities[| get_map[? "grabbing_entity"] ]; //decode map from item!
                     
                     if scr_ds_map_verify(get_dragged_map) //drag map exists!
@@ -141,8 +140,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
                     
                     //flag for updoot
                     if point_distance(get_dragged_map[? "x"],get_dragged_map[? "y"],get_dragged_map[? "last_update_x"],get_dragged_map[? "last_update_y"]) > 5 {
-                        if is_undefined(get_map[? "grabbing_entity"]) == false 
-                        and get_map[? "grabbing_entity"] != -1 {
+                        if scr_entityslot_is_valid(get_map[? "grabbing_entity"]) {
                             scr_item_updateflag_allplayers(get_map[? "grabbing_entity"],true);
                         }
                     }

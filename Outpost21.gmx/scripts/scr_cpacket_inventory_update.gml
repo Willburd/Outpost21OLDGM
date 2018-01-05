@@ -1,7 +1,7 @@
 ///scr_cpacket_inventory_update(connection id, object_id_request_is_from, entity id of inventory to send);
 var get_map = list_entities[| string(argument2)];
 show_debug_message("attempting to transmit inventory of entity: " + string(list_entities[| argument2]) + " using instance: " + string(argument1) + " to socket: " + string(argument0));
-if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) {
+if scr_ds_map_verify(get_map) {
     //compile data
     var get_inventory_map = get_map[? "contains_map"];
     
@@ -13,7 +13,7 @@ if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) {
     
         var get_slot_data = list_entities[| current_key ]; //pull the entity from from the list, the key popped off the map is just the entity id
         
-        if is_undefined(get_slot_data) == false and ds_exists(get_slot_data,ds_type_map) {
+        if scr_ds_map_verify(get_slot_data) {
             transmit_list[| (i*2)] = current_key; //store entity number
             transmit_list[| (i*2)+1] = asset_get_index(get_slot_data[? "object_index"]); //store object index
         }

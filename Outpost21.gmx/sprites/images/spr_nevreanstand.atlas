@@ -1,0 +1,83 @@
+
+spr_nevreanstand.png
+size: 128,32
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+nevbody/nev_body
+  rotate: true
+  xy: 63, 15
+  size: 15, 20
+  orig: 15, 20
+  offset: 0, 0
+  index: -1
+nevbody/nev_foot
+  rotate: true
+  xy: 122, 22
+  size: 8, 4
+  orig: 8, 4
+  offset: 0, 0
+  index: -1
+nevbody/nev_head
+  rotate: false
+  xy: 40, 16
+  size: 21, 14
+  orig: 21, 14
+  offset: 0, 0
+  index: -1
+nevbody/nev_hips
+  rotate: false
+  xy: 85, 15
+  size: 17, 15
+  orig: 17, 15
+  offset: 0, 0
+  index: -1
+nevbody/nev_leg_lower
+  rotate: false
+  xy: 57, 2
+  size: 10, 11
+  orig: 10, 11
+  offset: 0, 0
+  index: -1
+nevbody/nev_leg_upper
+  rotate: true
+  xy: 104, 21
+  size: 9, 16
+  orig: 9, 16
+  offset: 0, 0
+  index: -1
+nevbody/nev_lowerarm
+  rotate: false
+  xy: 21, 2
+  size: 21, 12
+  orig: 21, 12
+  offset: 0, 0
+  index: -1
+nevbody/nev_neck
+  rotate: true
+  xy: 44, 2
+  size: 12, 11
+  orig: 12, 11
+  offset: 0, 0
+  index: -1
+nevbody/nev_tail
+  rotate: true
+  xy: 2, 17
+  size: 13, 36
+  orig: 13, 36
+  offset: 0, 0
+  index: -1
+nevbody/nev_tailbase
+  rotate: true
+  xy: 2, 2
+  size: 13, 17
+  orig: 13, 17
+  offset: 0, 0
+  index: -1
+nevbody/nev_upperarm
+  rotate: false
+  xy: 69, 4
+  size: 10, 9
+  orig: 10, 9
+  offset: 0, 0
+  index: -1

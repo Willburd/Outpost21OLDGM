@@ -162,6 +162,7 @@
     <script>scripts\scr_client_errormessage.gml</script>
     <script>scripts\scr_client_controllock.gml</script>
     <script>scripts\scr_textbox_input.gml</script>
+    <script>scripts\scr_ds_map_verify.gml</script>
     <script>scripts\scr_consoleout.gml</script>
     <scripts name="imported scripts">
       <script>scripts\ProjectShadow.gml</script>

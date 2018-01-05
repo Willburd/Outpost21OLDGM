@@ -756,7 +756,7 @@ if async_load[? "type"] == network_type_data {
                 }
                 else
                 {
-                    if is_undefined(list_player[| player_slotid]) == false or ds_exists(list_player[| player_slotid],ds_type_map) == true {
+                    if scr_ds_map_verify(list_player[| player_slotid]) {
                         //prevent player entity dupes!
                         var get_check_map = list_entities[|  list_player[| player_slotid] ];
                         if is_undefined(get_check_map) == false and ds_exists(get_check_map,ds_type_map) 
@@ -835,8 +835,8 @@ if async_load[? "type"] == network_type_data {
             var player_entity = list_player[| player_number]; 
             global.map_loading_lock_thread[ connection_id] = true; //locked on this socket!
             
-            if is_undefined(player_entity) == false and is_undefined(list_entities[| player_entity]) == false 
-            and ds_exists(list_entities[| player_entity],ds_type_map) {
+            if is_undefined(player_entity) == false 
+            and scr_ds_map_verify(list_entities[| player_entity]) {
                 //get player location
                 var ply_map = list_entities[| player_entity];
                 var plx = ply_map[? "x"];
@@ -868,8 +868,7 @@ if async_load[? "type"] == network_type_data {
                 var get_size = ds_map_size(global.map_saved_constructions);
                 for (var i=0; i&lt;get_size; i+=1)
                 {
-                    if is_undefined(global.map_saved_constructions[? string(i)]) == false
-                    and ds_exists(global.map_saved_constructions[? string(i)],ds_type_map) {
+                    if scr_ds_map_verify(global.map_saved_constructions[? string(i)]){
                         var get_map = global.map_saved_constructions[? string(i)];
                         ds_priority_add(priority_list, string(i), point_distance(plx,ply,get_map[? "x"],get_map[? "y"]));
                     }
@@ -904,8 +903,8 @@ if async_load[? "type"] == network_type_data {
             var player_number = list_sockets[| connection_id]; 
             var player_entity = list_player[| player_number]; 
             
-            if is_undefined(player_entity) == false and is_undefined(list_entities[| player_entity]) == false 
-            and ds_exists(list_entities[| player_entity],ds_type_map) {
+            if is_undefined(player_entity) == false
+            and scr_ds_map_verify(list_entities[| player_entity]) {
                 show_debug_message("Shuttle found player!");
             
                 //get player location
@@ -914,8 +913,7 @@ if async_load[? "type"] == network_type_data {
                 var get_hostent = ply_map[? "inside_of_id"];
                 
                 if is_undefined(get_hostent) == false and get_hostent != -1 
-                and is_undefined(list_entities[| get_hostent]) == false 
-                and ds_exists(list_entities[| get_hostent],ds_type_map) {
+                and scr_ds_map_verify(list_entities[| get_hostent]) {
                     var host_map = list_entities[| get_hostent];
                     
                     //entity exists!
@@ -968,7 +966,7 @@ if async_load[? "type"] == network_type_data {
                 }
                 
                 //remove entity if it is the same as where we are going
-                if is_undefined(global.map_saved_constructions[? string(k)]) == false and ds_exists(global.map_saved_constructions[? string(k)],ds_type_map) == true {
+                if scr_ds_map_verify(global.map_saved_constructions[? string(k)]) {
                     var sub_map = global.map_saved_constructions[? string(k)];
                     if k != get_index and getx == sub_map[? "x"] and gety == sub_map[? "y"] {
                         //same location so replace it!
@@ -995,7 +993,7 @@ if async_load[? "type"] == network_type_data {
             
                 //load entity slot to be crafted
                 var sub_map = global.map_saved_constructions[? string(get_index)];
-                if is_undefined(sub_map) == false and ds_exists(sub_map,ds_type_map) == true {
+                if scr_ds_map_verify(sub_map) {
                     //base data always needed    
                     sub_map[? "obj"] = object_get_name( get_objectindex);
                     sub_map[? "map_entity"] = get_index;
@@ -1045,7 +1043,7 @@ if async_load[? "type"] == network_type_data {
             var get_mapentity = buffer_read(connection_buffer,buffer_u16);
         
             var sub_map = global.map_saved_constructions[? string(get_mapentity)];
-            if is_undefined( sub_map ) == false and ds_exists( sub_map ,ds_type_map) == true {
+            if scr_ds_map_verify( sub_map ) {
                 //same location so replace it!
                 sub_map[? "remove_flag"] = true;
                 show_debug_message("removing map entity at: " + string(get_mapentity));
@@ -1067,7 +1065,7 @@ if async_load[? "type"] == network_type_data {
             var get_mapentity = buffer_read(connection_buffer,buffer_u16);
             var sub_map = global.map_saved_constructions[? string(get_mapentity)];
             
-            if is_undefined( sub_map ) == false and ds_exists( sub_map ,ds_type_map) == true {
+            if scr_ds_map_verify( sub_map ) {
                 //transmit back the door security color!
                 scr_cpacket_map_door_security_reply( connection_id, get_mapentity , sub_map[? "security_color"]);
             }
@@ -1106,7 +1104,7 @@ if async_load[? "type"] == network_type_data {
             
             show_debug_message("===location of " + string(entity_number) + " requested");
             
-            if is_undefined(found_map) == false and ds_exists(found_map,ds_type_map) {
+            if scr_ds_map_verify(found_map){
                 show_debug_message(" -entity existed!");
                 var xx = found_map[? "x"];
                 var yy = found_map[? "y"];
@@ -1128,7 +1126,7 @@ if async_load[? "type"] == network_type_data {
             var entity_number  = buffer_read(connection_buffer,buffer_u32);
             var found_map = list_entities[| entity_number];
             
-            if is_undefined(found_map) == false and ds_exists(found_map,ds_type_map) {
+            if scr_ds_map_verify(found_map) {
                 show_debug_message("===location of entity: " + string(entity_number) + " updated.");
             
                 //set the location based off of this!
@@ -1207,8 +1205,8 @@ if async_load[? "type"] == network_type_data {
             var storagebox_map = list_entities[| storagebox_entity_number];
             
             //check if we can even access these!
-            if is_undefined(found_map) == false and ds_exists(found_map,ds_type_map)
-            and is_undefined(storagebox_map) == false and ds_exists(storagebox_map,ds_type_map) {
+            if scr_ds_map_verify(found_map)
+            and scr_ds_map_verify(storagebox_map) {
                 if string(entity_number) != string(storagebox_entity_number) {
                 
                     //decide if pickup is valid!
@@ -1395,8 +1393,8 @@ if async_load[? "type"] == network_type_data {
             
             
             //check if we can even access these!
-            if is_undefined(found_map) == false and ds_exists(found_map,ds_type_map)
-            and is_undefined(storagebox_map) == false and ds_exists(storagebox_map,ds_type_map) {
+            if scr_ds_map_verify(found_map)
+            and scr_ds_map_verify(storagebox_map) {
                 show_debug_message("===entity: " + string(entity_number) + " placed on ground. ");
                 
                 //set the location based off of this!
@@ -1464,7 +1462,7 @@ if async_load[? "type"] == network_type_data {
             var entity_number = buffer_read(connection_buffer,buffer_u32);
             //show_debug_message("===Entity dropped: " + string(entity_number));
             
-            if is_undefined(list_entities[| entity_number]) == false and ds_exists( list_entities[| entity_number], ds_type_map) == true {
+            if scr_ds_map_verify(list_entities[| entity_number]) {
                 //tell client that this entity is also unloaded
                 scr_cpacket_entity_drop(connection_id,entity_number);
                 //set the object as needing to update when it can
@@ -1498,7 +1496,7 @@ if async_load[? "type"] == network_type_data {
             return_instance_or_object = enum_entity_reply.is_entity; //if we return instance or object based stuff.
             show_debug_message("===Entity used: " + string(entity_number));
             
-            if is_undefined(list_entities[| entity_number]) == false and ds_exists( list_entities[| entity_number], ds_type_map) == true {
+            if scr_ds_map_verify(list_entities[| entity_number]) {
                 //extract map from entity
                 var found_map =  list_entities[| entity_number];
                 
@@ -1571,7 +1569,7 @@ if async_load[? "type"] == network_type_data {
                             if is_undefined(current_key) == false {
                                 var card_map = list_entities[| current_key];
                                 
-                                if is_undefined(card_map) == false and ds_exists(card_map,ds_type_map) {
+                                if scr_ds_map_verify(card_map) {
                                     if asset_get_index(card_map[? "object_index"]) == obj_puppet_securitycard {
                                         //flag that we will be returning a object_index, used by the security tool when bringing up the editing menu
                                         return_instance_or_object = enum_entity_reply.is_object;
@@ -1884,7 +1882,7 @@ if async_load[? "type"] == network_type_data {
                                         if i &lt; inv_size {
                                             //fill a cup if present, try till we run out of inventory!
                                             var item_map = list_entities[| current_key];
-                                            if is_undefined(item_map) == false and ds_exists(item_map,ds_type_map) {
+                                            if scr_ds_map_verify(item_map) {
                                                 if item_map[? "contains_type_liquid"] == true {
                                                     //fill cup if present!
                                                     var get_sub_inventory_map = item_map[? "contains_map"];
@@ -1967,7 +1965,7 @@ if async_load[? "type"] == network_type_data {
             //load up a list to transmit
             var transmission_list = ds_list_create();  
             
-            if is_undefined( sub_map ) == false and ds_exists( sub_map ,ds_type_map) == true {
+            if scr_ds_map_verify( sub_map ) {
                 //get security data, for door!
                 show_debug_message("map entity triggered: " + string( get_mapentity));
                 
@@ -2003,7 +2001,7 @@ if async_load[? "type"] == network_type_data {
             //get security data
             show_debug_message("map entity triggered: " + string( get_mapentity));
             
-            if is_undefined( sub_map ) == false and ds_exists( sub_map ,ds_type_map) == true {
+            if scr_ds_map_verify( sub_map ) {
                 //get seculist
                 var seclist = sub_map[? "security_clearance"];
                 transmission_list[| 0] = 1; //takes up space because the tooltip stuff means that the security menu expects the first entry to be an spflag

@@ -3,7 +3,7 @@
 //show_debug_message("Mass entity update: " + string(argument0));
 var get_map = list_entities[| string(argument0)];
 
-if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) and is_undefined(get_map[? "object_index"]) == false {
+if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == false {
     //get data
     var object = asset_get_index(get_map[? "object_index"]);
     var getx = get_map[? "x"]; 
@@ -39,7 +39,7 @@ if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) and is_unde
         }
     }
     
-    if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) {
+    if scr_ds_map_verify(get_map) {
     
         //check to see if garbage collection didn't nuke us
         if get_map[? "entity_last_process_cycle"] != global.server_processing_cycle {
@@ -54,7 +54,7 @@ if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) and is_unde
                 and get_map[? "grabbing_entity"] != -1 {
                     var get_dragged_map = list_entities[| get_map[? "grabbing_entity"] ]; //decode map from item!
                     
-                    if is_undefined(get_dragged_map) == false and ds_exists(get_dragged_map,ds_type_map) == true //drag map exists!
+                    if scr_ds_map_verify(get_dragged_map) //drag map exists!
                     and get_dragged_map[? "x"] != item_abyss_pos and get_dragged_map[? "y"] != item_abyss_pos { //not in the item abyss
                     
                         if get_dragged_map[? "inside_of_id"] == -1 and get_map[? "inside_of_id"] == -1 {
@@ -448,7 +448,7 @@ if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) and is_unde
                                     
                                     //release the player!
                                     var get_ply_map = list_entities[| get_plyent];
-                                    if is_undefined(get_ply_map) == false and ds_exists(get_ply_map,ds_type_map) {
+                                    if scr_ds_map_verify(get_ply_map) {
                                         get_ply_map[? "x"] = getinst.x+irandom_range(-32,32);
                                         get_ply_map[? "y"] = getinst.y+irandom_range(-8,8);
                                         get_ply_map[? "inside_of_id"] = -1; //let go!
@@ -533,8 +533,8 @@ if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) and is_unde
         var host_update_list = -1;
         var host_entity_wants_update = false;
         
-        if is_undefined(inside_id) == false and is_undefined(list_entities[| inside_id]) == false 
-        and list_entities[| inside_id] != -1 and ds_exists( list_entities[| inside_id],ds_type_map) {
+        if is_undefined(inside_id) == false 
+        and scr_ds_map_verify(list_entities[| inside_id]) {
             var container_map = list_entities[| inside_id];
             
             //fix old entities 
@@ -572,7 +572,7 @@ if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) and is_unde
                     if is_undefined(player_entity) == false {
                         var player_map = list_entities[| player_entity]; //get the data structure from the entity list
                         
-                        if is_undefined(player_map) == false and ds_exists(player_map,ds_type_map) == true {
+                        if scr_ds_map_verify(player_map) {
                             //get if this is the same entity as the player that we are sending it to!
                             var is_player = (player_map == get_map);
                             var plyx = player_map[? "x"];
@@ -583,7 +583,7 @@ if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) and is_unde
                             if get_ply_hostent != -1 {
                                 var get_ply_hostmap = list_entities[| get_ply_hostent];    
                             
-                                if is_undefined(get_ply_hostmap) == false and ds_exists(get_ply_hostmap,ds_type_map) {
+                                if scr_ds_map_verify(get_ply_hostmap) {
                                     var plyx = get_ply_hostmap[? "x"];
                                     var plyy = get_ply_hostmap[? "y"];
                                 }
@@ -652,7 +652,7 @@ if is_undefined(get_map) == false and ds_exists(get_map,ds_type_map) and is_unde
                                         if get_hostent != -1 {
                                             var get_hostmap = list_entities[| get_hostent];    
                                         
-                                            if is_undefined(get_hostmap) == false and ds_exists(get_hostmap,ds_type_map) {
+                                            if scr_ds_map_verify(get_hostmap) {
                                                 var ply_socket = player_map[? "player_socket"];
                                                 var host_update_list = get_hostmap[? "needs_update"];
                                             

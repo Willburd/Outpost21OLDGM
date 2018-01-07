@@ -108,7 +108,7 @@ if point_in_rectangle(mouse_x,mouse_y,x+304,y+48,x+361,y+64) == true {
             //connect to a server
             var port = real(input_array[1,0]);
             show_debug_message("Connecting to server " + string(input_array[0,0]) + " port: " + string(port));
-            network_connect(global.client_socket,input_array[0,0],port);
+            network_connect_raw(global.client_socket,input_array[0,0],port);
             network_set_timeout(global.client_socket,10000,10000);
             //lock last input
             ini_open(global.config_file_path);

@@ -248,42 +248,7 @@ alarm[0] = player_update_timer;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>
-//THESE ARE THINGS THE CLIENT RESPONDS TO!
-enum enum_client_packets {
-    request_seen,
-    //need to be right by eachother in order
-    login_newuser,
-    login_failed,
-    login_success,
-    //back to normal, receiving map update
-    character_transmit_data,
-    map_object_load,
-    map_object_drop,
-    map_security_reply,
-    map_door_open,
-    map_door_security_reply,
-    //character locking
-    character_locked,
-    player_entity_return,
-    player_security_reply,
-    movement_location_sync,
-    //entities
-    entity_load,
-    entity_drop,
-    entity_reply,
-    entity_activate,
-    entity_grab_update,
-    //misc
-    force_reset,
-    failed_action, //just when normal things like being unable to fill a cup because it is full!
-    server_alive,
-    //inventory
-    inventory_update,
-    storagebox_object_update,
-}
-
-enum enum_entity_reply {    
+            <string>enum enum_entity_reply {    
     is_entity,
     is_object,   
 }
@@ -295,6 +260,8 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
     var connection_bufsize = buffer_get_size(connection_buffer);
     
     var client_destination_number = buffer_read(connection_buffer,buffer_u8);
+    
+    scr_consoleout("  server sent us a packet!");
     
     if connection_bufsize &gt; 0 {
         //get the opcode off the packet!!
@@ -1045,6 +1012,40 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
           <argument>
             <kind>1</kind>
             <string>///Data handling
+
+//THESE ARE THINGS THE CLIENT RESPONDS TO!
+enum enum_client_packets {
+    request_seen,
+    //need to be right by eachother in order
+    login_newuser,
+    login_failed,
+    login_success,
+    //back to normal, receiving map update
+    character_transmit_data,
+    map_object_load,
+    map_object_drop,
+    map_security_reply,
+    map_door_open,
+    map_door_security_reply,
+    //character locking
+    character_locked,
+    player_entity_return,
+    player_security_reply,
+    movement_location_sync,
+    //entities
+    entity_load,
+    entity_drop,
+    entity_reply,
+    entity_activate,
+    entity_grab_update,
+    //misc
+    force_reset,
+    failed_action, //just when normal things like being unable to fill a cup because it is full!
+    server_alive,
+    //inventory
+    inventory_update,
+    storagebox_object_update,
+}
 
 //packet disassembly and processing
 if async_load[? "type"] == network_type_data {

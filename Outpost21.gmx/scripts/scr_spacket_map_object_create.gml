@@ -6,5 +6,5 @@ buffer_write(send_buffer,buffer_f32, argument1);
 buffer_write(send_buffer,buffer_f32, argument2);
 buffer_write(send_buffer,buffer_u8, argument3);
 buffer_write(send_buffer,buffer_u16, floor(((argument4 mod 360) /360)*65534));
-network_send_packet( global.client_socket, send_buffer, buffer_get_size(send_buffer));
+network_send_raw( global.client_socket, send_buffer, buffer_get_size(send_buffer));
 buffer_delete( send_buffer);

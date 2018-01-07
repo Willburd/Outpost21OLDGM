@@ -1,0 +1,218 @@
+# depslib dependency file v1.0
+1515324277 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
+	"main.h"
+	"byte_buffer.h"
+
+1515292531 c:\program files\sfml\sfml-2.4.2\include\sfml\network.hpp
+	<SFML/System.hpp>
+	<SFML/Network/Ftp.hpp>
+	<SFML/Network/Http.hpp>
+	<SFML/Network/IpAddress.hpp>
+	<SFML/Network/Packet.hpp>
+	<SFML/Network/Socket.hpp>
+	<SFML/Network/SocketHandle.hpp>
+	<SFML/Network/SocketSelector.hpp>
+	<SFML/Network/TcpListener.hpp>
+	<SFML/Network/TcpSocket.hpp>
+	<SFML/Network/UdpSocket.hpp>
+
+1515292531 c:\program files\sfml\sfml-2.4.2\include\sfml\system.hpp
+	<SFML/Config.hpp>
+	<SFML/System/Clock.hpp>
+	<SFML/System/Err.hpp>
+	<SFML/System/FileInputStream.hpp>
+	<SFML/System/InputStream.hpp>
+	<SFML/System/Lock.hpp>
+	<SFML/System/MemoryInputStream.hpp>
+	<SFML/System/Mutex.hpp>
+	<SFML/System/NonCopyable.hpp>
+	<SFML/System/Sleep.hpp>
+	<SFML/System/String.hpp>
+	<SFML/System/Thread.hpp>
+	<SFML/System/ThreadLocal.hpp>
+	<SFML/System/ThreadLocalPtr.hpp>
+	<SFML/System/Time.hpp>
+	<SFML/System/Utf.hpp>
+	<SFML/System/Vector2.hpp>
+	<SFML/System/Vector3.hpp>
+
+1515292531 c:\program files\sfml\sfml-2.4.2\include\sfml\config.hpp
+	"TargetConditionals.h"
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\system\clock.hpp
+	<SFML/System/Export.hpp>
+	<SFML/System/Time.hpp>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\system\export.hpp
+	<SFML/Config.hpp>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\time.hpp
+	<SFML/System/Export.hpp>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\system\err.hpp
+	<SFML/System/Export.hpp>
+	<ostream>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\system\fileinputstream.hpp
+	<SFML/Config.hpp>
+	<SFML/System/Export.hpp>
+	<SFML/System/InputStream.hpp>
+	<SFML/System/NonCopyable.hpp>
+	<cstdio>
+	<string>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\system\inputstream.hpp
+	<SFML/Config.hpp>
+	<SFML/System/Export.hpp>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\noncopyable.hpp
+	<SFML/System/Export.hpp>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\system\lock.hpp
+	<SFML/System/Export.hpp>
+	<SFML/System/NonCopyable.hpp>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\memoryinputstream.hpp
+	<SFML/Config.hpp>
+	<SFML/System/InputStream.hpp>
+	<SFML/System/Export.hpp>
+	<cstdlib>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\mutex.hpp
+	<SFML/System/Export.hpp>
+	<SFML/System/NonCopyable.hpp>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\sleep.hpp
+	<SFML/System/Export.hpp>
+	<SFML/System/Time.hpp>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\string.hpp
+	<SFML/System/Export.hpp>
+	<SFML/System/Utf.hpp>
+	<iterator>
+	<locale>
+	<string>
+	<SFML/System/String.inl>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\utf.hpp
+	<SFML/Config.hpp>
+	<algorithm>
+	<locale>
+	<string>
+	<cstdlib>
+	<SFML/System/Utf.inl>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\utf.inl
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\string.inl
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\thread.hpp
+	<SFML/System/Export.hpp>
+	<SFML/System/NonCopyable.hpp>
+	<cstdlib>
+	<SFML/System/Thread.inl>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\thread.inl
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\threadlocal.hpp
+	<SFML/System/Export.hpp>
+	<SFML/System/NonCopyable.hpp>
+	<cstdlib>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\threadlocalptr.hpp
+	<SFML/System/ThreadLocal.hpp>
+	<SFML/System/ThreadLocalPtr.inl>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\threadlocalptr.inl
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\vector2.hpp
+	<SFML/System/Vector2.inl>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\vector2.inl
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\vector3.hpp
+	<SFML/System/Vector3.inl>
+
+1515292534 c:\program files\sfml\sfml-2.4.2\include\sfml\system\vector3.inl
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\ftp.hpp
+	<SFML/Network/Export.hpp>
+	<SFML/Network/TcpSocket.hpp>
+	<SFML/System/NonCopyable.hpp>
+	<SFML/System/Time.hpp>
+	<string>
+	<vector>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\export.hpp
+	<SFML/Config.hpp>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\tcpsocket.hpp
+	<SFML/Network/Export.hpp>
+	<SFML/Network/Socket.hpp>
+	<SFML/System/Time.hpp>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\socket.hpp
+	<SFML/Network/Export.hpp>
+	<SFML/Network/SocketHandle.hpp>
+	<SFML/System/NonCopyable.hpp>
+	<vector>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\sockethandle.hpp
+	<SFML/Config.hpp>
+	<basetsd.h>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\http.hpp
+	<SFML/Network/Export.hpp>
+	<SFML/Network/IpAddress.hpp>
+	<SFML/Network/TcpSocket.hpp>
+	<SFML/System/NonCopyable.hpp>
+	<SFML/System/Time.hpp>
+	<map>
+	<string>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\ipaddress.hpp
+	<SFML/Network/Export.hpp>
+	<SFML/System/Time.hpp>
+	<istream>
+	<ostream>
+	<string>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\packet.hpp
+	<SFML/Network/Export.hpp>
+	<string>
+	<vector>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\socketselector.hpp
+	<SFML/Network/Export.hpp>
+	<SFML/System/Time.hpp>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\tcplistener.hpp
+	<SFML/Network/Export.hpp>
+	<SFML/Network/Socket.hpp>
+	<SFML/Network/IpAddress.hpp>
+
+1515292533 c:\program files\sfml\sfml-2.4.2\include\sfml\network\udpsocket.hpp
+	<SFML/Network/Export.hpp>
+	<SFML/Network/Socket.hpp>
+	<SFML/Network/IpAddress.hpp>
+	<vector>
+
+1515308586 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit.cpp
+	<cstring>
+	"client_transmit.h"
+
+1515309420 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit.h
+	<SFML/Network.hpp>
+
+1515318578 c:\users\kose\documents\github\outpost21\server\outpost21_server\main.h
+	<iostream>
+	<cstring>
+	<SFML/Network.hpp>
+
+1515322540 c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.h
+	<iostream>
+	<cstring>
+
+1515324032 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.cpp
+	"byte_buffer.h"
+

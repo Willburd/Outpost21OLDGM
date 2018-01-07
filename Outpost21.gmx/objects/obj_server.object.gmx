@@ -324,9 +324,9 @@ while (i &lt; ds_list_size(transmission_list))
     
     if global.socket_verified[ get_destin] == true or get_opcode == enum_client_packets.request_seen { //is a new connection or connection established.
         if global.packet_loading_count[ get_destin] &lt; entity_batch_size {
-            var send_size = network_send_packet(get_destin, pop_buff, buffer_get_size(pop_buff));
+            var send_size = network_send_raw(get_destin, pop_buff, buffer_get_size(pop_buff));
             
-            if send_size == buffer_get_size(pop_buff) + 12 {
+            if send_size == buffer_get_size(pop_buff) {
                 //sent
                 global.packet_loading_count[ get_destin] += send_size;
                 buffer_delete(pop_buff);

@@ -5,5 +5,5 @@ buffer_write(send_buffer,buffer_u32, argument0);
 buffer_write(send_buffer,buffer_u32, argument1);
 buffer_write(send_buffer,buffer_f32, argument2);
 buffer_write(send_buffer,buffer_f32, argument3);
-network_send_packet(global.client_socket, send_buffer, buffer_get_size(send_buffer));
+network_send_raw(global.client_socket, send_buffer, buffer_get_size(send_buffer));
 buffer_delete(send_buffer);

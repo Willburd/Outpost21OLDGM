@@ -1,4 +1,8 @@
+#ifndef BYTEBUFFER_H
+#define BYTEBUFFER_H
+
 #include <iostream>
+#include <string.h>
 #include <cstring>
 
 enum buffer_types {
@@ -19,7 +23,7 @@ class byte_buffer  {
     int buffer_place = 0;
 
     public:
-    std::size_t received;
+    std::size_t received = 0;
     char data[255];
 
     unsigned int buffer_get_pos();
@@ -36,4 +40,7 @@ class byte_buffer  {
     void buffer_write_u16(uint16_t input);
     void buffer_write_u32(uint32_t input);
     void buffer_write_f32(float input);
+    void buffer_write_string(std::string input);
 };
+
+#endif

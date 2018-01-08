@@ -49,6 +49,16 @@
 		</Linker>
 		<Unit filename="byte_buffer.cpp" />
 		<Unit filename="byte_buffer.h" />
+		<Unit filename="client_structure.cpp" />
+		<Unit filename="client_structure.h" />
+		<Unit filename="client_transmit_packets.cpp" />
+		<Unit filename="client_transmit_packets.h" />
+		<Unit filename="inih/cpp/INIReader.cpp" />
+		<Unit filename="inih/cpp/INIReader.h" />
+		<Unit filename="inih/ini.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="inih/ini.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="main.h" />
 		<Extensions>

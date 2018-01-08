@@ -1,44 +1,11 @@
+#ifndef MAIN_H
+#define MAIN_H
+
 #include <iostream>
 #include <cstring>
-#include <SFML/Network.hpp>
+#include "client_transmit_packets.h"
 
 ///NOTICE this needs to match the enum in the game maker side client!
-namespace client_transmission_packets {
-    enum enum_client_packets : uint16_t {
-        request_seen,
-        //need to be right by each other in order
-        login_newuser,
-        login_failed,
-        login_success,
-        //back to normal, receiving map update
-        character_transmit_data,
-        map_object_load,
-        map_object_drop,
-        map_security_reply,
-        map_door_open,
-        map_door_security_reply,
-        //character locking
-        character_locked,
-        player_entity_return,
-        player_security_reply,
-        movement_location_sync,
-        //entities
-        entity_load,
-        entity_drop,
-        entity_reply,
-        entity_activate,
-        entity_grab_update,
-        //misc
-        force_reset,
-        failed_action, //just when normal things like being unable to fill a cup because it is full!
-        server_alive,
-        //inventory
-        inventory_update,
-        storagebox_object_update,
-    };
-};
-
-
 namespace server_recieving_packets{
     enum enum_server_packets : uint16_t {
         //logins
@@ -82,6 +49,12 @@ namespace server_recieving_packets{
 };
 
 
+struct global_vars {
+    const std::string serverdata_file_path = "server_data.ini";
+};
 
 
 int main();
+
+
+#endif

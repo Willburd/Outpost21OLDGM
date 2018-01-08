@@ -261,8 +261,6 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
     
     var client_destination_number = buffer_read(connection_buffer,buffer_u8);
     
-    scr_consoleout("  server sent us a packet!");
-    
     if connection_bufsize &gt; 0 {
         //get the opcode off the packet!!
         var opcode = buffer_read(connection_buffer,buffer_u16);

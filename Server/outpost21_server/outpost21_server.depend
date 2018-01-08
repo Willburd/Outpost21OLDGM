@@ -1,7 +1,10 @@
 # depslib dependency file v1.0
-1515324277 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
+1515379765 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
+	<iostream>
+	<cstring>
+	<SFML/Network.hpp>
 	"main.h"
-	"byte_buffer.h"
+	"inih/cpp/INIReader.h"
 
 1515292531 c:\program files\sfml\sfml-2.4.2\include\sfml\network.hpp
 	<SFML/System.hpp>
@@ -204,15 +207,52 @@
 1515309420 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit.h
 	<SFML/Network.hpp>
 
-1515318578 c:\users\kose\documents\github\outpost21\server\outpost21_server\main.h
+1515375262 c:\users\kose\documents\github\outpost21\server\outpost21_server\main.h
 	<iostream>
 	<cstring>
+	"client_transmit_packets.h"
+
+1515378221 c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.h
+	<iostream>
+	<string.h>
+	<cstring>
+
+1515380605 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.cpp
+	"byte_buffer.h"
+
+1515367885 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\cpp\inireader.cpp
+	<algorithm>
+	<cctype>
+	<cstdlib>
+	"../ini.h"
+	"INIReader.h"
+
+1515367980 c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\ini.h
+	<stdio.h>
+
+1515367760 c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\cpp\inireader.h
+	<map>
+	<string>
+
+1515367976 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\ini.c
+	<stdio.h>
+	<ctype.h>
+	<string.h>
+	"ini.h"
+	<stdlib.h>
+
+1515374206 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\client_structure.cpp
+	"client_structure.h"
+
+1515375285 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_structure.h
 	<SFML/Network.hpp>
 
-1515322540 c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.h
-	<iostream>
-	<cstring>
+1515379765 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit_packets.cpp
+	"client_transmit_packets.h"
+	"client_structure.h"
 
-1515324032 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.cpp
+1515378168 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit_packets.h
+	<cstring>
+	"client_structure.h"
 	"byte_buffer.h"
 

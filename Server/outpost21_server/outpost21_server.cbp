@@ -54,6 +54,7 @@
 		<Unit filename="client_structure.h" />
 		<Unit filename="client_transmit_packets.cpp" />
 		<Unit filename="client_transmit_packets.h" />
+		<Unit filename="entitylibrary/entity_library.h" />
 		<Unit filename="inih/cpp/INIReader.cpp" />
 		<Unit filename="inih/cpp/INIReader.h" />
 		<Unit filename="inih/ini.c">

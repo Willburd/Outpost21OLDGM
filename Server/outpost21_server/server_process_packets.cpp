@@ -36,7 +36,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
 
             // TCP socket:
             byte_buffer* current_packet = new byte_buffer;
-            if (client.mySocket.receive(current_packet->data, 255, current_packet->received) != sf::Socket::Done
+            if (client.mySocket.receive(current_packet->data, 255, current_packet->received) != sf::Socket::Done)
             {
                 // client has been lost! exit loop
                 std::cout << "Connection lost! Inside thread: " << tid << std::endl;

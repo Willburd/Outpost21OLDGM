@@ -45,6 +45,7 @@
 			<Add directory="C:/Program Files/SFML/SFML-2.4.2/include" />
 		</Compiler>
 		<Linker>
+			<Add option="-pthread" />
 			<Add directory="C:/Program Files/SFML/SFML-2.4.2/lib" />
 		</Linker>
 		<Unit filename="byte_buffer.cpp" />
@@ -61,6 +62,10 @@
 		<Unit filename="inih/ini.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="main.h" />
+		<Unit filename="server_core.cpp" />
+		<Unit filename="server_core.h" />
+		<Unit filename="server_process_packets.cpp" />
+		<Unit filename="server_process_packets.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

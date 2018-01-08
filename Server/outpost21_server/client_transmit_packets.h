@@ -5,8 +5,9 @@
 #include "client_structure.h"
 #include "byte_buffer.h"
 
-///NOTICE this needs to match the enum in the game maker side client!
+
 namespace client_transmission_packets {
+    ///NOTICE this needs to match the enum in the game maker side client!
     enum enum_client_packets : uint16_t {
         request_seen,
         //need to be right by each other in order

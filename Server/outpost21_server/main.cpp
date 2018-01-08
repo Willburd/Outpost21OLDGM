@@ -94,7 +94,7 @@ int main()
                         std::cout << " E-hash    : " << get_pass_data << "|" << std::endl;
 
                         //login checks
-                        if(get_pass_data.length() > 0) {}
+                        if(get_pass_data.length() > 0) {
                             if(password_accepted == false) {
                                 //send new user confirmations!
                                 std::cout << "New user signup" << std::endl;
@@ -117,6 +117,7 @@ int main()
                                 }
                             }
                         }
+                    }
                 break;
 
                 case server_recieving_packets::heartbeat_request:

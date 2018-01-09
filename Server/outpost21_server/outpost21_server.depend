@@ -265,7 +265,7 @@
 	<SFML/Network.hpp>
 	<pthread.h>
 
-1515415244 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
+1515455752 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
 	"client_transmit_packets.h"
 	<SFML/Network.hpp>
 	<pthread.h>
@@ -287,6 +287,6 @@
 1515406129 c:\users\kose\documents\github\outpost21\server\outpost21_server\entity library\entity_library.h
 	"../server_core.h"
 
-1515415107 c:\users\kose\documents\github\outpost21\server\outpost21_server\entitylibrary\entity_library.h
+1515456002 c:\users\kose\documents\github\outpost21\server\outpost21_server\entitylibrary\entity_library.h
 	"../server_core.h"
 

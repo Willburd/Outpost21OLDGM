@@ -9,10 +9,6 @@
 class entity;
 
 
-
-
-
-
 struct global_vars {
     sf::TcpListener listener;
     int server_port = 0;

@@ -19,7 +19,7 @@ int global_vars::getIndexOfAsset(std::string inputAstIndex) {
 
 
 void global_vars::entity_add(entity* entityToAdd) {
-    for(int i = 0; i < entity_vector.size()+1; i++) {
+    for(unsigned int i = 0; i < entity_vector.size()+1; i++) {
         if(i == entity_vector.size()
         || entity_vector[i] == nullptr) {
             ///add at the end of list, or if a blank space is found

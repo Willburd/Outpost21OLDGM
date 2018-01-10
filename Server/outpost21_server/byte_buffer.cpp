@@ -4,15 +4,15 @@ void byte_buffer::buffer_debug() {
     //transmit debug?
     std::cout << "==PACKET DEBUG== " << std::endl;
     std::cout << "buffat: " <<  buffer_place << std::endl;
-    std::cout << "sizeof: " << (int)received << std::endl;
+    std::cout << "sizeof: " << (unsigned int)received << std::endl;
     std::cout << "Numbs: ";
-    for(unsigned int i = 0; i < (int)received; i++) {
+    for(unsigned int i = 0; i < (unsigned int)received; i++) {
          std::cout << (int)data[i] << ",";
     }
     std::cout << std::endl;
 
     std::cout << "Chars: ";
-    for(unsigned int i = 0; i < (int)received; i++) {
+    for(unsigned int i = 0; i < (unsigned int)received; i++) {
          std::cout << data[i] << ",";
     }
     std::cout << std::endl;
@@ -130,7 +130,7 @@ void byte_buffer::buffer_write_f32(float input) {
 }
 
 void byte_buffer::buffer_write_string(std::string input) {
-    int string_pos = 0;
+    unsigned int string_pos = 0;
 
     while(string_pos < input.length()) {
         //pump string into buffer

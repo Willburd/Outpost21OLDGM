@@ -312,155 +312,155 @@ namespace entityLibrary {
 
     void entity_template_creation() {
         ///living entities
-        global.CreateObjectAndAssetIndex("obj_puppet_arrivalshuttle");
-        global.CreateObjectAndAssetIndex("obj_puppet_player");
-        global.CreateObjectAndAssetIndex("obj_puppet_borb");
-        global.CreateObjectAndAssetIndex("obj_puppet_laserpoint");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_arrivalshuttle");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_player");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_borb");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_laserpoint");
 
         ///food
-        global.CreateObjectAndAssetIndex("obj_puppet_cup");
-        global.CreateObjectAndAssetIndex("obj_puppet_coffeepack");
-        global.CreateObjectAndAssetIndex("obj_puppet_coffee_hot");
-        global.CreateObjectAndAssetIndex("obj_puppet_coffee_microwaved");
-        global.CreateObjectAndAssetIndex("obj_puppet_coffee_cold");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_cup");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_coffeepack");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_coffee_hot");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_coffee_microwaved");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_coffee_cold");
 
         ///clothing equipment
-        global.CreateObjectAndAssetIndex("obj_puppet_toolbelt");
-        global.CreateObjectAndAssetIndex("obj_puppet_secbelt");
-        global.CreateObjectAndAssetIndex("obj_puppet_medbelt");
-        global.CreateObjectAndAssetIndex("obj_puppet_hazardvest");
-        global.CreateObjectAndAssetIndex("obj_puppet_hardhat");
-        global.CreateObjectAndAssetIndex("obj_puppet_sechelmet");
-        global.CreateObjectAndAssetIndex("obj_puppet_firehelmet");
-        global.CreateObjectAndAssetIndex("obj_puppet_firesuit");
-        global.CreateObjectAndAssetIndex("obj_puppet_secgasmask");
-        global.CreateObjectAndAssetIndex("obj_puppet_gasmask");
-        global.CreateObjectAndAssetIndex("obj_puppet_secarmor");
-        global.CreateObjectAndAssetIndex("obj_puppet_riotarmor");
-        global.CreateObjectAndAssetIndex("obj_puppet_bombarmor");
-        global.CreateObjectAndAssetIndex("obj_puppet_weldgogs");
-        global.CreateObjectAndAssetIndex("obj_puppet_goggles");
-        global.CreateObjectAndAssetIndex("obj_puppet_nitrogloves");
-        global.CreateObjectAndAssetIndex("obj_puppet_sterilmask");
-        global.CreateObjectAndAssetIndex("obj_puppet_cleansuit_helmet");
-        global.CreateObjectAndAssetIndex("obj_puppet_cleansuit_body");
-        global.CreateObjectAndAssetIndex("obj_puppet_sunglasses");
-        global.CreateObjectAndAssetIndex("obj_puppet_glasses_perscrip");
-        global.CreateObjectAndAssetIndex("obj_puppet_crowbar");
-        global.CreateObjectAndAssetIndex("obj_puppet_wirecutter");
-        global.CreateObjectAndAssetIndex("obj_puppet_screwdriver");
-        global.CreateObjectAndAssetIndex("obj_puppet_weldtool");
-        global.CreateObjectAndAssetIndex("obj_puppet_wrench");
-        global.CreateObjectAndAssetIndex("obj_puppet_laserrifle");
-        global.CreateObjectAndAssetIndex("obj_puppet_powercell");
-        global.CreateObjectAndAssetIndex("obj_puppet_securitycard");
-        global.CreateObjectAndAssetIndex("obj_puppet_securitytool");
-        global.CreateObjectAndAssetIndex("obj_puppet_flashlight");
-        global.CreateObjectAndAssetIndex("obj_puppet_flare");
-        global.CreateObjectAndAssetIndex("obj_puppet_radioA");
-        global.CreateObjectAndAssetIndex("obj_puppet_umbrella");
-        global.CreateObjectAndAssetIndex("obj_puppet_paper");
-        global.CreateObjectAndAssetIndex("obj_puppet_pen");
-        global.CreateObjectAndAssetIndex("obj_puppet_pencil");
-        global.CreateObjectAndAssetIndex("obj_puppet_bucket");
-        global.CreateObjectAndAssetIndex("obj_puppet_mop");
-        global.CreateObjectAndAssetIndex("obj_puppet_fireex");
-        global.CreateObjectAndAssetIndex("obj_puppet_fireaxe");
-        global.CreateObjectAndAssetIndex("obj_puppet_stunbaton");
-        global.CreateObjectAndAssetIndex("obj_puppet_pepperspray");
-        global.CreateObjectAndAssetIndex("obj_puppet_taser");
-        global.CreateObjectAndAssetIndex("obj_puppet_flashbang");
-        global.CreateObjectAndAssetIndex("obj_puppet_emp");
-        global.CreateObjectAndAssetIndex("obj_puppet_handcuffs");
-        global.CreateObjectAndAssetIndex("obj_puppet_secflashlight");
-        global.CreateObjectAndAssetIndex("obj_puppet_fluidspec");
-        global.CreateObjectAndAssetIndex("obj_puppet_stethoscope");
-        global.CreateObjectAndAssetIndex("obj_puppet_bandaid_box");
-        global.CreateObjectAndAssetIndex("obj_puppet_bandaid");
-        global.CreateObjectAndAssetIndex("obj_puppet_burnointment");
-        global.CreateObjectAndAssetIndex("obj_puppet_disinfectant");
-        global.CreateObjectAndAssetIndex("obj_puppet_antitoxin");
-        global.CreateObjectAndAssetIndex("obj_puppet_epinephrine");
-        global.CreateObjectAndAssetIndex("obj_puppet_syringe");
-        global.CreateObjectAndAssetIndex("obj_puppet_hypoinject");
-        global.CreateObjectAndAssetIndex("obj_puppet_beaker");
-        global.CreateObjectAndAssetIndex("obj_puppet_pillbottle");
-        global.CreateObjectAndAssetIndex("obj_puppet_scalpel");
-        global.CreateObjectAndAssetIndex("obj_puppet_hemostat");
-        global.CreateObjectAndAssetIndex("obj_puppet_sutures");
-        global.CreateObjectAndAssetIndex("obj_puppet_surgerysaw");
-        global.CreateObjectAndAssetIndex("obj_puppet_surgerydrill");
-        global.CreateObjectAndAssetIndex("obj_puppet_cauterytool");
-        global.CreateObjectAndAssetIndex("obj_puppet_cryobeaker");
-        global.CreateObjectAndAssetIndex("obj_puppet_gps");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_toolbelt");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_secbelt");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_medbelt");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_hazardvest");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_hardhat");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_sechelmet");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_firehelmet");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_firesuit");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_secgasmask");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_gasmask");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_secarmor");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_riotarmor");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_bombarmor");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_weldgogs");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_goggles");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_nitrogloves");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_sterilmask");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_cleansuit_helmet");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_cleansuit_body");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_sunglasses");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_glasses_perscrip");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_crowbar");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_wirecutter");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_screwdriver");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_weldtool");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_wrench");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_laserrifle");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_powercell");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_securitycard");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_securitytool");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_flashlight");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_flare");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_radioA");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_umbrella");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_paper");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_pen");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_pencil");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_bucket");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_mop");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_fireex");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_fireaxe");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_stunbaton");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_pepperspray");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_taser");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_flashbang");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_emp");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_handcuffs");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_secflashlight");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_fluidspec");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_stethoscope");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_bandaid_box");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_bandaid");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_burnointment");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_disinfectant");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_antitoxin");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_epinephrine");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_syringe");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_hypoinject");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_beaker");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_pillbottle");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_scalpel");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_hemostat");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_sutures");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_surgerysaw");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_surgerydrill");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_cauterytool");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_cryobeaker");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_gps");
 
-        global.CreateObjectAndAssetIndex("obj_puppet_labeler");
-        global.CreateObjectAndAssetIndex("obj_puppet_ducttape");
-        global.CreateObjectAndAssetIndex("obj_puppet_cautiontape");
-        global.CreateObjectAndAssetIndex("obj_puppet_clipboard");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_labeler");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_ducttape");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_cautiontape");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_clipboard");
 
 
         //furniture
-        global.CreateObjectAndAssetIndex("obj_furniture_stool");
-        global.CreateObjectAndAssetIndex("obj_furniture_table");
-        global.CreateObjectAndAssetIndex("obj_furniture_locker");
-        global.CreateObjectAndAssetIndex("obj_furniture_trashbin");
+        serverObj.CreateObjectAndAssetIndex("obj_furniture_stool");
+        serverObj.CreateObjectAndAssetIndex("obj_furniture_table");
+        serverObj.CreateObjectAndAssetIndex("obj_furniture_locker");
+        serverObj.CreateObjectAndAssetIndex("obj_furniture_trashbin");
 
-        global.CreateObjectAndAssetIndex("obj_puppet_janitorcart");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_janitorcart");
 
-        global.CreateObjectAndAssetIndex("obj_puppet_microwave");
-        global.CreateObjectAndAssetIndex("obj_puppet_coffeemaker");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_microwave");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_coffeemaker");
 
         //constructables and blueprints
-        global.CreateObjectAndAssetIndex("obj_puppet_conduit");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_conduit");
 
-        global.CreateObjectAndAssetIndex("obj_machine_STC");
+        serverObj.CreateObjectAndAssetIndex("obj_machine_STC");
 
-        global.CreateObjectAndAssetIndex("obj_puppet_blueprint");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_blueprint");
 
-        global.CreateObjectAndAssetIndex("obj_puppet_blueprint_genorator");
-        global.CreateObjectAndAssetIndex("obj_machine_genorator");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_blueprint_genorator");
+        serverObj.CreateObjectAndAssetIndex("obj_machine_genorator");
 
-        global.CreateObjectAndAssetIndex("obj_puppet_blueprint_outdoorlamp");
-        global.CreateObjectAndAssetIndex("obj_machine_outdoorlamp");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_blueprint_outdoorlamp");
+        serverObj.CreateObjectAndAssetIndex("obj_machine_outdoorlamp");
 
-        global.CreateObjectAndAssetIndex("obj_machine_indoorlamp");
+        serverObj.CreateObjectAndAssetIndex("obj_machine_indoorlamp");
 
-        global.CreateObjectAndAssetIndex("obj_puppet_blueprint_printer");
-        global.CreateObjectAndAssetIndex("obj_machine_blueprinter");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_blueprint_printer");
+        serverObj.CreateObjectAndAssetIndex("obj_machine_blueprinter");
 
-        global.CreateObjectAndAssetIndex("obj_puppet_blueprint_chargingstation");
-        global.CreateObjectAndAssetIndex("obj_machine_chargingstation");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_blueprint_chargingstation");
+        serverObj.CreateObjectAndAssetIndex("obj_machine_chargingstation");
 
 
-        global.CreateObjectAndAssetIndex("obj_puppet_blueprint_fabricator");
-        global.CreateObjectAndAssetIndex("obj_machine_fabricator");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_blueprint_fabricator");
+        serverObj.CreateObjectAndAssetIndex("obj_machine_fabricator");
 
-        global.CreateObjectAndAssetIndex("obj_puppet_blueprint_elecassem");
-        global.CreateObjectAndAssetIndex("obj_machine_elecassem");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_blueprint_elecassem");
+        serverObj.CreateObjectAndAssetIndex("obj_machine_elecassem");
 
         //resources and parts
-        global.CreateObjectAndAssetIndex("obj_puppet_plastic_rod");
-        global.CreateObjectAndAssetIndex("obj_puppet_metal_ingot");
-        global.CreateObjectAndAssetIndex("obj_puppet_metal_plates");
-        global.CreateObjectAndAssetIndex("obj_puppet_metal_cable");
-        global.CreateObjectAndAssetIndex("obj_puppet_metal_frames");
-        global.CreateObjectAndAssetIndex("obj_puppet_parts_fabarray");
-        global.CreateObjectAndAssetIndex("obj_puppet_parts_wires");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_plastic_rod");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_metal_ingot");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_metal_plates");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_metal_cable");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_metal_frames");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_parts_fabarray");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_parts_wires");
 
         ///toolboxes
-        global.CreateObjectAndAssetIndex("obj_puppet_assistbox");
-        global.CreateObjectAndAssetIndex("obj_puppet_cargobox");
-        global.CreateObjectAndAssetIndex("obj_puppet_commsbox");
-        global.CreateObjectAndAssetIndex("obj_puppet_weatherbox");
-        global.CreateObjectAndAssetIndex("obj_puppet_labbox");
-        global.CreateObjectAndAssetIndex("obj_puppet_medicbox");
-        global.CreateObjectAndAssetIndex("obj_puppet_toolbox");
-        global.CreateObjectAndAssetIndex("obj_puppet_minebox");
-        global.CreateObjectAndAssetIndex("obj_puppet_secbox");
-        global.CreateObjectAndAssetIndex("obj_puppet_atmobox");
-        global.CreateObjectAndAssetIndex("obj_puppet_hydrobox");
-        global.CreateObjectAndAssetIndex("obj_puppet_janibox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_assistbox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_cargobox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_commsbox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_weatherbox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_labbox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_medicbox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_toolbox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_minebox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_secbox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_atmobox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_hydrobox");
+        serverObj.CreateObjectAndAssetIndex("obj_puppet_janibox");
     }
 
 

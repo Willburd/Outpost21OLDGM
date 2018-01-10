@@ -1,7 +1,7 @@
 #include "server_core.h"
 
 ///SERVER CORE
-void global_vars::CreateObjectAndAssetIndex(std::string inputAssetIndex) {
+void serverCore::CreateObjectAndAssetIndex(std::string inputAssetIndex) {
     int get_last_index = object_index.size();
 
     //add latest index!
@@ -10,24 +10,48 @@ void global_vars::CreateObjectAndAssetIndex(std::string inputAssetIndex) {
 }
 
 
-std::string global_vars::getAssetOfIndex(int inputObjIndex) {
+std::string serverCore::getAssetOfIndex(int inputObjIndex) {
     return asset_index[inputObjIndex];
 }
-int global_vars::getIndexOfAsset(std::string inputAstIndex) {
+int serverCore::getIndexOfAsset(std::string inputAstIndex) {
     return object_index[inputAstIndex];
 }
 
 
-void global_vars::entity_add(entity* entityToAdd) {
+void serverCore::entity_add(entity* entityToAdd) {
     for(unsigned int i = 0; i < entity_vector.size()+1; i++) {
         if(i == entity_vector.size()
         || entity_vector[i] == nullptr) {
             ///add at the end of list, or if a blank space is found
             entity_vector[i] = entityToAdd;
+            entityToAdd->entity_number = i;
             break;
         }
     }
 };
+
+
+void serverCore::entity_remove(int entityNumberToRemove) {
+    if(entityNumberToRemove >= 0
+    && entity_vector[entityNumberToRemove] != nullptr) {
+        //place entity in abyss so the clients are repeatedly FORCED to unload it!
+        entity* get_ent = entity_vector[entityNumberToRemove];
+        get_ent->x = serverObj.entity_deletion_abyss;
+        get_ent->y = serverObj.entity_deletion_abyss;
+    }
+};
+
+
+void serverCore::set_update_flag( int entityNumberToUpdate, int clientNumber, bool updateFlag) {
+    if(entityNumberToUpdate >= 0
+    && entity_vector[entityNumberToUpdate] != nullptr) {
+        //set the entities updateflag for this client!
+        entity* get_ent = entity_vector[entityNumberToUpdate];
+        get_ent->needs_update[ clientNumber] = updateFlag;
+    }
+}
+
+
 
 
 ///ENTITY
@@ -46,9 +70,9 @@ entity::entity(std::string set_object_index,double set_x,double set_y, float set
     bool indestructable = set_indestructable;
 
     //set all update flags
-    for (int i = 0; i < global.server_maxplayers+1; i++)
+    for (int i = 0; i < serverObj.server_maxplayers+1; i++)
     {
-        needs_update[global.server_maxplayers] = true; //is a list of player flags!
+        needs_update[serverObj.server_maxplayers] = true; //is a list of player flags!
     }
 }
 
@@ -79,14 +103,14 @@ void entity::entity_securityInit() {
 
 void entity::entity_step() {
     //physics calculation, movement, and collisions
-    if(entity_last_process_cycle != global.entity_process_cycle) {
+    if(entity_last_process_cycle != serverObj.entity_process_cycle) {
 
 
         //personal update
         entity_personal_step();
 
         //prevent update in the same frame somehow
-        entity_last_process_cycle = global.entity_process_cycle;
+        entity_last_process_cycle = serverObj.entity_process_cycle;
     }
 }
 

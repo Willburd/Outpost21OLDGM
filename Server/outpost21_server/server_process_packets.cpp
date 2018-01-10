@@ -6,28 +6,28 @@
 #include "entitylibrary/entity_library.h"
 
 
-extern global_vars global;
+extern serverCore serverObj;
 
 void* server_recieving_packets::serverProcessLoop(void *threadid) {
-    int tid;
-    tid = (int)threadid;
-    std::cout << "Socket ready on port: " << global.server_port << " inside thread: " << tid << std::endl;
+    int threadId;
+    threadId = (int)threadid;
+    std::cout << "Socket ready on port: " << serverObj.server_port << " inside thread: " << threadId << std::endl;
 
     //make new client
     client_struct client;
 
     // accept a new connection
-    if (global.listener.accept(client.mySocket) != sf::Socket::Done)
+    if (serverObj.listener.accept(client.mySocket) != sf::Socket::Done)
     {
         // error...
     }
     else
     {
         //first connection
-        std::cout << "Connection recognition! Inside thread: " << tid << std::endl;
-        global.spawn_new_socket = true;
+        std::cout << "Connection recognition! Inside thread: " << threadId << std::endl;
+        serverObj.spawn_new_socket = true;
 
-        client.myNumber = tid;
+        client.myNumber = threadId;
         client_transmission_packets::cPacket_request_seen( client);
 
 
@@ -40,14 +40,14 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
             if (client.mySocket.receive(current_packet->data, 255, current_packet->received) != sf::Socket::Done)
             {
                 // client has been lost! exit loop
-                std::cout << "Connection lost! Inside thread: " << tid << std::endl;
+                std::cout << "Connection lost! Inside thread: " << threadId << std::endl;
                 quit = true;
             }
             else
             {
                 //extract packet's opcode!
                 uint16_t packetOpcode = current_packet->buffer_read_u16();
-                std::cout << "=====Packet Opcode " << packetOpcode << " Inside thread: " << tid << std::endl;
+                std::cout << "=====Packet Opcode " << packetOpcode << " Inside thread: " << threadId << std::endl;
 
 
                 switch(packetOpcode) {
@@ -67,15 +67,15 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                             std::string get_pass_data = "";
 
                             //load user data
-                            INIReader reader( global.serverdata_file_path);
+                            INIReader reader( serverObj.serverdata_file_path);
                             if (reader.ParseError() < 0) {
-                                std::cout << "Can't load '" << global.serverdata_file_path << "'" << std::endl;
+                                std::cout << "Can't load '" << serverObj.serverdata_file_path << "'" << std::endl;
                                 get_pass_data = "";
                                 password_accepted = false;
                             }
                             else
                             {
-                                std::cout << "Config loaded from '" << global.serverdata_file_path << "'" << std::endl;
+                                std::cout << "Config loaded from '" << serverObj.serverdata_file_path << "'" << std::endl;
 
                                 //get passhash from server data
                                 get_pass_data = reader.Get("UserData", buffer_login_name,"");
@@ -113,14 +113,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
 
                     case server_recieving_packets::heartbeat_request:
                         {
-                            std::cout << "-Heartbeat" << std::endl;
-                            //construct buffer to send data
-                            byte_buffer send_buffer;
-                            send_buffer.buffer_write_u8( 0); //client number
-                            send_buffer.buffer_write_u16( client_transmission_packets::server_alive); //opcode
-
-                            //transmit
-                            client.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());
+                            client_transmission_packets::cpacket_server_alive( client);
                         }
                     break;
 
@@ -159,29 +152,40 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                         {
                             double buffer_getx = current_packet->buffer_read_f32();
                             double buffer_gety = current_packet->buffer_read_f32();
-                            std::string buffer_get_objectindex = global.getAssetOfIndex( current_packet->buffer_read_u16() );
+                            std::string buffer_get_objectindex = serverObj.getAssetOfIndex( current_packet->buffer_read_u16() );
 
                             std::cout << "Server created entity: " << buffer_get_objectindex << std::endl;
                             entity* make_entity = entityLibrary::entity_template_library(  buffer_get_objectindex,buffer_getx,buffer_gety,0,0,false,-1);
-                            global.entity_add(make_entity); //add to main list//make a test entity
+                            serverObj.entity_add(make_entity); //add to main list//make a test entity
                         }
                     break;
                     case server_recieving_packets::entity_create_direction:
                         {
                             double buffer_getx = current_packet->buffer_read_f32();
                             double buffer_gety = current_packet->buffer_read_f32();
-                            std::string buffer_get_objectindex = global.getAssetOfIndex( current_packet->buffer_read_u16() );
+                            std::string buffer_get_objectindex = serverObj.getAssetOfIndex( current_packet->buffer_read_u16() );
                             float buffer_getdirection = (current_packet->buffer_read_u16() / 65534) * 360;
 
                             std::cout << "Server created entity, with direction: " << buffer_get_objectindex << std::endl;
                             entity* make_entity = entityLibrary::entity_template_library(buffer_get_objectindex,buffer_getx,buffer_gety,buffer_getdirection,0,false,-1);
-                            global.entity_add(make_entity); //add to main list//make a test entity
+                            serverObj.entity_add(make_entity); //add to main list//make a test entity
                         }
                     break;
                     case server_recieving_packets::entity_store: break;
                     case server_recieving_packets::entity_throw: break; //flows into place
                     case server_recieving_packets::entity_place: break;
-                    case server_recieving_packets::entity_drop: break; //not placing, unloading an entity from client inputs!
+                    case server_recieving_packets::entity_drop:
+                        {
+                            //flag the entity as something not loaded!
+                            int entity_number = current_packet->buffer_read_u32();
+                            //show_debug_message("===Entity dropped: " + string(entity_number));
+
+                            //tell client that this entity is also unloaded
+                            client_transmission_packets::cpacket_entity_drop( client, entity_number);
+                            //set the object as needing to update when it can
+                            serverObj.set_update_flag( entity_number, client.myNumber, true);
+                        }
+                    break; //not placing, unloading an entity from client inputs!
                     case server_recieving_packets::entity_construct: break;
                     case server_recieving_packets::entity_deconstruct: break;
                     case server_recieving_packets::entity_inventory_request: break;
@@ -199,8 +203,8 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
 
 
         //thread finished!
-        delete global.SocketThreads[tid];
-        global.SocketThreads[tid] = nullptr;
+        delete serverObj.SocketThreads[threadId];
+        serverObj.SocketThreads[threadId] = nullptr;
         pthread_exit(NULL);
     }
 

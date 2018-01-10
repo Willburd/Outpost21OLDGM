@@ -3,6 +3,7 @@
 #include "byte_buffer.h"
 #include "client_structure.h"
 #include "inih/cpp/INIReader.h"
+#include "entitylibrary/entity_library.h"
 
 
 extern global_vars global;
@@ -55,11 +56,11 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                             std::cout << "-Login requested" << std::endl;
 
                             //login attempt!
-                            std::string login_name      = current_packet->buffer_read_string(); //stores length and ignores null terminator!
-                            std::string login_passhash  = current_packet->buffer_read_string(); //stores length and ignores null terminator!
+                            std::string buffer_login_name      = current_packet->buffer_read_string(); //stores length and ignores null terminator!
+                            std::string buffer_login_passhash  = current_packet->buffer_read_string(); //stores length and ignores null terminator!
 
-                            std::cout << " Login name: " << login_name << "|" << std::endl;
-                            std::cout << " passhash  : " << login_passhash << "|" << std::endl;
+                            std::cout << " Login name: " << buffer_login_name << "|" << std::endl;
+                            std::cout << " passhash  : " << buffer_login_passhash << "|" << std::endl;
 
                             //confirmed password
                             bool password_accepted = false;
@@ -77,7 +78,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                 std::cout << "Config loaded from '" << global.serverdata_file_path << "'" << std::endl;
 
                                 //get passhash from server data
-                                get_pass_data = reader.Get("UserData", login_name,"");
+                                get_pass_data = reader.Get("UserData", buffer_login_name,"");
                                 password_accepted = true;
                             }
 
@@ -89,22 +90,21 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                 if(password_accepted == false) {
                                     //send new user confirmations!
                                     std::cout << "New user signup" << std::endl;
-                                    //scr_cpacket_login_newuser(connection_id,login_name,login_passhash);
                                 }
                                 else if(password_accepted == true)
                                 {
                                     //confirm loaded password
-                                    bool login_success = (get_pass_data == login_passhash);
+                                    bool login_success = (get_pass_data == buffer_login_passhash);
 
 
                                     if(login_success == true) {
                                         std::cout << "Login correct!" << std::endl;
-                                        client_transmission_packets::cPacket_login_success( client, login_name);
+                                        client_transmission_packets::cPacket_login_success( client, buffer_login_name);
                                     }
                                     else
                                     {
                                         std::cout << "Login wrong!" << std::endl;
-                                        client_transmission_packets::cPacket_login_failed( client, login_name);
+                                        client_transmission_packets::cPacket_login_failed( client, buffer_login_name);
                                     }
                                 }
                             }
@@ -154,8 +154,30 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                     case server_recieving_packets::movement_location_update: break;
                     //inventory
                     case server_recieving_packets::entity_request_all: break;
-                    case server_recieving_packets::entity_create: break;
-                    case server_recieving_packets::entity_create_direction: break;
+
+                    case server_recieving_packets::entity_create:
+                        {
+                            double buffer_getx = current_packet->buffer_read_f32();
+                            double buffer_gety = current_packet->buffer_read_f32();
+                            std::string buffer_get_objectindex = global.getAssetOfIndex( current_packet->buffer_read_u16() );
+
+                            std::cout << "Server created entity: " << buffer_get_objectindex << std::endl;
+                            entity* make_entity = entityLibrary::entity_template_library(  buffer_get_objectindex,buffer_getx,buffer_gety,0,0,false,-1);
+                            global.entity_add(make_entity); //add to main list//make a test entity
+                        }
+                    break;
+                    case server_recieving_packets::entity_create_direction:
+                        {
+                            double buffer_getx = current_packet->buffer_read_f32();
+                            double buffer_gety = current_packet->buffer_read_f32();
+                            std::string buffer_get_objectindex = global.getAssetOfIndex( current_packet->buffer_read_u16() );
+                            float buffer_getdirection = (current_packet->buffer_read_u16() / 65534) * 360;
+
+                            std::cout << "Server created entity, with direction: " << buffer_get_objectindex << std::endl;
+                            entity* make_entity = entityLibrary::entity_template_library(buffer_get_objectindex,buffer_getx,buffer_gety,buffer_getdirection,0,false,-1);
+                            global.entity_add(make_entity); //add to main list//make a test entity
+                        }
+                    break;
                     case server_recieving_packets::entity_store: break;
                     case server_recieving_packets::entity_throw: break; //flows into place
                     case server_recieving_packets::entity_place: break;
@@ -182,4 +204,6 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
         pthread_exit(NULL);
     }
 
+
+    return nullptr;
 }

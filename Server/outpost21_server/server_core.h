@@ -5,11 +5,26 @@
 #include <SFML/Network.hpp>
 #include <pthread.h>
 #include <vector>
+#include <map>
 
 class entity;
 
 
-struct global_vars {
+class global_vars {
+    //entity list
+    std::vector<entity*> entity_vector;
+
+    //object_index list
+    //create asset index list
+    std::map <std::string, int> object_index;
+    std::map <int, std::string> asset_index;
+
+    public:
+    //This function populates the asset and object indexs for reverse lookup of each!
+    void CreateObjectAndAssetIndex(std::string inputAssetIndex);
+    std::string getAssetOfIndex(int inputObjIndex);
+    int getIndexOfAsset(std::string inputAstIndex);
+
     sf::TcpListener listener;
     int server_port = 0;
     static const int server_maxplayers = 16;
@@ -31,10 +46,13 @@ struct global_vars {
 
     //entities
     int entity_process_cycle = 0;
-    std::vector<entity*> entity_vector;
+
 
     //file paths
     const std::string serverdata_file_path = "server_data.ini";
+
+    //add entity
+    void entity_add(entity* entityToAdd);
 };
 
 
@@ -56,11 +74,6 @@ class entity {
     int contains_max = 0; //inventory max size
     bool contains_type_liquid = false;
     int contains_size = 0; //item physical size that can be held
-    //item displaying
-    bool contains_display = false; //if true the object will display its contents on or in it
-    double contains_display_x = 0; //relative to own x
-    double contains_display_y = 0; //relative to own y
-    int contains_display_d = 0; //relative to own depth
     //server side collision entitys
     int SS_collision = -1; //mass update handles this
     bool SS_collision_ignores_walls = false;
@@ -71,17 +84,31 @@ class entity {
     int entity_last_process_cycle = 0;
 
     public:
+    //entity core
     double x = 0;
     double y = 0;
     double last_update_x = 0;
     double last_update_y = 0;
     float dir = 0;
     double spd = 0;
+    //item displaying
+    bool contains_display = false; //if true the object will display its contents on or in it
+    double contains_display_x = 0; //relative to own x
+    double contains_display_y = 0; //relative to own y
+    int contains_display_d = 0; //relative to own depth
 
+    ///personal variable map, because c++ does not support derived member access from pointers of base class! :D FUCK ME RIGHT?
+    std::map <std::string, int> myIntVars;
+    std::map <std::string, std::string> myStringVars;
+
+    ///security clearance
+    std::vector<bool> securityLevel;
+
+    ///functions
     entity(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
-    ~entity();
     void entity_set_inventorylimits( int inventory_size, int max_storeable_item_size, int item_size, bool is_a_liquid, bool contains_a_liquid, int item_class, int inventory_storage_class);
     void entity_step(); //physics calc
+    void entity_securityInit();
     virtual void entity_personal_step();
 };
 

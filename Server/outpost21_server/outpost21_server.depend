@@ -1,11 +1,13 @@
 # depslib dependency file v1.0
-1515395795 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
+1515560306 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
 	<iostream>
 	<cstring>
 	<SFML/Network.hpp>
+	<pthread.h>
+	<chrono>
+	<unistd.h>
 	"main.h"
 	"inih/cpp/INIReader.h"
-	<pthread.h>
 
 1515292531 c:\program files\sfml\sfml-2.4.2\include\sfml\network.hpp
 	<SFML/System.hpp>
@@ -264,7 +266,7 @@
 	<SFML/Network.hpp>
 	<pthread.h>
 
-1515555614 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
+1515560950 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
 	"client_transmit_packets.h"
 	<SFML/Network.hpp>
 	<pthread.h>

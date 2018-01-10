@@ -38,6 +38,8 @@ class global_vars {
     double forced_movement_minimum_cutoff = 0.30;
     double maximum_movement = 20;
 
+    int server_tickrate = 48; //ticks per second
+
     int map_size = 16384;
     int map_min_xlimit = 10;
     int map_min_ylimit = 10;

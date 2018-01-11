@@ -74,6 +74,7 @@ enum enum_homeworlds {
     luna,
     mars,
     tal,
+    goldring,
 }
 
 var i = enum_homeworlds.not_set;
@@ -184,7 +185,21 @@ global.planet_mod[ i, 3] = 0; //dex
 global.planet_mod[ i, 4] = 0; //int
 global.planet_mod[ i, 5] = 2; //con
 
-
+var i = enum_homeworlds.goldring;
+global.planet_mod[ i, 0] = "The Great Golden Ring";
+global.planet_mod[ i, 1] = " Probabably one of the most impressive feats "
+                         + "of engineering in all the known worlds, the Great "
+                         + "Golden Ring of Vilous is a giant artificial ring built "
+                         + "around Tal, existing within the exosphere of the planet "
+                         + "and supported by numerous giant space elevators to the surface. "
+                         + "The Ring serves as a singular super city compltete with every "
+                         + "building imaginable, and serves as Tal's space port and the "
+                         + "center of it's comerce, just like the ancient city of Goldring "
+                         + "that this colousal strucutre was named and inspired by. "
+global.planet_mod[ i, 2] = 0; //str
+global.planet_mod[ i, 3] = 1; //dex
+global.planet_mod[ i, 4] = 2; //int
+global.planet_mod[ i, 5] = 1; //con
 
 
 /*******************

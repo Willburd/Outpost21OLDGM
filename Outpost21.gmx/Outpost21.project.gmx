@@ -18,8 +18,8 @@
     <sprite>sprites\spr_securitymenu_template</sprite>
     <sprite>sprites\spr_chargen_menus</sprite>
     <sprite>sprites\spr_chargen_planets</sprite>
-    <sprite>sprites\spr_chargen_body</sprite>
     <sprite>sprites\spr_chargen_homeworld_onscreen</sprite>
+    <sprite>sprites\spr_chargen_body</sprite>
     <sprite>sprites\spr_chargen_planets_highlight</sprite>
     <sprite>sprites\spr_flashymonitor</sprite>
     <sprite>sprites\spr_shuttleconsole</sprite>

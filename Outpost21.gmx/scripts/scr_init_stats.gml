@@ -68,13 +68,33 @@ global.race_mod[ i, 10] = lang_list; //additional languages
 *******************/
 
 enum enum_homeworlds {
+    not_set,
+    offworld,
     earth,
     luna,
     mars,
-    offworld,
-    not_set,
     tal,
 }
+
+var i = enum_homeworlds.not_set;
+global.planet_mod[ i, 0] = "Unset";
+global.planet_mod[ i, 1] = "bluh bluh bluh.";
+global.planet_mod[ i, 2] = 0; //str
+global.planet_mod[ i, 3] = 0; //dex
+global.planet_mod[ i, 4] = 0; //int
+global.planet_mod[ i, 5] = 0; //con
+
+
+var i = enum_homeworlds.offworld;
+global.planet_mod[ i, 0] = "Off world";
+global.planet_mod[ i, 1] = " You have spent your life in space. "
+                         + "Your life of travel has made you a "
+                         + "jack of all trades, but master of none. "
+global.planet_mod[ i, 2] = 1; //str
+global.planet_mod[ i, 3] = 1; //dex
+global.planet_mod[ i, 4] = 1; //int
+global.planet_mod[ i, 5] = 1; //con
+
 
 var i = enum_homeworlds.earth;
 global.planet_mod[ i, 0] = "Earth";
@@ -100,6 +120,7 @@ global.planet_mod[ i, 3] = 1; //dex
 global.planet_mod[ i, 4] = 2; //int
 global.planet_mod[ i, 5] = 1; //con
 
+
 var i = enum_homeworlds.luna;
 global.planet_mod[ i, 0] = "Lunar farm array";
 global.planet_mod[ i, 1] = " 2078 Marked the first year of " 
@@ -119,6 +140,7 @@ global.planet_mod[ i, 2] = 1; //str
 global.planet_mod[ i, 3] = 1; //dex
 global.planet_mod[ i, 4] = 0; //int
 global.planet_mod[ i, 5] = 2; //con
+
 
 var i = enum_homeworlds.mars;
 global.planet_mod[ i, 0] = "Martian sea";
@@ -143,6 +165,7 @@ global.planet_mod[ i, 3] = 0; //dex
 global.planet_mod[ i, 4] = 2; //int
 global.planet_mod[ i, 5] = 2; //con
 
+
 var i = enum_homeworlds.tal;
 global.planet_mod[ i, 0] = "Tal";
 global.planet_mod[ i, 1] = " Many centuries of political turmoil, "
@@ -162,23 +185,6 @@ global.planet_mod[ i, 4] = 0; //int
 global.planet_mod[ i, 5] = 2; //con
 
 
-var i = enum_homeworlds.offworld;
-global.planet_mod[ i, 0] = "Off world";
-global.planet_mod[ i, 1] = " You have spent your life in space. "
-                         + "Your life of travel has made you a "
-                         + "jack of all trades, but master of none. "
-global.planet_mod[ i, 2] = 1; //str
-global.planet_mod[ i, 3] = 1; //dex
-global.planet_mod[ i, 4] = 1; //int
-global.planet_mod[ i, 5] = 1; //con
-
-var i = enum_homeworlds.not_set;
-global.planet_mod[ i, 0] = "Unset";
-global.planet_mod[ i, 1] = "bluh bluh bluh.";
-global.planet_mod[ i, 2] = 0; //str
-global.planet_mod[ i, 3] = 0; //dex
-global.planet_mod[ i, 4] = 0; //int
-global.planet_mod[ i, 5] = 0; //con
 
 
 /*******************

@@ -30,6 +30,7 @@ image_alpha = -1;
 selected = false;
 image_speed = 0;
 box_height = 0;
+planet_assigned = enum_homeworlds.offworld;
 </string>
           </argument>
         </arguments>
@@ -68,7 +69,8 @@ else if image_alpha &gt;= 1 and stepstep &gt;= 0 {
             with obj_chargen_menu_planet stepstep = -0.10; //fadeout
             with obj_chargen_selectedplanet stepstep = -0.10; //fadeout last planet
             with instance_create(1536,432,obj_chargen_selectedplanet) {
-                image_index = other.image_index;
+                planet_assigned = other.planet_assigned;
+                image_index = planet_assigned;
             }
         
             //next menu
@@ -113,11 +115,11 @@ else
             <kind>1</kind>
             <string>image_alpha = clamp(image_alpha + stepstep,-1,1.50);
 
-draw_sprite_ext(sprite_index,image_index,x,y,1,1,0,image_blend,clamp(image_alpha,0,1));
+draw_sprite_ext(sprite_index,planet_assigned,x,y,1,1,0,image_blend,clamp(image_alpha,0,1));
 draw_sprite_ext(spr_chargen_planets_highlight,0,x,y,1,1,0,image_blend,selected*image_alpha);
 
 if depth = -101 {
-    if box_height == 0 box_height = string_height_ext(global.planet_mod[ image_index, 0] + ":#" + global.planet_mod[ image_index, 1],16,270)+5;
+    if box_height == 0 box_height = string_height_ext(global.planet_mod[ planet_assigned, 0] + ":#" + global.planet_mod[ planet_assigned, 1],16,270)+5;
     
     draw_sprite_part_ext(spr_planetlore_backing,0,0,0,288,6,1792,32,1,1,image_blend,image_alpha);
     draw_sprite_part_ext(spr_planetlore_backing,0,0,7,288,1,1792,32+6,1,box_height,image_blend,image_alpha);
@@ -125,7 +127,7 @@ if depth = -101 {
     
     draw_set_color(c_black);
     draw_set_alpha(image_alpha);
-    draw_text_ext(1792+8,32+8,global.planet_mod[ image_index, 0] + ":#" +global.planet_mod[ image_index, 1],16,270);
+    draw_text_ext(1792+8,32+8,global.planet_mod[ planet_assigned, 0] + ":#" +global.planet_mod[ planet_assigned, 1],16,270);
     draw_set_alpha(1);
 }
 </string>

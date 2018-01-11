@@ -211,6 +211,10 @@ if arraysize &gt; 0 {
                     my_text = global.job_mod[ i, enum_job_stat.stat_desc];
                 break;
                 
+                case enum_charmenu_context.previous_jobs :
+                    my_text = global.previous_job_mod[ i, 1];
+                break;
+                
                 case enum_charmenu_context.guild:
                     my_text = global.guild_mod[ i, 1];
                 break;

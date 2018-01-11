@@ -36,9 +36,9 @@ global.race_mod[ i, 2] =  2; //int
 global.race_mod[ i, 3] = -1; //con
 global.race_mod[ i, 4] = spr_nevreanstand; //sprite
 global.race_mod[ i, 5] = "Nevrean";
-global.race_mod[ i, 6] = enum_homeworlds.tal;
-global.race_mod[ i, 7] = enum_homeworlds.not_set;
-global.race_mod[ i, 8] = enum_homeworlds.not_set;
+global.race_mod[ i, 6] = enum_homeworlds.talcity;
+global.race_mod[ i, 7] = enum_homeworlds.goldring;
+global.race_mod[ i, 8] = enum_homeworlds.taljungle;
 global.race_mod[ i, 9] = enum_homeworlds.offworld;
 var lang_list = ds_list_create();
 lang_list[| 0] = enum_language.galactic
@@ -73,7 +73,9 @@ enum enum_homeworlds {
     earth,
     luna,
     mars,
-    tal,
+    talcity,
+    goldring,
+    taljungle,
 }
 
 var i = enum_homeworlds.not_set;
@@ -166,7 +168,7 @@ global.planet_mod[ i, 4] = 2; //int
 global.planet_mod[ i, 5] = 2; //con
 
 
-var i = enum_homeworlds.tal;
+var i = enum_homeworlds.talcity;
 global.planet_mod[ i, 0] = "Tal";
 global.planet_mod[ i, 1] = " Many centuries of political turmoil, "
                          + "world wars, attempted genocide, and "
@@ -184,8 +186,39 @@ global.planet_mod[ i, 3] = 0; //dex
 global.planet_mod[ i, 4] = 0; //int
 global.planet_mod[ i, 5] = 2; //con
 
+var i = enum_homeworlds.goldring;
+global.planet_mod[ i, 0] = "The Great Golden Ring";
+global.planet_mod[ i, 1] = " Probabably one of the most impressive feats "
+                         + "of engineering in all the known worlds, the Great "
+                         + "Golden Ring of Vilous is a giant artificial ring built "
+                         + "around Tal, existing within the exosphere of the planet "
+                         + "and supported by numerous giant space elevators to the surface. "
+                         + "The Ring serves as a singular super city compltete with every "
+                         + "building imaginable, and serves as Tal's space port and the "
+                         + "center of it's comerce, just like the ancient city of Goldring "
+                         + "that this colousal strucutre was named and inspired by. "
+global.planet_mod[ i, 2] = 0; //str
+global.planet_mod[ i, 3] = 1; //dex
+global.planet_mod[ i, 4] = 2; //int
+global.planet_mod[ i, 5] = 1; //con
 
-
+var i = enum_homeworlds.taljungle;
+global.planet_mod[ i, 0] = "The Talaxian Jungles of Tal";
+global.planet_mod[ i, 1] = " Despite all the modernization of Tal, "
+                         + " the alien jungles that had plagued civilization "
+                         + "since all of recorded vilous history still covers "
+                         + "almost thirty percent of the planet's land. "
+                         + "And many still choose to eek out an existance in "
+                         + "these harsh lands, shunning the collectivism the rest "
+                         + "of the world has embraced. ## "
+                         + "Growing up here is still just as dangerous as it was "
+                         + "in days of old, even with the technoligical developments "
+                         + "that are now utilized, requiring a strong force of will "
+                         + "to live here.";
+global.planet_mod[ i, 2] = 1; //str
+global.planet_mod[ i, 3] = 1; //dex
+global.planet_mod[ i, 4] = -1; //int
+global.planet_mod[ i, 5] = 3; //con
 
 /*******************
     ARCHETYPES
@@ -395,22 +428,32 @@ global.job_mod[ job, enum_job_stat.stat_startkit]      = obj_puppet_janibox;
 //assistant job
 var i = 0;
 global.previous_job_mod[ i, 0]          = "Unemployed";
+global.previous_job_mod[ i, 1]          = " You've lived at home with your parents your " + 
+                                            "entire life till they just kicked you out.";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Personal employment";
+global.previous_job_mod[ i, 1]          = " description";
 i += 1;
 global.previous_job_mod[ i, 0]          = "ESHUI subsidiary";
+global.previous_job_mod[ i, 1]          = " description";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Galactic Association of Fast Food outlets";
+global.previous_job_mod[ i, 1]          = " description";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Galactic Highspeed-Railway Company";
+global.previous_job_mod[ i, 1]          = " description";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Builders League United";
+global.previous_job_mod[ i, 1]          = " description";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Nanotrasen Research Station 13";
+global.previous_job_mod[ i, 1]          = " description";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Reliable Excavation Demolition ";
+global.previous_job_mod[ i, 1]          = " description";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Universe hauling LTD.";
+global.previous_job_mod[ i, 1]          = " description";
 
 
 
@@ -457,7 +500,9 @@ global.guild_mod[ i, 1] = " You lack any form of prior affiliation "
                          
 var i = enum_guilds.earthgov;
 global.guild_mod[ i, 0] = "Earthgov";
-global.guild_mod[ i, 1] = " ";
+global.guild_mod[ i, 1] = " blah blah blah"
+                         + " "
+
 
 var i = enum_guilds.unitedfed;
 global.guild_mod[ i, 0] = "United Federation";

@@ -4,6 +4,7 @@
 #include "client_structure.h"
 #include "inih/cpp/INIReader.h"
 #include "entitylibrary/entity_library.h"
+#include "base64/base64.h"
 
 
 extern serverCore serverObj;
@@ -128,22 +129,22 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
 
 
                             //Check to see if this is a new player object!
-                            for(unsigned int i = 0; i < entity_vector.size()+1; i++) {
-                                entity* check_entity = list_entities[| i];
+                            for(unsigned int i = 0; i < serverObj.entity_vector.size(); i++) {
+                                entity* check_entity = serverObj.entity_vector[ i];
 
                                 //if the slot exists at all
-                                if entity_vector[i] != nullptr) {
+                                if(check_entity != nullptr) {
                                     //check if entity had player data and send it
                                     if(check_entity->myStringVars.count("player_name") > 0
-                                    && check_entity->myStringVars["player_name"] == user_getname {
+                                    && check_entity->myStringVars["player_name"] == user_getname) {
                                         //debug out
-                                        std::cout << " -sent entity: " + string(i) << std::endl;
+                                        std::cout << " -sent entity: " + i << std::endl;
                                         std::cout << " -char name: " + user_getname << std::endl;
                                         //construct a string to transmit
-                                        ///var transmit_string = ds_map_write(check_player);
-                                        ///var base64_transmit = base64_encode(transmit_string);
+                                        std::string transmit_string = "5434534sdfsdf";
+                                        std::string base64_transmit = base64_encode(reinterpret_cast<const unsigned char*>(transmit_string.c_str()),transmit_string.length());
                                         //send data to player
-                                        ///scr_cpacket_character_transmit_data(connection_id,base64_transmit);
+                                        //scr_cpacket_character_transmit_data(connection_id,base64_transmit);
                                     }
                                 }
                             }

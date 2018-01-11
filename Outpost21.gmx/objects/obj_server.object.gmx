@@ -34,7 +34,7 @@ msg_inspect = -1;
 msg_delete = -1;
 
 if global.max_server_players &gt; 0 {
-    server = network_create_server(network_socket_tcp,get_port,global.max_server_players);
+    server = network_create_server_raw(network_socket_tcp,get_port,global.max_server_players);
     toggle_draw = true;
     
     if server &gt;= 0 {
@@ -561,7 +561,7 @@ if async_load[? "type"] == network_type_data {
                         //force update with entity id
                         check_player[? "entity_number"] = i; //old files might not have
                         //construct a string to transmit
-                        var transmit_string = ds_map_write(check_player);
+                        var transmit_string = json_encode(check_player);
                         var base64_transmit = base64_encode(transmit_string);
                         //send data to player
                         scr_cpacket_character_transmit_data(connection_id,base64_transmit);

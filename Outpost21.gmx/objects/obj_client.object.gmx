@@ -357,8 +357,7 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
             
                 //add this to the character menu!
                 with obj_charmenu_controller {
-                    var temp_charmap = ds_map_create();
-                    ds_map_read( temp_charmap, decode_string);
+                    temp_charmap = json_decode( decode_string);
                     ds_map_add_map( character_map, string(ds_map_size(character_map)), temp_charmap);
                 }
             break;

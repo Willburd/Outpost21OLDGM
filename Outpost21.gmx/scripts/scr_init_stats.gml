@@ -36,7 +36,7 @@ global.race_mod[ i, 2] =  2; //int
 global.race_mod[ i, 3] = -1; //con
 global.race_mod[ i, 4] = spr_nevreanstand; //sprite
 global.race_mod[ i, 5] = "Nevrean";
-global.race_mod[ i, 6] = enum_homeworlds.not_set;
+global.race_mod[ i, 6] = enum_homeworlds.tal;
 global.race_mod[ i, 7] = enum_homeworlds.not_set;
 global.race_mod[ i, 8] = enum_homeworlds.not_set;
 global.race_mod[ i, 9] = enum_homeworlds.offworld;
@@ -73,6 +73,7 @@ enum enum_homeworlds {
     mars,
     offworld,
     not_set,
+    tal,
 }
 
 var i = enum_homeworlds.earth;
@@ -142,7 +143,23 @@ global.planet_mod[ i, 3] = 0; //dex
 global.planet_mod[ i, 4] = 2; //int
 global.planet_mod[ i, 5] = 2; //con
 
-
+var i = enum_homeworlds.tal;
+global.planet_mod[ i, 0] = "Tal";
+global.planet_mod[ i, 1] = " Many centuries of political turmoil, "
+                         + "world wars, attempted genocide, and "
+                         + "an overwhelming hostile planet has "
+                         + "shaped Tal into a hardened, cultural "
+                         + "wonderland of many races living in close "
+                         + "harmony with each other and the planet itself. ## "
+                         + "With the planet modernized to be on par with "
+                         + "the rest of the galaxy, and the untamable alien "
+                         + "wilds now completely understood and controlled, "
+                         + "the inhabinants looked towards the stars for thier "
+                         + "next great triumph.";
+global.planet_mod[ i, 2] = 2; //str
+global.planet_mod[ i, 3] = 0; //dex
+global.planet_mod[ i, 4] = 0; //int
+global.planet_mod[ i, 5] = 2; //con
 
 
 var i = enum_homeworlds.offworld;

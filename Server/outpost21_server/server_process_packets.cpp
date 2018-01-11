@@ -118,9 +118,36 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                     break;
 
                     case server_recieving_packets::login_newuser: break;
-                    //character aquisition
+                    //character acquisition
                     case server_recieving_packets::character_get_all_owned:
-                        current_packet->buffer_debug();
+                        {
+                            std::cout << "===all owned characters requested" << std::endl;
+
+                            //check for character existance!
+                            std::string user_getname  = current_packet->buffer_read_string();
+
+
+                            //Check to see if this is a new player object!
+                            for(unsigned int i = 0; i < entity_vector.size()+1; i++) {
+                                entity* check_entity = list_entities[| i];
+
+                                //if the slot exists at all
+                                if entity_vector[i] != nullptr) {
+                                    //check if entity had player data and send it
+                                    if(check_entity->myStringVars.count("player_name") > 0
+                                    && check_entity->myStringVars["player_name"] == user_getname {
+                                        //debug out
+                                        std::cout << " -sent entity: " + string(i) << std::endl;
+                                        std::cout << " -char name: " + user_getname << std::endl;
+                                        //construct a string to transmit
+                                        ///var transmit_string = ds_map_write(check_player);
+                                        ///var base64_transmit = base64_encode(transmit_string);
+                                        //send data to player
+                                        ///scr_cpacket_character_transmit_data(connection_id,base64_transmit);
+                                    }
+                                }
+                            }
+                        }
                     break;
 
                     case server_recieving_packets::character_query:

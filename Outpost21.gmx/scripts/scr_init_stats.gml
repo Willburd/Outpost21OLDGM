@@ -54,8 +54,8 @@ global.race_mod[ i, 2] =  1; //int
 global.race_mod[ i, 3] = -1; //con
 global.race_mod[ i, 4] = spr_nevreanstand; //sprite
 global.race_mod[ i, 5] = "Valekin";
-global.race_mod[ i, 6] = enum_homeworlds.not_set;
-global.race_mod[ i, 7] = enum_homeworlds.not_set;
+global.race_mod[ i, 6] = enum_homeworlds.valekinhome;
+global.race_mod[ i, 7] = enum_homeworlds.valekinfleet;
 global.race_mod[ i, 8] = enum_homeworlds.not_set;
 global.race_mod[ i, 9] = enum_homeworlds.offworld;
 var lang_list = ds_list_create();
@@ -76,6 +76,8 @@ enum enum_homeworlds {
     talcity,
     goldring,
     taljungle,
+    valekinhome,
+    valekinfleet,
 }
 
 var i = enum_homeworlds.not_set;
@@ -219,6 +221,43 @@ global.planet_mod[ i, 2] = 1; //str
 global.planet_mod[ i, 3] = 1; //dex
 global.planet_mod[ i, 4] = -1; //int
 global.planet_mod[ i, 5] = 3; //con
+
+var i = enum_homeworlds.valekinhome;
+global.planet_mod[ i, 0] = "put stuff here";
+global.planet_mod[ i, 1] = " "
+                         + "  "
+                         + " "
+                         + " "
+                         + " "
+                         + " "
+                         + " "
+                         + " "
+                         + " "
+                         + " "
+                         + " ";
+global.planet_mod[ i, 2] = 0; //str
+global.planet_mod[ i, 3] = 0; //dex
+global.planet_mod[ i, 4] = 0; //int
+global.planet_mod[ i, 5] = 0; //con
+
+var i = enum_homeworlds.valekinfleet;
+global.planet_mod[ i, 0] = "put stuff here";
+global.planet_mod[ i, 1] = " "
+                         + "  "
+                         + " "
+                         + " "
+                         + " "
+                         + " "
+                         + " "
+                         + " "
+                         + " "
+                         + " "
+                         + " ";
+global.planet_mod[ i, 2] = 0; //str
+global.planet_mod[ i, 3] = 0; //dex
+global.planet_mod[ i, 4] = 0; //int
+global.planet_mod[ i, 5] = 0; //con
+
 
 /*******************
     ARCHETYPES
@@ -432,13 +471,15 @@ global.previous_job_mod[ i, 1]          = " You've lived at home with your paren
                                             "entire life till they just kicked you out.";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Personal employment";
-global.previous_job_mod[ i, 1]          = " description";
+global.previous_job_mod[ i, 1]          = " You use to run a home business, and made just " +
+                                          "enough to get by.";
 i += 1;
 global.previous_job_mod[ i, 0]          = "ESHUI subsidiary";
 global.previous_job_mod[ i, 1]          = " description";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Galactic Association of Fast Food outlets";
-global.previous_job_mod[ i, 1]          = " description";
+global.previous_job_mod[ i, 1]          = " Flipping burgers, dealing with angry customers, " +
+                                          " and serving tables has been your life till now.";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Galactic Highspeed-Railway Company";
 global.previous_job_mod[ i, 1]          = " description";
@@ -447,7 +488,8 @@ global.previous_job_mod[ i, 0]          = "Builders League United";
 global.previous_job_mod[ i, 1]          = " description";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Nanotrasen Research Station 13";
-global.previous_job_mod[ i, 1]          = " description";
+global.previous_job_mod[ i, 1]          = " You've been to hell and back, you've seen " +
+                                          "things you can't comperhend, and now you need a break.";
 i += 1;
 global.previous_job_mod[ i, 0]          = "Reliable Excavation Demolition ";
 global.previous_job_mod[ i, 1]          = " description";
@@ -487,6 +529,8 @@ enum enum_guilds {
     earthgov,
     unitedfed,
     western_front,
+    mercenary_guild,
+    raincult,
     
 }
 
@@ -500,14 +544,23 @@ global.guild_mod[ i, 1] = " You lack any form of prior affiliation "
                          
 var i = enum_guilds.earthgov;
 global.guild_mod[ i, 0] = "Earthgov";
-global.guild_mod[ i, 1] = " blah blah blah"
-                         + " "
-
+global.guild_mod[ i, 1] = " Goverment of Earth" +
+                          " ";
 
 var i = enum_guilds.unitedfed;
 global.guild_mod[ i, 0] = "United Federation";
-global.guild_mod[ i, 1] = " ";
-                         
+global.guild_mod[ i, 1] = " The UN of the galaxy but slightly more effective" +
+                          " ";
 var i = enum_guilds.western_front;
 global.guild_mod[ i, 0] = "Western Front";
-global.guild_mod[ i, 1] = " ";
+global.guild_mod[ i, 1] = " space cowboys" +
+                          " ";
+
+var i = enum_guilds.mercenary_guild;
+global.guild_mod[ i, 0] = "The Mercenary Guild";
+global.guild_mod[ i, 1] = " people who do stuff for money" +
+                          " ";
+var i = enum_guilds.raincult;
+global.guild_mod[ i, 0] = "The Glorious Path Of Rain Silves";
+global.guild_mod[ i, 1] = " crazy cult" +
+                          " ";

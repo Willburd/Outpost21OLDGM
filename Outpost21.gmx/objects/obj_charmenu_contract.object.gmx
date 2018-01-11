@@ -142,8 +142,8 @@ var drawtext = input_array[0,0];
 draw_text_transformed(x+52,y+52, drawtext + text_ender,1,1,image_angle);
 
 //homeworld
-var scale = 1 - (string_width(global.planet_mod[ obj_chargen_selectedplanet.image_index, 0]) / 532);
-draw_text_transformed( x+94, y+73, global.planet_mod[ obj_chargen_selectedplanet.image_index, 0], scale, 1, image_angle);
+var scale = 1 - (string_width(global.planet_mod[ obj_chargen_selectedplanet.planet_assigned, 0]) / 532);
+draw_text_transformed( x+94, y+73, global.planet_mod[ obj_chargen_selectedplanet.planet_assigned, 0], scale, 1, image_angle);
 
 //age
 var text_ender = "";

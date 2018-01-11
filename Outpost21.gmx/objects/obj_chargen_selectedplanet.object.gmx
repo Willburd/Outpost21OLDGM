@@ -26,6 +26,7 @@
           <argument>
             <kind>1</kind>
             <string>stepstep = 0.10; //fade in automatically
+planet_assigned = enum_homeworlds.offworld;
 image_alpha = -1;
 image_speed = 0;
 </string>
@@ -77,7 +78,7 @@ if stepstep &lt; 0 and image_alpha &lt; 0 {
           <argument>
             <kind>1</kind>
             <string>image_alpha = clamp(image_alpha + stepstep,-1,1.50);
-draw_sprite_ext(sprite_index,image_index,x,y,1,1,0,image_blend,clamp(image_alpha,0,1));
+draw_sprite_ext(sprite_index,planet_assigned,x,y,1,1,0,image_blend,clamp(image_alpha,0,1));
 </string>
           </argument>
         </arguments>

@@ -127,7 +127,8 @@ with obj_charmenu_contract vspeed = 30; //go off screen
 //spawn new menu
 for (var i=0; i&lt;4; i+=1) {
     with instance_create(1696,32+(i*96),obj_chargen_menu_planet) {
-        image_index = global.race_mod[ other.selected_entry_pass, 6 + i];
+        planet_assigned = global.race_mod[ other.selected_entry_pass, 6 + i];
+        image_index = planet_assigned;
     }
 }
 </string>

@@ -14,33 +14,51 @@ serverCore serverObj;
 
 int main()
 {
-
-
-    // bind the listener to a port
+    ///load server configs
     std::string get_port = "2727";
-    std::cout << "Port" << std::endl;
-    std::cin >> get_port;
-    serverObj.server_port = stoi(get_port);
+    std::string get_mapPath = "";
+    INIReader reader( serverObj.serverdata_file_path);
+    if (reader.ParseError() < 0) {
+        std::cout << "Can't load '" << serverObj.serverdata_file_path << "'" << std::endl;
+    }
+    else
+    {
+        std::cout << "Config loaded from '" << serverObj.serverdata_file_path << "'" << std::endl;
 
+        //get passhash from server data
+        get_port = reader.Get("ServerData", "Port", "2727");
+        get_mapPath = reader.Get("ServerData", "Map_path", "");
+    }
+
+
+    /// bind the listener to a port
+    serverObj.server_port = stoi(get_port);
     //clean out clients
     for (int i = 0; i < serverObj.server_maxplayers; i++)
     {
         serverObj.SocketThreads[i] = nullptr;
     }
 
+    ///load the ingame map! and all entities with it!
+    serverObj.gameMapLoad(get_mapPath);
+
+
+    ///start server
     if (serverObj.listener.listen( serverObj.server_port ) != sf::Socket::Done)
     {
         // error...
+        std::cout << "Failed to start server. Port '" << get_port << "' already in use!" << std::endl;
     }
     else
     {
+        //setup tick timer
         std::chrono::system_clock::time_point a = std::chrono::system_clock::now();
         std::chrono::system_clock::time_point b = std::chrono::system_clock::now();
 
         //process server
         bool server_quit = false;
         while(server_quit == false) {
-            // Maintain designated frequency of 5 Hz (200 ms per frame)
+            /// Maintain designated update frequency
             float work_frequency = 1000/serverObj.server_tickrate;
             a = std::chrono::system_clock::now();
             std::chrono::duration<double, std::milli> work_time = a - b;
@@ -55,7 +73,7 @@ int main()
             b = std::chrono::system_clock::now();
             std::chrono::duration<double, std::milli> sleep_time = b - a;
 
-            //handle new clients!
+            ///handle new clients!
             if(serverObj.spawn_new_socket == true) {
 
                 //allow a new socket to be opened
@@ -75,9 +93,10 @@ int main()
                     }
                 }
 
+                ///TODO explore why this part seems to have a memory leak when getting the pointer.
                 //process entity personal steps!
-                for(unsigned int i = 0; i < serverObj.entity_vector.size(); i++) {
-                    entity* getEnt = serverObj.entity_vector.at(i);
+                /*for(unsigned int i = 0; i < serverObj.entity_map.size(); i++) {
+                    entity* getEnt = serverObj.entity_map[i];
 
                     if(getEnt != nullptr) {
                         if(getEnt->x == serverObj.entity_deletion_abyss || getEnt->y == serverObj.entity_deletion_abyss) {
@@ -91,9 +110,8 @@ int main()
                             else
                             {
                                 //force destruction of entity
-                                serverObj.entity_vector[getEnt->entity_number] = nullptr;
+                                serverObj.entity_map[getEnt->entity_number] = nullptr;
                                 delete getEnt;
-
                             }
                         }
                         else
@@ -101,7 +119,7 @@ int main()
                             getEnt->entity_step();
                         }
                     }
-                }
+                }*/
 
                 //handle server processing
 

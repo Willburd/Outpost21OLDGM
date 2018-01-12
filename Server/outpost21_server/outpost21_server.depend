@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1515638928 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
+1515765865 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
 	<iostream>
 	<cstring>
 	<SFML/Network.hpp>
@@ -210,80 +210,84 @@
 1515309420 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit.h
 	<SFML/Network.hpp>
 
-1515638928 c:\users\kose\documents\github\outpost21\server\outpost21_server\main.h
+1515683438 c:\users\kose\documents\github\outpost21\server\outpost21_server\main.h
 	<iostream>
 	<cstring>
 	"server_core.h"
 	"server_process_packets.h"
 	"client_transmit_packets.h"
 
-1515638928 c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.h
+1515683438 c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.h
 	<iostream>
 	<string.h>
 	<cstring>
 
-1515638928 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.cpp
+1515683438 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.cpp
 	"byte_buffer.h"
 
-1515638928 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\cpp\inireader.cpp
+1515683438 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\cpp\inireader.cpp
 	<algorithm>
 	<cctype>
 	<cstdlib>
 	"../ini.h"
 	"INIReader.h"
 
-1515638928 c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\ini.h
+1515683438 c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\ini.h
 	<stdio.h>
 
-1515638928 c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\cpp\inireader.h
+1515683438 c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\cpp\inireader.h
 	<map>
 	<string>
 
-1515638928 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\ini.c
+1515683438 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\ini.c
 	<stdio.h>
 	<ctype.h>
 	<string.h>
 	"ini.h"
 	<stdlib.h>
 
-1515638928 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\client_structure.cpp
+1515683438 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\client_structure.cpp
 	"client_structure.h"
 
-1515638928 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_structure.h
+1515683438 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_structure.h
 	<SFML/Network.hpp>
 
-1515638928 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit_packets.cpp
+1515683438 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit_packets.cpp
 	"client_transmit_packets.h"
 	"client_structure.h"
 
-1515638928 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit_packets.h
+1515683438 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit_packets.h
 	<cstring>
 	"client_structure.h"
 	"byte_buffer.h"
 
-1515638928 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_process_packets.h
+1515683438 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_process_packets.h
 	"client_transmit_packets.h"
 	<SFML/Network.hpp>
 	<pthread.h>
 
-1515638928 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
+1515765556 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
 	"client_transmit_packets.h"
+	"json/json.hpp"
 	<SFML/Network.hpp>
 	<pthread.h>
 	<vector>
 	<map>
 
-1515638928 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.cpp
+1515764930 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.cpp
 	"server_core.h"
+	"json/json.hpp"
+	"entitylibrary/entity_library.h"
+	<fstream>
 
-1515651781 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_process_packets.cpp
+1515753411 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_process_packets.cpp
 	"server_core.h"
+	"base64/base64.h"
 	"server_process_packets.h"
 	"byte_buffer.h"
 	"client_structure.h"
-	"inih/cpp/INIReader.h"
 	"entitylibrary/entity_library.h"
-	"base64/base64.h"
+	"inih/cpp/INIReader.h"
 
 1515405056 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\entity library\entity_library.cpp
 	"entity_library.h"
@@ -291,13 +295,225 @@
 1515406129 c:\users\kose\documents\github\outpost21\server\outpost21_server\entity library\entity_library.h
 	"../server_core.h"
 
-1515638928 c:\users\kose\documents\github\outpost21\server\outpost21_server\entitylibrary\entity_library.h
+1515749864 c:\users\kose\documents\github\outpost21\server\outpost21_server\entitylibrary\entity_library.h
 	"../server_core.h"
 
-1515651578 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\base64\base64.cpp
+1515683438 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\base64\base64.cpp
 	"base64.h"
 	<iostream>
 
-1515651617 c:\users\kose\documents\github\outpost21\server\outpost21_server\base64\base64.h
+1515683438 c:\users\kose\documents\github\outpost21\server\outpost21_server\base64\base64.h
 	<string>
+
+1515730570 c:\users\kose\documents\github\outpost21\server\outpost21_server\json\json.hpp
+	<algorithm>
+	<cassert>
+	<ciso646>
+	<cstddef>
+	<functional>
+	<initializer_list>
+	<iosfwd>
+	<iterator>
+	<numeric>
+	<string>
+	<utility>
+	<cstdint>
+	<map>
+	<memory>
+	<string>
+	<vector>
+	<ciso646>
+	<ciso646>
+	<cstddef>
+	<limits>
+	<type_traits>
+	<utility>
+	<cstdint>
+	<map>
+	<memory>
+	<string>
+	<vector>
+	<ciso646>
+	<exception>
+	<stdexcept>
+	<string>
+	<array>
+	<ciso646>
+	<cstddef>
+	<cstdint>
+	<algorithm>
+	<array>
+	<ciso646>
+	<forward_list>
+	<iterator>
+	<string>
+	<tuple>
+	<type_traits>
+	<utility>
+	<valarray>
+	<exception>
+	<stdexcept>
+	<string>
+	<ciso646>
+	<cstddef>
+	<limits>
+	<type_traits>
+	<utility>
+	<array>
+	<ciso646>
+	<cstddef>
+	<cstdint>
+	<ciso646>
+	<iterator>
+	<tuple>
+	<type_traits>
+	<utility>
+	<valarray>
+	<vector>
+	<algorithm>
+	<array>
+	<cassert>
+	<cstddef>
+	<cstring>
+	<ios>
+	<istream>
+	<iterator>
+	<memory>
+	<numeric>
+	<string>
+	<type_traits>
+	<utility>
+	<clocale>
+	<cstddef>
+	<cstdlib>
+	<initializer_list>
+	<ios>
+	<iomanip>
+	<sstream>
+	<string>
+	<vector>
+	<algorithm>
+	<array>
+	<cassert>
+	<cstddef>
+	<cstring>
+	<ios>
+	<istream>
+	<iterator>
+	<memory>
+	<numeric>
+	<string>
+	<type_traits>
+	<utility>
+	<cassert>
+	<cmath>
+	<cstdint>
+	<functional>
+	<string>
+	<utility>
+	<clocale>
+	<cstddef>
+	<cstdlib>
+	<initializer_list>
+	<ios>
+	<iomanip>
+	<sstream>
+	<string>
+	<vector>
+	<ciso646>
+	<cstddef>
+	<limits>
+	<ostream>
+	<ciso646>
+	<cstddef>
+	<limits>
+	<ostream>
+	<ciso646>
+	<iterator>
+	<type_traits>
+	<cstddef>
+	<string>
+	<cstddef>
+	<iterator>
+	<utility>
+	<algorithm>
+	<cstddef>
+	<ios>
+	<iterator>
+	<memory>
+	<ostream>
+	<string>
+	<vector>
+	<algorithm>
+	<array>
+	<cassert>
+	<cmath>
+	<cstddef>
+	<cstdint>
+	<cstring>
+	<iomanip>
+	<ios>
+	<iterator>
+	<limits>
+	<sstream>
+	<string>
+	<utility>
+	<algorithm>
+	<array>
+	<cstdint>
+	<cstring>
+	<limits>
+	<algorithm>
+	<array>
+	<cassert>
+	<cmath>
+	<cstddef>
+	<cstdint>
+	<cstring>
+	<iomanip>
+	<ios>
+	<iterator>
+	<limits>
+	<sstream>
+	<string>
+	<utility>
+	<algorithm>
+	<cstddef>
+	<ios>
+	<iterator>
+	<memory>
+	<ostream>
+	<string>
+	<vector>
+	<algorithm>
+	<array>
+	<cassert>
+	<ciso646>
+	<clocale>
+	<cmath>
+	<cstddef>
+	<cstdint>
+	<cstdio>
+	<iterator>
+	<limits>
+	<string>
+	<type_traits>
+	<initializer_list>
+	<utility>
+	<utility>
+
+1515729573 c:\users\kose\documents\github\outpost21\server\outpost21_server\json\json_fwd.hpp
+	<cstdint>
+	<map>
+	<memory>
+	<string>
+	<vector>
+
+1515729583 c:\users\kose\documents\github\outpost21\server\outpost21_server\json\adl_serializer.hpp
+	<utility>
+	"detail/conversions/from_json.hpp"
+	"detail/conversions/to_json.hpp"
+
+1515762577 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\entitylibrary\entity_library.cpp
+	"entity_library.h"
 

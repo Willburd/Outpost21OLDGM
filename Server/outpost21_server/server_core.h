@@ -2,12 +2,21 @@
 #define SERVERCORE_H
 
 #include "client_transmit_packets.h"
+#include "json/json.hpp"
 #include <SFML/Network.hpp>
 #include <pthread.h>
 #include <vector>
 #include <map>
 
+
+
 class entity;
+
+
+struct securityLevel {
+    std::string name = "";
+    unsigned int color = 0;
+};
 
 
 class serverCore {
@@ -18,7 +27,10 @@ class serverCore {
 
     public:
     //entity list
-    std::vector<entity*> entity_vector;
+    std::map< unsigned int, entity*> entity_map;
+
+    //security data list
+    std::map< unsigned int, securityLevel*> mapSecurityLevels;
 
     //This function populates the asset and object indexs for reverse lookup of each!
     void CreateObjectAndAssetIndex(std::string inputAssetIndex);
@@ -57,9 +69,18 @@ class serverCore {
     const std::string serverdata_file_path = "server_data.ini";
 
     //add entity
-    void entity_add(entity* entityToAdd);
+    void securityLevelAdd( unsigned int index,std::string inputName, int inputColor);
+    void securityLevelRemove( unsigned int index);
+    void entity_add(entity* entityToAdd); //dynamically add the entity to the vector
+    void entity_set(entity* entityToAdd, int entityNumberToAssign); //forcibly set the new entity to a specific index, used for file loading
     void entity_remove(int entityNumberToRemove);
     void set_update_flag( int entityNumberToUpdate, int clientNumber, bool updateFlag);
+
+    bool gameMapLoad(std::string mapFilePath);
+    //sub functions of map loads
+    void securityMapLoad(nlohmann::json j);
+    void entityMapLoad(nlohmann::json e);
+    entity* entityAssembleMapLoad(nlohmann::json a);
 };
 
 
@@ -67,6 +88,7 @@ extern serverCore serverObj;
 
 
 class entity {
+    entity(const entity& that);
     std::string object_index = "obj_puppet_generic";
     bool indestructable = false;
     //external inventory control
@@ -78,11 +100,6 @@ class entity {
     int contains_max = 0; //inventory max size
     bool contains_type_liquid = false;
     int contains_size = 0; //item physical size that can be held
-    //server side collision entitys
-    int SS_collision = -1; //mass update handles this
-    bool SS_collision_ignores_walls = false;
-    double SS_bouncyness = 0.5;
-    double SS_decelerator = serverObj.forced_movement_decelerator;
     //if constructed it does not move
     bool constructed = false;
     int entity_last_process_cycle = 0;
@@ -103,6 +120,11 @@ class entity {
     double contains_display_x = 0; //relative to own x
     double contains_display_y = 0; //relative to own y
     int contains_display_d = 0; //relative to own depth
+    //server side collision entitys
+    int SS_collision = -1; //mass update handles this
+    bool SS_collision_ignores_walls = false;
+    double SS_bouncyness = 0.5;
+    double SS_decelerator = serverObj.forced_movement_decelerator;
 
     ///personal variable map, because c++ does not support derived member access from pointers of base class! :D FUCK ME RIGHT?
     std::map <std::string, int> myIntVars;
@@ -116,6 +138,11 @@ class entity {
     void entity_set_inventorylimits( int inventory_size, int max_storeable_item_size, int item_size, bool is_a_liquid, bool contains_a_liquid, int item_class, int inventory_storage_class);
     void entity_step(); //physics calc
     void entity_securityInit();
+    void entity_securityUpdate();
+    void entity_setConstructed(bool setCon);
+    bool entity_getConstructed();
+    void entity_setGrabbed(unsigned int entityNumber);
+    unsigned int entity_getGrabbed();
     virtual void entity_personal_step();
 };
 

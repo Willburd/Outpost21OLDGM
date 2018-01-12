@@ -48,12 +48,15 @@
 			<Add option="-pthread" />
 			<Add directory="C:/Program Files/SFML/SFML-2.4.2/lib" />
 		</Linker>
+		<Unit filename="base64/base64.cpp" />
+		<Unit filename="base64/base64.h" />
 		<Unit filename="byte_buffer.cpp" />
 		<Unit filename="byte_buffer.h" />
 		<Unit filename="client_structure.cpp" />
 		<Unit filename="client_structure.h" />
 		<Unit filename="client_transmit_packets.cpp" />
 		<Unit filename="client_transmit_packets.h" />
+		<Unit filename="entitylibrary/entity_library.cpp" />
 		<Unit filename="entitylibrary/entity_library.h" />
 		<Unit filename="inih/cpp/INIReader.cpp" />
 		<Unit filename="inih/cpp/INIReader.h" />
@@ -61,6 +64,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="inih/ini.h" />
+		<Unit filename="json/json.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="main.h" />
 		<Unit filename="server_core.cpp" />

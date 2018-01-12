@@ -124,8 +124,6 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
     std::string get_objectindex = "";
     double getx = 0;
     double gety = 0;
-    double getprvx = 0;
-    double getprvy = 0;
     float getdir = 0;
     double getspd = 0;
     bool getindestruct = false;
@@ -150,6 +148,9 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
     bool get_containsliquid = false;
     int get_containsclass = 0;
 
+    std::map <std::string, int> get_myIntVars;
+    std::map <std::string, std::string> get_myStringVars;
+
     std::cout << "====Loading entity====" << std::endl;
     for (nlohmann::json::iterator it = a.begin(); it != a.end(); ++it) {
         //itterate through entity's properties
@@ -157,7 +158,7 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
         //and the soft item specific values
         std::string jsonKey = it.key();
 
-
+        ///TODO add the rest of these entity assembly things. And then the generic case of personal vars!
         if(jsonKey == "entity_number") {
             getEntityNumber = a.at(jsonKey).get<int>();
             std::cout << " |------entityID: " << getEntityNumber << std::endl;
@@ -176,15 +177,19 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
         }
         else if(jsonKey == "last_update_x") {
             //ignore this,
+            std::cout << " |----------prvX: DYNAMIC SET..." << std::endl;
         }
         else if(jsonKey == "last_update_y") {
             //ignore this,
+            std::cout << " |----------prvY: DYNAMIC SET..." << std::endl;
         }
         else if(jsonKey == "needs_update") {
             //ignore this,
+            std::cout << " |---user_update: DYNAMIC SET..." << std::endl;
         }
         else if(jsonKey == "entity_last_process_cycle") {
             //ignore this,
+            std::cout << " |----last_cycle: DYNAMIC SET..." << std::endl;
         }
         else if(jsonKey == "dir") {
             getdir = a.at(jsonKey).get<float>();
@@ -212,6 +217,7 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
         }
         else if(jsonKey == "SS_collision") {
             //ignore this,
+            std::cout << " |----SS_coldata: DYNAMIC SET..." << std::endl;
         }
         else if(jsonKey == "SS_collision_ignores_walls") {
             get_SS_ignorewalls = (bool)a.at(jsonKey).get<int>();
@@ -224,9 +230,6 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
         else if(jsonKey == "SS_decelerator") {
             get_SS_ignorewalls = a.at(jsonKey).get<double>();
             std::cout << " |---SS_decelera: " << get_SS_decelerator << std::endl;
-        }
-        else if(jsonKey == "security_clearance") {
-            //ignore this,
         }
         else if(jsonKey == "contains_display") {
             get_disp = (bool)a.at(jsonKey).get<int>();
@@ -247,6 +250,9 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
         else if(jsonKey == "contains_max") {
             get_containsmax = a.at(jsonKey).get<int>();
             std::cout << " |---contain_max: " << get_containsmax << std::endl;
+        }
+        else if(jsonKey == "contains_map") {
+            ///TODO inventory extraction
         }
         else if(jsonKey == "contains_size") {
             get_containssize = a.at(jsonKey).get<int>();
@@ -272,17 +278,45 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
             get_isliquid = (bool)a.at(jsonKey).get<int>();
             std::cout << " |-------isliqud: " << get_isliquid << std::endl;
         }
+        else if(jsonKey == "security_clearance") {
+            ///THIS IS FOR SECURITY CARDS! Stores the security level to set to objects
+            std::cout << " |------secClear: " << std::endl;
+
+            ///TODO! need to add security data to security cards.
+        }
+        else if(jsonKey == "security_levels") {
+            ///This is for the object's current security status (for doors to check!)
+            //ignored. This is manually updated
+            std::cout << " |------secLevel: DYNAMIC SET..." << std::endl;
+        }
         else
         {
-            std::cout << " |--Personal key: " << jsonKey << std::endl;
-            ///TODO needs to tell between string and int
+            nlohmann::json jsonEntry = (nlohmann::json)*it;
 
+            std::cout << " |--Personal key: " << jsonKey;
+
+            if(jsonEntry.is_object()) {
+                std::cout << " ::objects not supported for custom variable loading" << std::endl;
+            }
+            else
+            {
+                if(jsonEntry.is_string()) {
+                get_myStringVars[jsonKey] = jsonEntry.get<std::string>();
+                std::cout << " ::string" << std::endl;
+                }
+                else
+                {
+                    get_myIntVars[jsonKey] = jsonEntry.get<int>();
+                    std::cout << " ::int" << std::endl;
+                }
+            }
         }
-        ///TODO add the rest of these entity assembly things. And then the generic case of personal vars!
     }
 
     //call entity create to make the base entity
     entity* make_entity = entityLibrary::entity_template_library(get_objectindex,getx,gety,getdir,getspd,getindestruct,getinsideof);
+    make_entity->entity_number = getEntityNumber; ///EXTREMELY IMPORTANT!
+
     make_entity->entity_set_inventorylimits(get_containsmax,get_containssize,get_issize,get_isliquid,get_containsliquid,get_isclass,get_containsclass);
 
     make_entity->entity_setConstructed( getconstructed);
@@ -386,15 +420,17 @@ void entity::entity_securityInit() {
     //set all security flags as disabled, entities calling security updates will correct this. This is just init.
     //largely because it is called before the inventory has been properly set for the object, so it can't check for
     //the security cards needed to set its clearances anyway.
-    for(unsigned int i; i < serverObj.mapSecurityLevels.size(); i++) {
-        securityLevel[ i] = false;
+    for (unsigned int i = 0; i < serverObj.mapSecurityLevels.size(); i++ )
+    {
+        entitySecurityLevel[ i] = false; //force set all security to disabled
     }
 }
 
 void entity::entity_securityUpdate() {
     //blank out all security levels for safety
-    for(unsigned int i; i < serverObj.mapSecurityLevels.size(); i++) {
-        securityLevel[ i] = false;
+    for (std::map<unsigned int,bool>::iterator it = entitySecurityLevel.begin(); it != entitySecurityLevel.end(); it++ )
+    {
+        it->second = false; //force set all security to disabled
     }
 
     ///TODO!!!

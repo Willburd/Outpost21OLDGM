@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1515765865 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
+1515798936 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
 	<iostream>
 	<cstring>
 	<SFML/Network.hpp>
@@ -266,7 +266,7 @@
 	<SFML/Network.hpp>
 	<pthread.h>
 
-1515765556 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
+1515797269 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
 	"client_transmit_packets.h"
 	"json/json.hpp"
 	<SFML/Network.hpp>
@@ -274,7 +274,7 @@
 	<vector>
 	<map>
 
-1515764930 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.cpp
+1515798907 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.cpp
 	"server_core.h"
 	"json/json.hpp"
 	"entitylibrary/entity_library.h"

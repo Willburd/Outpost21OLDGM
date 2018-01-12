@@ -95,7 +95,7 @@ int main()
 
                 ///TODO explore why this part seems to have a memory leak when getting the pointer.
                 //process entity personal steps!
-                /*for(unsigned int i = 0; i < serverObj.entity_map.size(); i++) {
+                for(unsigned int i = 0; i < serverObj.entity_map.size(); i++) {
                     entity* getEnt = serverObj.entity_map[i];
 
                     if(getEnt != nullptr) {
@@ -119,7 +119,7 @@ int main()
                             getEnt->entity_step();
                         }
                     }
-                }*/
+                }
 
                 //handle server processing
 

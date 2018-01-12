@@ -42,7 +42,7 @@ class serverCore {
 
     //unique x and y locations
     const double entity_deletion_abyss = -4000;
-    const double entity_item_storage = -4000;
+    const double entity_item_storage = -2000;
 
     //constants
     static const int server_maxplayers = 16;
@@ -131,7 +131,7 @@ class entity {
     std::map <std::string, std::string> myStringVars;
 
     ///security clearance
-    std::vector<bool> securityLevel;
+    std::map <unsigned int,bool> entitySecurityLevel;
 
     ///functions
     entity(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);

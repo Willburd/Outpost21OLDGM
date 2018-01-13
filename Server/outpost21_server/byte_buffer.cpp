@@ -64,13 +64,13 @@ float byte_buffer::buffer_read_f32() {
 std::string byte_buffer::buffer_read_string() {
     bool string_end_found = false;
     std::string wip_string = "";
-    std::cout << "ripping char: " << data[buffer_place] << std::endl;
-    std::cout << "buffer pos: " << buffer_place << std::endl;
-
     //if we are sitting at a null already
     if(data[buffer_place] == 0) string_end_found = true;
 
     while(string_end_found == false) {
+        //std::cout << "ripping char: " << data[buffer_place] << std::endl;
+        //std::cout << "buffer pos: " << buffer_place << std::endl;
+
         //rip character and store it
         char get_char = data[buffer_place];
         wip_string += get_char;

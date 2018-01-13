@@ -351,12 +351,14 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
             
             
             case  enum_client_packets.character_transmit_data: 
+                show_debug_message("====character_transmit_data");
                 var char_data = buffer_read(connection_buffer,buffer_string);
                 var decode_string = base64_decode(char_data);
                 scr_consoleout("character was found");
             
                 //add this to the character menu!
                 with obj_charmenu_controller {
+                    show_debug_message(decode_string);
                     temp_charmap = json_decode( decode_string);
                     ds_map_add_map( character_map, string(ds_map_size(character_map)), temp_charmap);
                 }

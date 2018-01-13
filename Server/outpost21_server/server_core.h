@@ -39,6 +39,7 @@ class serverCore {
 
     sf::TcpListener listener;
     int server_port = 0;
+    int server_tickrate = 60; //ticks per second
 
     //unique x and y locations
     const double entity_deletion_abyss = -4000;
@@ -49,7 +50,6 @@ class serverCore {
     const double forced_movement_decelerator = 0.925;
     const double forced_movement_minimum_cutoff = 0.30;
     const double maximum_movement = 20;
-    const int server_tickrate = 60; //ticks per second
 
     const int map_size = 16384;
     const int map_min_xlimit = 10;
@@ -72,7 +72,7 @@ class serverCore {
     void securityLevelAdd( unsigned int index,std::string inputName, int inputColor);
     void securityLevelRemove( unsigned int index);
     void entity_add(entity* entityToAdd); //dynamically add the entity to the vector
-    void entity_set(entity* entityToAdd, int entityNumberToAssign); //forcibly set the new entity to a specific index, used for file loading
+    void entity_set(entity* entityToAdd, unsigned int entityNumberToAssign); //forcibly set the new entity to a specific index, used for file loading
     void entity_remove(int entityNumberToRemove);
     void set_update_flag( int entityNumberToUpdate, int clientNumber, bool updateFlag);
 
@@ -80,7 +80,8 @@ class serverCore {
     //sub functions of map loads
     void securityMapLoad(nlohmann::json j);
     void entityMapLoad(nlohmann::json e);
-    entity* entityAssembleMapLoad(nlohmann::json a);
+    entity* entityJsonDecode(nlohmann::json a);
+    std::string entityJsonEncode( entity* inputEntity);
 };
 
 
@@ -92,14 +93,15 @@ class entity {
     std::string object_index = "obj_puppet_generic";
     bool indestructable = false;
     //external inventory control
+    int is_type_class = 0;
     bool is_liquid = false;
     int is_size = 0; //item is a physical size of
     //self inventory
     int grabbing_entity = -1;
-    std::vector<int> contains_map;
     int contains_max = 0; //inventory max size
     bool contains_type_liquid = false;
     int contains_size = 0; //item physical size that can be held
+    int contains_class = 0; //item physical size that can be held
     //if constructed it does not move
     bool constructed = false;
     int entity_last_process_cycle = 0;
@@ -107,6 +109,7 @@ class entity {
     public:
     int entity_number = -1; //index in entity vector
     int inside_of_id = -1;
+    std::vector<int> contains_vector;
     bool needs_update[serverObj.server_maxplayers]; //is a list of player flags!
     //entity core
     double x = 0;
@@ -131,18 +134,34 @@ class entity {
     std::map <std::string, std::string> myStringVars;
 
     ///security clearance
-    std::map <unsigned int,bool> entitySecurityLevel;
+    std::map <unsigned int,bool> entitySecurityLevels;
 
     ///functions
     entity(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+    virtual ~entity();
     void entity_set_inventorylimits( int inventory_size, int max_storeable_item_size, int item_size, bool is_a_liquid, bool contains_a_liquid, int item_class, int inventory_storage_class);
     void entity_step(); //physics calc
     void entity_securityInit();
     void entity_securityUpdate();
-    void entity_setConstructed(bool setCon);
-    bool entity_getConstructed();
-    void entity_setGrabbed(unsigned int entityNumber);
+
+    //get only
+    std::string entity_getObjectIndex();
+    int entity_getInventoryMaxSize();
+    int entity_getInventoryItemSizeMax();
+    bool entity_getInventoryAllowLiquids();
+    int entity_getInventoryItemClassAllowed();
+
     unsigned int entity_getGrabbed();
+    bool entity_getConstructed();
+    bool entity_getIndestructable();
+    int entity_getItemClass();
+    int entity_getItemSize();
+    bool entity_getItemIsLiquid();
+
+    void entity_setGrabbed(unsigned int entityNumber);
+    void entity_setConstructed(bool setCon);
+    void entity_setIndestructable(bool input);
+
     virtual void entity_personal_step();
 };
 

@@ -5,6 +5,7 @@
 #include "client_structure.h"
 #include "entitylibrary/entity_library.h"
 #include "inih/cpp/INIReader.h"
+#include <map>
 
 
 
@@ -128,24 +129,25 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                             //check for character existance!
                             std::string user_getname  = current_packet->buffer_read_string();
 
-
-                            //Check to see if this is a new player object!
-                            for(unsigned int i = 0; i < serverObj.entity_map.size(); i++) {
-                                entity* check_entity = serverObj.entity_map[ i];
+                            //loop through all entities
+                            std::map<unsigned int, entity*>::iterator it;
+                            for (it = serverObj.entity_map.begin(); it != serverObj.entity_map.end(); it++) {
+                                entity* check_entity = it->second;
 
                                 //if the slot exists at all
                                 if(check_entity != nullptr) {
                                     //check if entity had player data and send it
-                                    if(check_entity->myStringVars.count("player_name") > 0
-                                    && check_entity->myStringVars["player_name"] == user_getname) {
-                                        //debug out
-                                        std::cout << " -sent entity: " + i << std::endl;
-                                        std::cout << " -char name: " + user_getname << std::endl;
-                                        //construct a string to transmit
-                                        std::string transmit_string = "5434534sdfsdf";
-                                        std::string base64_transmit = base64_encode(reinterpret_cast<unsigned const char*>(transmit_string.c_str()),(unsigned int)transmit_string.length());
-                                        //send data to player
-                                        //scr_cpacket_character_transmit_data(connection_id,base64_transmit);
+                                    if(check_entity->entity_getObjectIndex() == "obj_puppet_player") {
+                                        if(check_entity->myStringVars["player_name"] == user_getname) {
+                                            //debug out
+                                            std::cout << " -sent entity: " << it->first << std::endl;
+                                            std::cout << " -char name: " << check_entity->myStringVars["player_nickname"] << std::endl;
+                                            //construct a string to transmit
+                                            std::string transmit_string = serverObj.entityJsonEncode( check_entity);
+                                            std::string base64_transmit = base64_encode(reinterpret_cast<unsigned const char*>(transmit_string.c_str()),(unsigned int)transmit_string.length());
+                                            //send data to player
+                                            client_transmission_packets::cpacket_character_transmit_data( client, base64_transmit);
+                                        }
                                     }
                                 }
                             }

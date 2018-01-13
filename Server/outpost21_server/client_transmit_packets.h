@@ -45,7 +45,7 @@ namespace client_transmission_packets {
     //login_newuser,
     int cPacket_login_failed(client_struct& inputClient, std::string nameUsed);
     int cPacket_login_success(client_struct& inputClient, std::string nameUsed);
-    ///character_transmit_data,
+    int cpacket_character_transmit_data(client_struct& inputClient, std::string jsonStringOfEntity);
     //map_object_load,
     //map_object_drop,
     //map_security_reply,

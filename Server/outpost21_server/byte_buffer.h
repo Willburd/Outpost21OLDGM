@@ -24,7 +24,7 @@ class byte_buffer  {
 
     public:
     std::size_t received = 0;
-    char data[255];
+    char data[2048]; //big buffer, the "recieved" value only sends part of these total bytes.
 
     unsigned int buffer_get_pos();
 

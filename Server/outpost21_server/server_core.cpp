@@ -60,7 +60,7 @@ void serverCore::entity_add(entity* entityToAdd) {
 };
 
 
-void serverCore::entity_set(entity* entityToAdd, int entityNumberToAssign) {
+void serverCore::entity_set(entity* entityToAdd, unsigned int entityNumberToAssign) {
     if(entityNumberToAssign >= entity_map.size() || entity_map[entityNumberToAssign] == nullptr) {
 
         std::cout << "Assigning entity number: " << entityNumberToAssign << std::endl;
@@ -116,8 +116,57 @@ void serverCore::securityMapLoad(nlohmann::json j) {
     }
 }
 
+std::string serverCore::entityJsonEncode( entity* inputEntity) {
+    nlohmann::json returnJson = {
+        {"entity_number", inputEntity->entity_number},
+        {"object_index", inputEntity->entity_getObjectIndex()},
 
-entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
+        {"x", inputEntity->x},
+        {"y", inputEntity->y},
+        {"last_update_x", inputEntity->last_update_x},
+        {"last_update_y", inputEntity->last_update_y},
+        {"dir", inputEntity->dir},
+        {"spd", inputEntity->spd},
+
+        {"constructed", inputEntity->entity_getConstructed()},
+        {"inside_of_id", inputEntity->inside_of_id},
+        {"grabbing_entity", inputEntity->entity_getGrabbed()},
+        {"indestructable", inputEntity->entity_getIndestructable()},
+
+        {"SS_collision_ignores_walls", inputEntity->SS_collision_ignores_walls},
+        {"SS_bouncyness", inputEntity->SS_bouncyness},
+        {"SS_decelerator", inputEntity->SS_decelerator},
+
+        {"contains_display", inputEntity->contains_display},
+        {"contains_display_d", inputEntity->contains_display_d},
+        {"contains_display_x", inputEntity->contains_display_x},
+        {"contains_display_y", inputEntity->contains_display_y},
+
+        {"contains_max", inputEntity->entity_getInventoryMaxSize()},
+        {"contains_size", inputEntity->entity_getInventoryItemSizeMax()},
+        {"contains_type_liquid", inputEntity->entity_getInventoryAllowLiquids()},
+        {"contains_class", inputEntity->entity_getInventoryItemClassAllowed()},
+
+        {"is_class", inputEntity->entity_getItemClass()},
+        {"is_size", inputEntity->entity_getItemSize()},
+        {"is_liquid", inputEntity->entity_getItemIsLiquid()},
+        {"contains_map", inputEntity->contains_vector},
+        {"security_levels", inputEntity->entitySecurityLevels}
+    };
+
+    //get the dynamic variables from the entity
+    nlohmann::json jmap_Int(inputEntity->myIntVars);
+    nlohmann::json jmap_String(inputEntity->myStringVars);
+
+    //merge
+    returnJson.insert(jmap_Int.begin(), jmap_Int.end());
+    returnJson.insert(jmap_String.begin(), jmap_String.end());
+
+    return returnJson.dump();
+}
+
+
+entity* serverCore::entityJsonDecode(nlohmann::json a) {
     //this takes all build in variables and assigns them, leaving the others to be picked up by
     //the entity's personal variables
     int getEntityNumber = -1;
@@ -185,11 +234,11 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
         }
         else if(jsonKey == "needs_update") {
             //ignore this,
-            std::cout << " |---user_update: DYNAMIC SET..." << std::endl;
+            std::cout << " |---user_update: DEPRICATED" << std::endl;
         }
         else if(jsonKey == "entity_last_process_cycle") {
             //ignore this,
-            std::cout << " |----last_cycle: DYNAMIC SET..." << std::endl;
+            std::cout << " |----last_cycle: DEPRICATED" << std::endl;
         }
         else if(jsonKey == "dir") {
             getdir = a.at(jsonKey).get<float>();
@@ -301,13 +350,13 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
             else
             {
                 if(jsonEntry.is_string()) {
-                get_myStringVars[jsonKey] = jsonEntry.get<std::string>();
-                std::cout << " ::string" << std::endl;
+                    get_myStringVars[jsonKey] = jsonEntry.get<std::string>();
+                    std::cout << " ::string: " << get_myStringVars[jsonKey] << std::endl;
                 }
                 else
                 {
                     get_myIntVars[jsonKey] = jsonEntry.get<int>();
-                    std::cout << " ::int" << std::endl;
+                    std::cout << " ::int: " << get_myIntVars[jsonKey] << std::endl;
                 }
             }
         }
@@ -331,6 +380,11 @@ entity* serverCore::entityAssembleMapLoad(nlohmann::json a) {
     make_entity->SS_bouncyness = get_SS_bouncyness;
     make_entity->SS_decelerator = get_SS_decelerator;
 
+    make_entity->myIntVars.clear();
+    make_entity->myIntVars.insert(get_myIntVars.begin(), get_myIntVars.end());
+    make_entity->myStringVars.clear();
+    make_entity->myStringVars.insert(get_myStringVars.begin(), get_myStringVars.end());
+
     //fill entity with personal data!
 
 
@@ -345,7 +399,7 @@ void serverCore::entityMapLoad(nlohmann::json e) {
         nlohmann::json jsonEntity = (nlohmann::json)*it;
 
         if(jsonEntity.is_object()) {
-            entity* make_entity = entityAssembleMapLoad( jsonEntity);
+            entity* make_entity = serverObj.entityJsonDecode( jsonEntity);
 
             serverObj.entity_set( make_entity, make_entity->entity_number); //add to main list
         }
@@ -387,7 +441,7 @@ bool serverCore::gameMapLoad(std::string mapFilePath) {
 ///ENTITY
 entity::entity(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid) {
     //constructor
-    std::string object_index = set_object_index;
+    object_index = set_object_index;
     entity_number = -1; //index in entity vector
     x = set_x;
     y = set_y;
@@ -405,11 +459,16 @@ entity::entity(std::string set_object_index,double set_x,double set_y, float set
     }
 }
 
+entity::~entity(){
+}
+
 
 void entity::entity_set_inventorylimits( int inventory_size, int max_storeable_item_size, int item_size, bool is_a_liquid, bool contains_a_liquid, int item_class, int inventory_storage_class) {
     is_liquid = is_a_liquid;
     is_size = item_size; //item is a physical size of
     //self inventory
+    is_type_class = item_class;
+    contains_class = inventory_storage_class;
     contains_max = inventory_size; //inventory max size
     contains_type_liquid = contains_a_liquid;
     contains_size = max_storeable_item_size; //item physical size that can be held
@@ -422,13 +481,13 @@ void entity::entity_securityInit() {
     //the security cards needed to set its clearances anyway.
     for (unsigned int i = 0; i < serverObj.mapSecurityLevels.size(); i++ )
     {
-        entitySecurityLevel[ i] = false; //force set all security to disabled
+        entitySecurityLevels[ i] = false; //force set all security to disabled
     }
 }
 
 void entity::entity_securityUpdate() {
     //blank out all security levels for safety
-    for (std::map<unsigned int,bool>::iterator it = entitySecurityLevel.begin(); it != entitySecurityLevel.end(); it++ )
+    for (std::map<unsigned int,bool>::iterator it = entitySecurityLevels.begin(); it != entitySecurityLevels.end(); it++ )
     {
         it->second = false; //force set all security to disabled
     }
@@ -442,10 +501,10 @@ void entity::entity_securityUpdate() {
 
 
 void entity::entity_step() {
+    //std::cout << "entity personal step: " << entity_number << " cycle: " << serverObj.entity_process_cycle << std::endl;
+
     //physics calculation, movement, and collisions
     if(entity_last_process_cycle != serverObj.entity_process_cycle) {
-
-
         //personal update
         entity_personal_step();
 
@@ -460,6 +519,47 @@ void entity::entity_personal_step() {
     //for example, coffee cooling down and changing into cold coffee
 }
 
+std::string entity::entity_getObjectIndex() {
+    return object_index;
+}
+
+int entity::entity_getInventoryMaxSize() {
+    return contains_max;
+}
+
+int entity::entity_getInventoryItemSizeMax() {
+    return contains_size;
+}
+
+bool entity::entity_getInventoryAllowLiquids() {
+    return contains_type_liquid;
+}
+
+int entity::entity_getInventoryItemClassAllowed() {
+    return contains_class;
+}
+
+int entity::entity_getItemClass() {
+    return is_type_class;
+}
+
+int entity::entity_getItemSize() {
+    return is_size;
+}
+
+bool entity::entity_getItemIsLiquid() {
+    return is_liquid;
+}
+
+
+
+void entity::entity_setIndestructable(bool input){
+    indestructable = input;
+}
+
+bool entity::entity_getIndestructable() {
+    return indestructable;
+}
 
 void entity::entity_setConstructed(bool setCon){
     constructed = setCon;

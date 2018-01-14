@@ -1,5 +1,6 @@
 ///scr_spacket_character_create(character name,username,race,home,body,jobprev,job,guild,langM,langA,age);
 var send_buffer = buffer_create(1,buffer_grow,1);
+buffer_write(send_buffer,buffer_u8,210); //packet-start magic number
 buffer_write(send_buffer,buffer_u16, enum_server_packets.character_created); //make new char
 buffer_write(send_buffer,buffer_string, argument[0]); //name
 buffer_write(send_buffer,buffer_string, argument[1]); //user name

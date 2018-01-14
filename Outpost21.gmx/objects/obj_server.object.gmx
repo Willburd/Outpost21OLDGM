@@ -471,1596 +471,1621 @@ if async_load[? "type"] == network_type_data {
     var connection_buffer = async_load[? "buffer"];
     var connection_bufsize = async_load[? "size"];
     
-    //get the opcode off the packet!!
-    var opcode = buffer_read(connection_buffer,buffer_u16);
-    switch opcode {
     
-        case enum_server_packets.login_requested: 
-            show_debug_message("===Login details submitted");
-            //login attempt!
-            var login_success   = false;
-            var login_name      = buffer_read(connection_buffer,buffer_string); //stores length and ignores null terminator!
-            var login_passhash  = buffer_read(connection_buffer,buffer_string); //stores length and ignores null terminator!
-            
-            show_debug_message("user: " + string(login_name));
-            show_debug_message("hash: " + string(login_passhash));
-            
-            //load user data
-            ini_open(global.serverdata_file_path)
-                var get_pass = ini_read_string("UserData",login_name,-1);
-            ini_close();
-            
-            //login checks
-            if string(get_pass) == "-1" {
-                //send new user confirmations!
-                scr_cpacket_login_newuser(connection_id,login_name,login_passhash);
+    //pop magic packet off.
+    var packet_found = false;
+    
+    while(buffer_tell(send_buffer) &lt; buffer_get_size(send_buffer)) {
+        if packet_found == false
+        {
+            //search for magic packet
+            var foundByte = buffer_read(send_buffer,buffer_u8);
+            if foundByte == 210 {
+                packet_found = true;
+                show_debug_message("MAGIC FOUND");
             }
             else
             {
-                //confirm loaded password
-                login_success = (get_pass == login_passhash);
-                
-                //for now no logins, just trigger to the client that they logged in!
-                scr_cpacket_login_return(connection_id,login_success,login_name);
+                show_debug_message("not magic: " + string(foundByte));
             }
-        break;
-        
-        
-        case enum_server_packets.login_newuser: 
-            show_debug_message("===Login details created!");
-            //login attempt!
-            var login_name      = buffer_read(connection_buffer,buffer_string); //stores length and ignores null terminator!
-            var login_passhash  = buffer_read(connection_buffer,buffer_string); //stores length and ignores null terminator!
+        }
+        else
+        {
+            //cleanout
+            packet_found = false;
             
-            show_debug_message("user: " + string(login_name));
-            show_debug_message("hash: " + string(login_passhash));
+            //get the opcode off the packet!!
+            var opcode = buffer_read(connection_buffer,buffer_u16);
+            switch opcode {
             
-            //load user data
-            ini_open(global.serverdata_file_path)
-                var get_pass = ini_read_string("UserData",login_name,-1);
-            
-                if string(get_pass) == "-1" {
-                    ini_write_string("UserData",login_name,login_passhash);
-                    //auto login!
-                    scr_cpacket_login_return(connection_id,true,login_name);
-                }
-                else
-                {
-                    show_debug_message(" -a user tried to register the same name twice. This is not possible.");
-                }
-            ini_close();
-        break;
-        
-        
-        case enum_server_packets.heartbeat_request:
-            //tell the client we are indeed still alive.
-            scr_cpacket_server_alive(connection_id);
-        break;
-        
-        
-        case enum_server_packets.character_get_all_owned:
-            show_debug_message("===all owned characters requested");
-        
-            //check for character existance!
-            var user_getname  = buffer_read(connection_buffer,buffer_string);
-            
-            //Check to see if this is a new player object!
-            for(var i = 0; i &lt; ds_list_size(list_entities); i += 1)  {
-                var check_player = list_entities[| i];
-                
-                //if the slot exists at all
-                if is_undefined(check_player) == false 
-                and ds_exists(check_player,ds_type_map) == true {
-                
-                    //check if entity had player data and send it
-                    if is_undefined(check_player[? "player_name"]) == false 
-                    and check_player[? "player_name"] == string(user_getname) {
-                        //debug out
-                        show_debug_message(" -sent entity: " + string(i));
-                        show_debug_message(" -char name: " + string(check_player[? "player_name"]));
-                        //force update with entity id
-                        check_player[? "entity_number"] = i; //old files might not have
-                        //construct a string to transmit
-                        var transmit_string = json_encode(check_player);
-                        var base64_transmit = base64_encode(transmit_string);
-                        //send data to player
-                        scr_cpacket_character_transmit_data(connection_id,base64_transmit);
-                    }
-                }
-            }
-        break;
-        
-    
-        case enum_server_packets.character_query:
-            show_debug_message("===specific character by name requested");
-        
-            //check for character existance!
-            var char_getname  = buffer_read(connection_buffer,buffer_string);
-            
-            //Check to see if this is a new player object!
-            for(var i = 0; i &lt; ds_list_size(list_entities); i += 1)  {
-                var check_player = list_entities[| i];
-                
-                //if the slot exists at all
-                if is_undefined(check_player) == false 
-                and ds_exists(check_player,ds_type_map) == true {
-                
-                    //check if entity had player data and send it
-                    if is_undefined(check_player[? "player_nickname"]) == false 
-                    and check_player[? "player_nickname"] == string(char_getname) {
-                        //debug out
-                        show_debug_message(" -sent entity: " + string(i));
-                        show_debug_message(" -char name: " + string(check_player[? "player_name"]));
-                        //force update with entity id
-                        check_player[? "entity_number"] = i; //old files might not have
-                        //construct a string to transmit
-                        var transmit_string = ds_map_write(check_player);
-                        var base64_transmit = base64_encode(transmit_string);
-                        //send data to player
-                        scr_cpacket_character_transmit_data(connection_id,base64_transmit);
-                    }
-                }
-            }
-        break;
-        
-    
-        case enum_server_packets.character_created:
-            show_debug_message("===character created");    
-        
-            //check for character existance!
-            var char_getname      = buffer_read(connection_buffer,buffer_string);
-            var char_getusername  = buffer_read(connection_buffer,buffer_string);
-            var char_getrace      = buffer_read(connection_buffer,buffer_u8);
-            var char_gethomeworld = buffer_read(connection_buffer,buffer_u8);
-            var char_getbody      = buffer_read(connection_buffer,buffer_u8);
-            var char_getjob       = buffer_read(connection_buffer,buffer_u8);
-            var char_getjobprev   = buffer_read(connection_buffer,buffer_u8);
-            var char_getguild     = buffer_read(connection_buffer,buffer_u8);
-            var char_getlang_main = buffer_read(connection_buffer,buffer_u8);
-            var char_getlang_alt  = buffer_read(connection_buffer,buffer_u8);
-            var char_getage       = buffer_read(connection_buffer,buffer_u16);
-            
-            //a NEW player joined!
-            var new_entity = scr_entity_template_library(obj_puppet_player,item_storage_pos,item_storage_pos,0,0,true,-1); //7933,8872
-                new_entity[? "stasis"] = true; //start in stasis
-            var new_player_entity = scr_server_entity_add(new_entity); //add to main list
-            
-            //add the entity_number to the player id list so it points to this!
-            var found_slot = false;
-            var player_slotid = 0;
-            while found_slot == false {
-                if player_slotid &gt; ds_list_size(list_player) or is_undefined(list_player[| player_slotid]) or ds_exists(list_player[| player_slotid],ds_type_map) == false {
-                    //store the list reference number!
-                    list_player[| player_slotid] = new_player_entity; //player list stores a reference to the player entity id
+                case enum_server_packets.login_requested: 
+                    show_debug_message("===Login details submitted");
+                    //login attempt!
+                    var login_success   = false;
+                    var login_name      = buffer_read(connection_buffer,buffer_string); //stores length and ignores null terminator!
+                    var login_passhash  = buffer_read(connection_buffer,buffer_string); //stores length and ignores null terminator!
                     
-                    //add data back to the map, do not use new_player_entity it is just the entity list reference number
-                    new_entity[? "player_slot_id"] = player_slotid; //backstore this, for quick reference if needed!
-                    new_entity[? "player_name"] = char_getusername; //backstore this, for quick reference if needed!
-                    new_entity[? "player_nickname"] = char_getname; //backstore this, for quick reference if needed! firstname + lastname on char creation!
-                    new_entity[? "stasis"] = false; //take player out of stasis 
-                    new_entity[? "stat_race"] = char_getrace;
-                    new_entity[? "stat_homeworld"] = char_gethomeworld;
-                    new_entity[? "stat_body"] = char_getbody;
-                    new_entity[? "stat_job"] = char_getjob;
-                    new_entity[? "stat_jobprev"] = char_getjobprev;
-                    new_entity[? "stat_guild"] = char_getguild;
-                    new_entity[? "stat_lang_main"] = char_getlang_main;
-                    new_entity[? "stat_lang_alt"] = char_getlang_alt;
-                    new_entity[? "stat_age"] = char_getage;
+                    show_debug_message("user: " + string(login_name));
+                    show_debug_message("hash: " + string(login_passhash));
                     
-                    //invisible to others, due to arrival shuttle
-                    var arrival_shuttle = scr_entity_template_library(obj_puppet_arrivalshuttle,10,10,0,0,false,-1);
-                    var ent_arivalshuttle = scr_server_entity_add(arrival_shuttle);
-                    new_entity[? "inside_of_id"] = ent_arivalshuttle;
-                    arrival_shuttle[? "inside_of_id"] = ent_arivalshuttle; //hide inside self till loaded!
+                    //load user data
+                    ini_open(global.serverdata_file_path)
+                        var get_pass = ini_read_string("UserData",login_name,-1);
+                    ini_close();
                     
-                    //add to the inventory of the other object!
-                    var storage_map = arrival_shuttle[? "contains_map"];
-                    storage_map[? string(new_player_entity)] = new_player_entity; //store the entity inside a key pointing to that entity! we can itterate later using ds_map_next!
-                    
-                    
-                    //change collision from entity to player
-                    with new_entity[? "SS_collision"] instance_destroy();
-                    new_entity[? "SS_collision"] = instance_create(new_entity[? "x"],new_entity[? "y"],obj_serverside_player);
-                    with new_entity[? "SS_collision"] {
-                        entity_id = new_player_entity;
-                    }
-                    
-                    //setup default inventory!
-                    var storage_map = new_entity[? "contains_map"];
-                    
-                    var new_startitem_entity = scr_toolkit_template_library( global.job_mod[ char_getjob, enum_job_stat.stat_startkit], item_storage_pos, item_storage_pos, 0, 0, false, new_player_entity);
-                    storage_map[? string(new_startitem_entity)] = new_startitem_entity;
-                    
-                    
-                    //lock the socket
-                    list_sockets[| connection_id] = player_slotid; //point's to the player reference list.  sockets[] -&gt; player[] -&gt; entity[] -&gt; actual_map!
-                    new_entity[? "player_socket"] = connection_id;
-                    
-                    //send final connection packet
-                    show_debug_message(" -Locked player entity to: " + string(new_player_entity));
-                    scr_cpacket_character_lock(connection_id,new_player_entity); //will put me in the arrival shuttle automatically
-                    
-                    //update client with security
-                    scr_server_entity_securityupdate(new_player_entity);
-                    
-                    //done!
-                    if ds_exists(map_load_queues[connection_id],ds_type_queue) ds_queue_clear(map_load_queues[connection_id]); //clear to prevent rejoin halfdownloads
-                    found_slot = true; 
-                    break;
-                }
-                else
-                {
-                    if is_undefined(list_player[| player_slotid]) == false or ds_exists(list_player[| player_slotid],ds_type_map) == true {
-                        //prevent player entity dupes!
-                        var get_check_map = list_entities[|  list_player[| player_slotid] ];
-                        if is_undefined(get_check_map) == false and ds_exists(get_check_map,ds_type_map) 
-                        and get_check_map[? "player_socket"] == connection_id {
-                            ds_list_delete(list_player, player_slotid); //remove the last player and let me become it!!
-                        }
-                        else
-                        {
-                            player_slotid++;
-                        }
+                    //login checks
+                    if string(get_pass) == "-1" {
+                        //send new user confirmations!
+                        scr_cpacket_login_newuser(connection_id,login_name,login_passhash);
                     }
                     else
                     {
-                        player_slotid++;
+                        //confirm loaded password
+                        login_success = (get_pass == login_passhash);
+                        
+                        //for now no logins, just trigger to the client that they logged in!
+                        scr_cpacket_login_return(connection_id,login_success,login_name);
                     }
-                }
-            }
-        break;
-        
-        
-        case enum_server_packets.character_loaded:
-            show_debug_message("===character loaded");
-        
-            //add the entity_number to the player id list so it points to this!
-            var found_slot = false;
-            var player_slotid = 0;
-            while found_slot == false {
-                if player_slotid &gt; ds_list_size(list_player) or is_undefined(list_player[| player_slotid]) or ds_exists(list_player[| player_slotid],ds_type_map) == false {
-                     //use the entity we passed it before!
-                    var new_player_entity = buffer_read(connection_buffer,buffer_u32);
+                break;
+                
+                
+                case enum_server_packets.login_newuser: 
+                    show_debug_message("===Login details created!");
+                    //login attempt!
+                    var login_name      = buffer_read(connection_buffer,buffer_string); //stores length and ignores null terminator!
+                    var login_passhash  = buffer_read(connection_buffer,buffer_string); //stores length and ignores null terminator!
                     
-                    //store the list reference number!
-                    list_player[| player_slotid] = new_player_entity; //player list stores a reference to the player entity id
+                    show_debug_message("user: " + string(login_name));
+                    show_debug_message("hash: " + string(login_passhash));
                     
-                    //lock the socket
-                    list_sockets[| connection_id] = player_slotid; //point's to the player reference list.  sockets[] -&gt; player[] -&gt; entity[] -&gt; actual_map!
+                    //load user data
+                    ini_open(global.serverdata_file_path)
+                        var get_pass = ini_read_string("UserData",login_name,-1);
                     
-                    //setup entity itself
-                    var new_entity = list_entities[| new_player_entity];
-                    if is_undefined(new_entity) == false and ds_exists(new_entity ,ds_type_map) {
-                        new_entity[? "player_slot_id"] = player_slotid; //backstore this, for quick reference if needed!
-                        new_entity[? "stasis"] = false; //take player out of stasis 
-                        new_entity[? "player_socket"] = connection_id;
+                        if string(get_pass) == "-1" {
+                            ini_write_string("UserData",login_name,login_passhash);
+                            //auto login!
+                            scr_cpacket_login_return(connection_id,true,login_name);
+                        }
+                        else
+                        {
+                            show_debug_message(" -a user tried to register the same name twice. This is not possible.");
+                        }
+                    ini_close();
+                break;
+                
+                
+                case enum_server_packets.heartbeat_request:
+                    //tell the client we are indeed still alive.
+                    scr_cpacket_server_alive(connection_id);
+                break;
+                
+                
+                case enum_server_packets.character_get_all_owned:
+                    show_debug_message("===all owned characters requested");
+                
+                    //check for character existance!
+                    var user_getname  = buffer_read(connection_buffer,buffer_string);
+                    
+                    //Check to see if this is a new player object!
+                    for(var i = 0; i &lt; ds_list_size(list_entities); i += 1)  {
+                        var check_player = list_entities[| i];
                         
-                        //send final connection packet
-                        show_debug_message(" -Locked player entity to: " + string(new_player_entity));
-                        scr_cpacket_character_lock(connection_id,new_player_entity);
+                        //if the slot exists at all
+                        if is_undefined(check_player) == false 
+                        and ds_exists(check_player,ds_type_map) == true {
                         
-                        //update client with security
-                        scr_server_entity_securityupdate(new_player_entity);
+                            //check if entity had player data and send it
+                            if is_undefined(check_player[? "player_name"]) == false 
+                            and check_player[? "player_name"] == string(user_getname) {
+                                //debug out
+                                show_debug_message(" -sent entity: " + string(i));
+                                show_debug_message(" -char name: " + string(check_player[? "player_name"]));
+                                //force update with entity id
+                                check_player[? "entity_number"] = i; //old files might not have
+                                //construct a string to transmit
+                                var transmit_string = json_encode(check_player);
+                                var base64_transmit = base64_encode(transmit_string);
+                                //send data to player
+                                scr_cpacket_character_transmit_data(connection_id,base64_transmit);
+                            }
+                        }
+                    }
+                break;
+                
+            
+                case enum_server_packets.character_query:
+                    show_debug_message("===specific character by name requested");
+                
+                    //check for character existance!
+                    var char_getname  = buffer_read(connection_buffer,buffer_string);
+                    
+                    //Check to see if this is a new player object!
+                    for(var i = 0; i &lt; ds_list_size(list_entities); i += 1)  {
+                        var check_player = list_entities[| i];
+                        
+                        //if the slot exists at all
+                        if is_undefined(check_player) == false 
+                        and ds_exists(check_player,ds_type_map) == true {
+                        
+                            //check if entity had player data and send it
+                            if is_undefined(check_player[? "player_nickname"]) == false 
+                            and check_player[? "player_nickname"] == string(char_getname) {
+                                //debug out
+                                show_debug_message(" -sent entity: " + string(i));
+                                show_debug_message(" -char name: " + string(check_player[? "player_name"]));
+                                //force update with entity id
+                                check_player[? "entity_number"] = i; //old files might not have
+                                //construct a string to transmit
+                                var transmit_string = ds_map_write(check_player);
+                                var base64_transmit = base64_encode(transmit_string);
+                                //send data to player
+                                scr_cpacket_character_transmit_data(connection_id,base64_transmit);
+                            }
+                        }
+                    }
+                break;
+                
+            
+                case enum_server_packets.character_created:
+                    show_debug_message("===character created");    
+                
+                    //check for character existance!
+                    var char_getname      = buffer_read(connection_buffer,buffer_string);
+                    var char_getusername  = buffer_read(connection_buffer,buffer_string);
+                    var char_getrace      = buffer_read(connection_buffer,buffer_u8);
+                    var char_gethomeworld = buffer_read(connection_buffer,buffer_u8);
+                    var char_getbody      = buffer_read(connection_buffer,buffer_u8);
+                    var char_getjob       = buffer_read(connection_buffer,buffer_u8);
+                    var char_getjobprev   = buffer_read(connection_buffer,buffer_u8);
+                    var char_getguild     = buffer_read(connection_buffer,buffer_u8);
+                    var char_getlang_main = buffer_read(connection_buffer,buffer_u8);
+                    var char_getlang_alt  = buffer_read(connection_buffer,buffer_u8);
+                    var char_getage       = buffer_read(connection_buffer,buffer_u16);
+                    
+                    //a NEW player joined!
+                    var new_entity = scr_entity_template_library(obj_puppet_player,item_storage_pos,item_storage_pos,0,0,true,-1); //7933,8872
+                        new_entity[? "stasis"] = true; //start in stasis
+                    var new_player_entity = scr_server_entity_add(new_entity); //add to main list
+                    
+                    //add the entity_number to the player id list so it points to this!
+                    var found_slot = false;
+                    var player_slotid = 0;
+                    while found_slot == false {
+                        if player_slotid &gt; ds_list_size(list_player) or is_undefined(list_player[| player_slotid]) or ds_exists(list_player[| player_slotid],ds_type_map) == false {
+                            //store the list reference number!
+                            list_player[| player_slotid] = new_player_entity; //player list stores a reference to the player entity id
+                            
+                            //add data back to the map, do not use new_player_entity it is just the entity list reference number
+                            new_entity[? "player_slot_id"] = player_slotid; //backstore this, for quick reference if needed!
+                            new_entity[? "player_name"] = char_getusername; //backstore this, for quick reference if needed!
+                            new_entity[? "player_nickname"] = char_getname; //backstore this, for quick reference if needed! firstname + lastname on char creation!
+                            new_entity[? "stasis"] = false; //take player out of stasis 
+                            new_entity[? "stat_race"] = char_getrace;
+                            new_entity[? "stat_homeworld"] = char_gethomeworld;
+                            new_entity[? "stat_body"] = char_getbody;
+                            new_entity[? "stat_job"] = char_getjob;
+                            new_entity[? "stat_jobprev"] = char_getjobprev;
+                            new_entity[? "stat_guild"] = char_getguild;
+                            new_entity[? "stat_lang_main"] = char_getlang_main;
+                            new_entity[? "stat_lang_alt"] = char_getlang_alt;
+                            new_entity[? "stat_age"] = char_getage;
+                            
+                            //invisible to others, due to arrival shuttle
+                            var arrival_shuttle = scr_entity_template_library(obj_puppet_arrivalshuttle,10,10,0,0,false,-1);
+                            var ent_arivalshuttle = scr_server_entity_add(arrival_shuttle);
+                            new_entity[? "inside_of_id"] = ent_arivalshuttle;
+                            arrival_shuttle[? "inside_of_id"] = ent_arivalshuttle; //hide inside self till loaded!
+                            
+                            //add to the inventory of the other object!
+                            var storage_map = arrival_shuttle[? "contains_map"];
+                            storage_map[? string(new_player_entity)] = new_player_entity; //store the entity inside a key pointing to that entity! we can itterate later using ds_map_next!
+                            
+                            
+                            //change collision from entity to player
+                            with new_entity[? "SS_collision"] instance_destroy();
+                            new_entity[? "SS_collision"] = instance_create(new_entity[? "x"],new_entity[? "y"],obj_serverside_player);
+                            with new_entity[? "SS_collision"] {
+                                entity_id = new_player_entity;
+                            }
+                            
+                            //setup default inventory!
+                            var storage_map = new_entity[? "contains_map"];
+                            
+                            var new_startitem_entity = scr_toolkit_template_library( global.job_mod[ char_getjob, enum_job_stat.stat_startkit], item_storage_pos, item_storage_pos, 0, 0, false, new_player_entity);
+                            storage_map[? string(new_startitem_entity)] = new_startitem_entity;
+                            
+                            
+                            //lock the socket
+                            list_sockets[| connection_id] = player_slotid; //point's to the player reference list.  sockets[] -&gt; player[] -&gt; entity[] -&gt; actual_map!
+                            new_entity[? "player_socket"] = connection_id;
+                            
+                            //send final connection packet
+                            show_debug_message(" -Locked player entity to: " + string(new_player_entity));
+                            scr_cpacket_character_lock(connection_id,new_player_entity); //will put me in the arrival shuttle automatically
+                            
+                            //update client with security
+                            scr_server_entity_securityupdate(new_player_entity);
+                            
+                            //done!
+                            if ds_exists(map_load_queues[connection_id],ds_type_queue) ds_queue_clear(map_load_queues[connection_id]); //clear to prevent rejoin halfdownloads
+                            found_slot = true; 
+                            break;
+                        }
+                        else
+                        {
+                            if is_undefined(list_player[| player_slotid]) == false or ds_exists(list_player[| player_slotid],ds_type_map) == true {
+                                //prevent player entity dupes!
+                                var get_check_map = list_entities[|  list_player[| player_slotid] ];
+                                if is_undefined(get_check_map) == false and ds_exists(get_check_map,ds_type_map) 
+                                and get_check_map[? "player_socket"] == connection_id {
+                                    ds_list_delete(list_player, player_slotid); //remove the last player and let me become it!!
+                                }
+                                else
+                                {
+                                    player_slotid++;
+                                }
+                            }
+                            else
+                            {
+                                player_slotid++;
+                            }
+                        }
+                    }
+                break;
+                
+                
+                case enum_server_packets.character_loaded:
+                    show_debug_message("===character loaded");
+                
+                    //add the entity_number to the player id list so it points to this!
+                    var found_slot = false;
+                    var player_slotid = 0;
+                    while found_slot == false {
+                        if player_slotid &gt; ds_list_size(list_player) or is_undefined(list_player[| player_slotid]) or ds_exists(list_player[| player_slotid],ds_type_map) == false {
+                             //use the entity we passed it before!
+                            var new_player_entity = buffer_read(connection_buffer,buffer_u32);
+                            
+                            //store the list reference number!
+                            list_player[| player_slotid] = new_player_entity; //player list stores a reference to the player entity id
+                            
+                            //lock the socket
+                            list_sockets[| connection_id] = player_slotid; //point's to the player reference list.  sockets[] -&gt; player[] -&gt; entity[] -&gt; actual_map!
+                            
+                            //setup entity itself
+                            var new_entity = list_entities[| new_player_entity];
+                            if is_undefined(new_entity) == false and ds_exists(new_entity ,ds_type_map) {
+                                new_entity[? "player_slot_id"] = player_slotid; //backstore this, for quick reference if needed!
+                                new_entity[? "stasis"] = false; //take player out of stasis 
+                                new_entity[? "player_socket"] = connection_id;
+                                
+                                //send final connection packet
+                                show_debug_message(" -Locked player entity to: " + string(new_player_entity));
+                                scr_cpacket_character_lock(connection_id,new_player_entity);
+                                
+                                //update client with security
+                                scr_server_entity_securityupdate(new_player_entity);
+                            }
+                            else
+                            {
+                                //somehow... we lost it...
+                                scr_cpacket_force_reset(connection_id," -Character was lost before loading could be finished.");
+                            }
+                            
+                            //flag as done
+                            if ds_exists(map_load_queues[connection_id],ds_type_queue) ds_queue_clear(map_load_queues[connection_id]); //clear to prevent rejoin halfdownloads
+                            found_slot = true; //done!
+                            break;
+                        }
+                        else
+                        {
+                            if scr_ds_map_verify(list_player[| player_slotid]) {
+                                //prevent player entity dupes!
+                                var get_check_map = list_entities[|  list_player[| player_slotid] ];
+                                if is_undefined(get_check_map) == false and ds_exists(get_check_map,ds_type_map) 
+                                and get_check_map[? "player_socket"] == connection_id {
+                                    ds_list_delete(list_player, player_slotid); //remove the last player and let me become it!!
+                                }
+                                else
+                                {
+                                    player_slotid++;
+                                }
+                            }
+                            else
+                            {
+                                player_slotid++;
+                            }
+                        }
+                    }
+                break;
+                
+                case enum_server_packets.player_object_request:
+                    show_debug_message("===Player " + string(connection_id) + " requested their entity number, and object.");
+                    var player_number = list_sockets[| connection_id]; 
+                    var player_entity = list_player[| player_number]; 
+                    var hide_ent = false;
+                    
+                    if is_undefined(player_entity) == false and is_undefined(list_entities[| player_entity]) == false 
+                    and ds_exists(list_entities[| player_entity],ds_type_map) {
+                        var sub_map = list_entities[| player_entity];
+                        
+                        if sub_map[? "inside_of_id"] != -1 {
+                            //send entity number of entity we are inside of!!
+                            
+                            //certain objects hide their puppets to specific clients.
+                            var hide_ent = false;
+                            
+                            //begin overwriting
+                            var backup = player_entity;
+                            player_entity = sub_map[? "inside_of_id"];
+                            
+                            //backup filter
+                            if is_undefined(player_entity) == false and is_undefined(list_entities[| player_entity]) == false 
+                            and ds_exists(list_entities[| player_entity],ds_type_map) {
+                                var sub_map = list_entities[| player_entity];
+                                show_debug_message(" -returned CONTAINER entity " + string(player_entity) + " is object: " + string(sub_map[? "object_index"]));
+                            }
+                            else
+                            {
+                                //oops filter
+                                player_entity = backup;
+                                show_debug_message(" -returned BACKUP entity " + string(player_entity) + " is object: " + string(sub_map[? "object_index"]));
+                            }
+                        }
+                        else
+                        {
+                            //send entity number!
+                            show_debug_message(" -returned entity " + string(player_entity) + " is object: " + string(sub_map[? "object_index"]));
+                            
+                            //certain objects hide their puppets to specific clients.
+                            var hide_ent = true;
+                        }
+                        
+                        //transmit!
+                        scr_cpacket_playerentity_return( connection_id, player_entity, asset_get_index(sub_map[? "object_index"]), sub_map[? "x"], sub_map[? "y"], hide_ent);
                     }
                     else
                     {
                         //somehow... we lost it...
-                        scr_cpacket_force_reset(connection_id," -Character was lost before loading could be finished.");
+                        scr_cpacket_force_reset(connection_id," -Character entity data was not found.");
                     }
-                    
-                    //flag as done
-                    if ds_exists(map_load_queues[connection_id],ds_type_queue) ds_queue_clear(map_load_queues[connection_id]); //clear to prevent rejoin halfdownloads
-                    found_slot = true; //done!
-                    break;
-                }
-                else
-                {
-                    if scr_ds_map_verify(list_player[| player_slotid]) {
-                        //prevent player entity dupes!
-                        var get_check_map = list_entities[|  list_player[| player_slotid] ];
-                        if is_undefined(get_check_map) == false and ds_exists(get_check_map,ds_type_map) 
-                        and get_check_map[? "player_socket"] == connection_id {
-                            ds_list_delete(list_player, player_slotid); //remove the last player and let me become it!!
-                        }
-                        else
-                        {
-                            player_slotid++;
-                        }
-                    }
-                    else
-                    {
-                        player_slotid++;
-                    }
-                }
-            }
-        break;
-        
-        case enum_server_packets.player_object_request:
-            show_debug_message("===Player " + string(connection_id) + " requested their entity number, and object.");
-            var player_number = list_sockets[| connection_id]; 
-            var player_entity = list_player[| player_number]; 
-            var hide_ent = false;
-            
-            if is_undefined(player_entity) == false and is_undefined(list_entities[| player_entity]) == false 
-            and ds_exists(list_entities[| player_entity],ds_type_map) {
-                var sub_map = list_entities[| player_entity];
+                break;
                 
-                if sub_map[? "inside_of_id"] != -1 {
-                    //send entity number of entity we are inside of!!
+                case enum_server_packets.map_request_whole:
+                    show_debug_message("===Player " + string(connection_id) + " requested a map download.");
+                    if ds_exists(map_load_queues[connection_id],ds_type_queue) == false map_load_queues[connection_id] = ds_queue_create();
+                    var player_number = list_sockets[| connection_id]; 
+                    var player_entity = list_player[| player_number]; 
+                    global.map_loading_lock_thread[ connection_id] = true; //locked on this socket!
                     
-                    //certain objects hide their puppets to specific clients.
-                    var hide_ent = false;
+                    if is_undefined(player_entity) == false 
+                    and scr_ds_map_verify(list_entities[| player_entity]) {
+                        //get player location
+                        var ply_map = list_entities[| player_entity];
+                        var plx = ply_map[? "x"];
+                        var ply = ply_map[? "y"];
                     
-                    //begin overwriting
-                    var backup = player_entity;
-                    player_entity = sub_map[? "inside_of_id"];
-                    
-                    //backup filter
-                    if is_undefined(player_entity) == false and is_undefined(list_entities[| player_entity]) == false 
-                    and ds_exists(list_entities[| player_entity],ds_type_map) {
-                        var sub_map = list_entities[| player_entity];
-                        show_debug_message(" -returned CONTAINER entity " + string(player_entity) + " is object: " + string(sub_map[? "object_index"]));
-                    }
-                    else
-                    {
-                        //oops filter
-                        player_entity = backup;
-                        show_debug_message(" -returned BACKUP entity " + string(player_entity) + " is object: " + string(sub_map[? "object_index"]));
-                    }
-                }
-                else
-                {
-                    //send entity number!
-                    show_debug_message(" -returned entity " + string(player_entity) + " is object: " + string(sub_map[? "object_index"]));
-                    
-                    //certain objects hide their puppets to specific clients.
-                    var hide_ent = true;
-                }
-                
-                //transmit!
-                scr_cpacket_playerentity_return( connection_id, player_entity, asset_get_index(sub_map[? "object_index"]), sub_map[? "x"], sub_map[? "y"], hide_ent);
-            }
-            else
-            {
-                //somehow... we lost it...
-                scr_cpacket_force_reset(connection_id," -Character entity data was not found.");
-            }
-        break;
-        
-        case enum_server_packets.map_request_whole:
-            show_debug_message("===Player " + string(connection_id) + " requested a map download.");
-            if ds_exists(map_load_queues[connection_id],ds_type_queue) == false map_load_queues[connection_id] = ds_queue_create();
-            var player_number = list_sockets[| connection_id]; 
-            var player_entity = list_player[| player_number]; 
-            global.map_loading_lock_thread[ connection_id] = true; //locked on this socket!
-            
-            if is_undefined(player_entity) == false 
-            and scr_ds_map_verify(list_entities[| player_entity]) {
-                //get player location
-                var ply_map = list_entities[| player_entity];
-                var plx = ply_map[? "x"];
-                var ply = ply_map[? "y"];
-            
-                //load from containing object!
-                var storage_ent = ply_map[? "inside_of_id"];
-                if storage_ent != -1 {
-                        if scr_ds_map_verify(list_entities[| storage_ent]) {
-                        var storageent_map = list_entities[| storage_ent];
+                        //load from containing object!
+                        var storage_ent = ply_map[? "inside_of_id"];
+                        if storage_ent != -1 {
+                                if scr_ds_map_verify(list_entities[| storage_ent]) {
+                                var storageent_map = list_entities[| storage_ent];
+                                
+                                if asset_get_index(storageent_map[? "object_index"]) == obj_puppet_arrivalshuttle {
+                                    //load in from the start shuttle! (middle loads)
+                                    var plx = global.map_size/2;
+                                    var ply = global.map_size/2;
+                                }
+                                else
+                                {
+                                    //load in from an actual entity!
+                                    var plx = storageent_map[? "x"];
+                                    var ply = storageent_map[? "y"];
+                                }
+                            }
+                        }
                         
-                        if asset_get_index(storageent_map[? "object_index"]) == obj_puppet_arrivalshuttle {
-                            //load in from the start shuttle! (middle loads)
-                            var plx = global.map_size/2;
-                            var ply = global.map_size/2;
-                        }
-                        else
-                        {
-                            //load in from an actual entity!
-                            var plx = storageent_map[? "x"];
-                            var ply = storageent_map[? "y"];
-                        }
-                    }
-                }
-                
-                //prioritize loading those around the player
-                priority_list = ds_priority_create()
-            
-                var get_size = ds_map_size(global.map_saved_constructions);
-                for (var i=0; i&lt;get_size; i+=1)
-                {
-                    if scr_ds_map_verify(global.map_saved_constructions[? string(i)]){
-                        var get_map = global.map_saved_constructions[? string(i)];
-                        ds_priority_add(priority_list, string(i), point_distance(plx,ply,get_map[? "x"],get_map[? "y"]));
-                    }
-                }
-                
-                //padding, to stop mulching...
-                var telomer = 300;
-                while telomer &gt; 0 {
-                    ds_priority_add(priority_list, string(-1),-1);
-                    telomer -= 1;
-                }
-                
-                //store em in the queue in that order!!
-                while(ds_priority_size(priority_list)&gt;0) {
-                    var pop_priority = ds_priority_delete_min(priority_list);
-                    ds_queue_enqueue(map_load_queues[connection_id],pop_priority);
-                }
-                
-                ds_priority_destroy(priority_list);
-            }
-        break;
-        
-        
-        case enum_server_packets.client_ready_for_map_download:
-            //unlock socket!
-            global.map_loading_lock_thread[ connection_id] = pending; //set as pending unlock
-        break;
-        
-        case enum_server_packets.client_map_preloaded:
-            show_debug_message("Server was notified that the map finished preloading for client: " + string(connection_id));
-            //client has returned that it has loaded. If we are in a shuttle let us land!!
-            var player_number = list_sockets[| connection_id]; 
-            var player_entity = list_player[| player_number]; 
-            
-            if is_undefined(player_entity) == false
-            and scr_ds_map_verify(list_entities[| player_entity]) {
-                show_debug_message("Shuttle found player!");
-            
-                //get player location
-                var ply_map = list_entities[| player_entity];
-                
-                var get_hostent = ply_map[? "inside_of_id"];
-                
-                if is_undefined(get_hostent) == false and scr_ds_map_verify(list_entities[| get_hostent]) {
-                    var host_map = list_entities[| get_hostent];
+                        //prioritize loading those around the player
+                        priority_list = ds_priority_create()
                     
-                    //entity exists!
-                    if asset_get_index(host_map[? "object_index"]) == obj_puppet_arrivalshuttle {
-                        show_debug_message("found shuttle entity");
-                        var found_pad = noone;
-                        //allow shuttle to land!
-                        with obj_serverside_landingpad {
-                            if found_pad == noone {
-                                if current_ship_entity == -1 and landing_pad_clearance == enum_landingpad_setting.public {
-                                    
-                                    //allow a landing! and lock the pad!
-                                    found_pad = id;
-                                    current_ship_entity = get_hostent; //lock it to the ship
-                                    
-                                    host_map[? "dropoff_padid"] = found_pad;
-                                    host_map[? "dropoff_x"] = found_pad.x;
-                                    host_map[? "dropoff_y"] = found_pad.y;
+                        var get_size = ds_map_size(global.map_saved_constructions);
+                        for (var i=0; i&lt;get_size; i+=1)
+                        {
+                            if scr_ds_map_verify(global.map_saved_constructions[? string(i)]){
+                                var get_map = global.map_saved_constructions[? string(i)];
+                                ds_priority_add(priority_list, string(i), point_distance(plx,ply,get_map[? "x"],get_map[? "y"]));
+                            }
+                        }
+                        
+                        //padding, to stop mulching...
+                        var telomer = 300;
+                        while telomer &gt; 0 {
+                            ds_priority_add(priority_list, string(-1),-1);
+                            telomer -= 1;
+                        }
+                        
+                        //store em in the queue in that order!!
+                        while(ds_priority_size(priority_list)&gt;0) {
+                            var pop_priority = ds_priority_delete_min(priority_list);
+                            ds_queue_enqueue(map_load_queues[connection_id],pop_priority);
+                        }
+                        
+                        ds_priority_destroy(priority_list);
+                    }
+                break;
+                
+                
+                case enum_server_packets.client_ready_for_map_download:
+                    //unlock socket!
+                    global.map_loading_lock_thread[ connection_id] = pending; //set as pending unlock
+                break;
+                
+                case enum_server_packets.client_map_preloaded:
+                    show_debug_message("Server was notified that the map finished preloading for client: " + string(connection_id));
+                    //client has returned that it has loaded. If we are in a shuttle let us land!!
+                    var player_number = list_sockets[| connection_id]; 
+                    var player_entity = list_player[| player_number]; 
+                    
+                    if is_undefined(player_entity) == false
+                    and scr_ds_map_verify(list_entities[| player_entity]) {
+                        show_debug_message("Shuttle found player!");
+                    
+                        //get player location
+                        var ply_map = list_entities[| player_entity];
+                        
+                        var get_hostent = ply_map[? "inside_of_id"];
+                        
+                        if is_undefined(get_hostent) == false and scr_ds_map_verify(list_entities[| get_hostent]) {
+                            var host_map = list_entities[| get_hostent];
+                            
+                            //entity exists!
+                            if asset_get_index(host_map[? "object_index"]) == obj_puppet_arrivalshuttle {
+                                show_debug_message("found shuttle entity");
+                                var found_pad = noone;
+                                //allow shuttle to land!
+                                with obj_serverside_landingpad {
+                                    if found_pad == noone {
+                                        if current_ship_entity == -1 and landing_pad_clearance == enum_landingpad_setting.public {
+                                            
+                                            //allow a landing! and lock the pad!
+                                            found_pad = id;
+                                            current_ship_entity = get_hostent; //lock it to the ship
+                                            
+                                            host_map[? "dropoff_padid"] = found_pad;
+                                            host_map[? "dropoff_x"] = found_pad.x;
+                                            host_map[? "dropoff_y"] = found_pad.y;
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            }
-        break;
-        
-        
-        case enum_server_packets.map_object_create:
-            var get_objectindex = buffer_read(connection_buffer,buffer_u16);
-            var getx = buffer_read(connection_buffer,buffer_f32);
-            var gety = buffer_read(connection_buffer,buffer_f32);
-            var gethpprec = buffer_read(connection_buffer,buffer_u8);
-            var getdir = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
-            
-            show_debug_message("Map data received, creating a new map entity");
-            show_debug_message(" -object: " + string(get_objectindex) );
-            
-            //get the end of the map
-            var get_index = -1;
-            var k = 0;
-            while (k &lt;= ds_map_size(global.map_saved_constructions)) {
-                //build entity
-                if get_index == -1 and (is_undefined(global.map_saved_constructions[? string(k)]) or global.map_saved_constructions[? string(k)] == -1 or ds_exists(global.map_saved_constructions[? string(k)],ds_type_map) == false) {
-                     //entry found!
-                     get_index = k;
-                     //load sublist
-                     var sub_map = ds_map_create();
-                     ds_map_replace_map( global.map_saved_constructions, string(k), sub_map); //add to the map
-                     show_debug_message(" -empty slot found: " + string(k));
-                }
+                break;
                 
-                //remove entity if it is the same as where we are going
-                if scr_ds_map_verify(global.map_saved_constructions[? string(k)]) {
-                    var sub_map = global.map_saved_constructions[? string(k)];
-                    if k != get_index and getx == sub_map[? "x"] and gety == sub_map[? "y"] {
+                
+                case enum_server_packets.map_object_create:
+                    var get_objectindex = buffer_read(connection_buffer,buffer_u16);
+                    var getx = buffer_read(connection_buffer,buffer_f32);
+                    var gety = buffer_read(connection_buffer,buffer_f32);
+                    var gethpprec = buffer_read(connection_buffer,buffer_u8);
+                    var getdir = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
+                    
+                    show_debug_message("Map data received, creating a new map entity");
+                    show_debug_message(" -object: " + string(get_objectindex) );
+                    
+                    //get the end of the map
+                    var get_index = -1;
+                    var k = 0;
+                    while (k &lt;= ds_map_size(global.map_saved_constructions)) {
+                        //build entity
+                        if get_index == -1 and (is_undefined(global.map_saved_constructions[? string(k)]) or global.map_saved_constructions[? string(k)] == -1 or ds_exists(global.map_saved_constructions[? string(k)],ds_type_map) == false) {
+                             //entry found!
+                             get_index = k;
+                             //load sublist
+                             var sub_map = ds_map_create();
+                             ds_map_replace_map( global.map_saved_constructions, string(k), sub_map); //add to the map
+                             show_debug_message(" -empty slot found: " + string(k));
+                        }
+                        
+                        //remove entity if it is the same as where we are going
+                        if scr_ds_map_verify(global.map_saved_constructions[? string(k)]) {
+                            var sub_map = global.map_saved_constructions[? string(k)];
+                            if k != get_index and getx == sub_map[? "x"] and gety == sub_map[? "y"] {
+                                //same location so replace it!
+                                sub_map[? "remove_flag"] = true;
+                                show_debug_message(" -removing slot at same place: " + string(k));
+                                
+                                //update all players, tell them to unload
+                                for (var i=0; i&lt;global.max_server_players; i+=1)
+                                {
+                                    if scr_socket_verify( i) {
+                                        if ds_exists(map_load_queues[i],ds_type_queue) == false map_load_queues[i] = ds_queue_create();
+                                        ds_queue_enqueue( map_load_queues[i], k); //tell all players to unload this
+                                        show_debug_message(" -queued map entity to player socket: " + string(i));
+                                    }
+                                }
+                            }
+                        }
+                        
+                        k += 1;
+                    }
+                
+                    if get_index != -1 {
+                        show_debug_message(" -get index is: " + string( get_index));
+                    
+                        //load entity slot to be crafted
+                        var sub_map = global.map_saved_constructions[? string(get_index)];
+                        if scr_ds_map_verify(sub_map) {
+                            //base data always needed    
+                            sub_map[? "obj"] = object_get_name( get_objectindex);
+                            sub_map[? "map_entity"] = get_index;
+                            sub_map[? "x"] = getx;
+                            sub_map[? "y"] = gety;
+                            sub_map[? "health"] = gethpprec;
+                            sub_map[? "angle"] = getdir;
+                            sub_map[? "remove_flag"] = false;
+                            
+                            //special map object data stuff!
+                            switch get_objectindex {
+                                case obj_door:
+                                    //spawn with security list
+                                    ds_map_add_list( sub_map, "security_clearance", ds_list_create());
+                                    sub_map[? "security_color"] = -1; //this is set and returned when a door is set with something!
+                                break;
+                                
+                                case obj_landingpad:
+                                    //default landing pad data
+                                    sub_map[? "landingpad_clearance"] = enum_landingpad_setting.private;
+                                    
+                                    //add server side object
+                                    with instance_create(sub_map[? "x"],sub_map[? "y"],obj_serverside_landingpad) {
+                                        show_debug_message(" -server side door created.");
+                                        landing_pad_clearance = sub_map[? "landingpad_clearance"];
+                                    }
+                                break;
+                            }
+                            
+                            //decode a collision object out of it
+                            scr_server_mapentity_makeobject(get_index);
+                            
+                            //update all players, tell them to load
+                            for (var i=0; i&lt;global.max_server_players; i+=1)
+                            {
+                                if scr_socket_verify( i) {
+                                    if ds_exists(map_load_queues[i],ds_type_queue) == false map_load_queues[i] = ds_queue_create();
+                                    ds_queue_enqueue( map_load_queues[i], get_index); //tell all players to load this
+                                    show_debug_message(" -queued map entity to player socket: " + string(i));
+                                }
+                            }
+                        }
+                    }
+                break;
+                
+                case enum_server_packets.map_object_destroy: 
+                    var get_mapentity = buffer_read(connection_buffer,buffer_u16);
+                
+                    var sub_map = global.map_saved_constructions[? string(get_mapentity)];
+                    if scr_ds_map_verify( sub_map ) {
                         //same location so replace it!
                         sub_map[? "remove_flag"] = true;
-                        show_debug_message(" -removing slot at same place: " + string(k));
+                        show_debug_message("removing map entity at: " + string(get_mapentity));
                         
                         //update all players, tell them to unload
                         for (var i=0; i&lt;global.max_server_players; i+=1)
                         {
                             if scr_socket_verify( i) {
                                 if ds_exists(map_load_queues[i],ds_type_queue) == false map_load_queues[i] = ds_queue_create();
-                                ds_queue_enqueue( map_load_queues[i], k); //tell all players to unload this
+                                ds_queue_enqueue( map_load_queues[i], get_mapentity); //tell all players to unload this
                                 show_debug_message(" -queued map entity to player socket: " + string(i));
                             }
                         }
                     }
-                }
+                break;
                 
-                k += 1;
-            }
-        
-            if get_index != -1 {
-                show_debug_message(" -get index is: " + string( get_index));
-            
-                //load entity slot to be crafted
-                var sub_map = global.map_saved_constructions[? string(get_index)];
-                if scr_ds_map_verify(sub_map) {
-                    //base data always needed    
-                    sub_map[? "obj"] = object_get_name( get_objectindex);
-                    sub_map[? "map_entity"] = get_index;
-                    sub_map[? "x"] = getx;
-                    sub_map[? "y"] = gety;
-                    sub_map[? "health"] = gethpprec;
-                    sub_map[? "angle"] = getdir;
-                    sub_map[? "remove_flag"] = false;
+                
+                case enum_server_packets.map_request_door_security: 
+                    var get_mapentity = buffer_read(connection_buffer,buffer_u16);
+                    var sub_map = global.map_saved_constructions[? string(get_mapentity)];
                     
-                    //special map object data stuff!
-                    switch get_objectindex {
-                        case obj_door:
-                            //spawn with security list
-                            ds_map_add_list( sub_map, "security_clearance", ds_list_create());
-                            sub_map[? "security_color"] = -1; //this is set and returned when a door is set with something!
-                        break;
-                        
-                        case obj_landingpad:
-                            //default landing pad data
-                            sub_map[? "landingpad_clearance"] = enum_landingpad_setting.private;
-                            
-                            //add server side object
-                            with instance_create(sub_map[? "x"],sub_map[? "y"],obj_serverside_landingpad) {
-                                show_debug_message(" -server side door created.");
-                                landing_pad_clearance = sub_map[? "landingpad_clearance"];
-                            }
-                        break;
+                    if scr_ds_map_verify( sub_map ) {
+                        //transmit back the door security color!
+                        scr_cpacket_map_door_security_reply( connection_id, get_mapentity , sub_map[? "security_color"]);
                     }
+                break;
+                
+                
+                case enum_server_packets.map_request_securitydata:
+                    show_debug_message("===client requested map security data: " + string(connection_id));
                     
-                    //decode a collision object out of it
-                    scr_server_mapentity_makeobject(get_index);
+                    //transmit data
+                    var encapsulate_map = ds_map_create();
+                    ds_map_add_list(encapsulate_map,"security",global.list_security_levels);
+                    var TXstring = json_encode(encapsulate_map);
+                    var TXbase64 = base64_encode(TXstring);
+                    scr_cpacket_map_security_reply(connection_id,TXbase64);
                     
-                    //update all players, tell them to load
-                    for (var i=0; i&lt;global.max_server_players; i+=1)
-                    {
-                        if scr_socket_verify( i) {
-                            if ds_exists(map_load_queues[i],ds_type_queue) == false map_load_queues[i] = ds_queue_create();
-                            ds_queue_enqueue( map_load_queues[i], get_index); //tell all players to load this
-                            show_debug_message(" -queued map entity to player socket: " + string(i));
+                    //cleanup
+                    encapsulate_map[? "security"] = -1;
+                    ds_map_destroy(encapsulate_map);
+                    
+                    //update clearances
+                    var get_socket_player = list_sockets[| connection_id];
+                    if scr_socket_verify(get_socket_player) {
+                    
+                        var get_ply_entity = list_player[| get_socket_player];
+                        if scr_entityslot_is_valid(get_ply_entity) {
+                            scr_server_entity_securityupdate(get_ply_entity);
                         }
                     }
-                }
-            }
-        break;
-        
-        case enum_server_packets.map_object_destroy: 
-            var get_mapentity = buffer_read(connection_buffer,buffer_u16);
-        
-            var sub_map = global.map_saved_constructions[? string(get_mapentity)];
-            if scr_ds_map_verify( sub_map ) {
-                //same location so replace it!
-                sub_map[? "remove_flag"] = true;
-                show_debug_message("removing map entity at: " + string(get_mapentity));
+                break;
                 
-                //update all players, tell them to unload
-                for (var i=0; i&lt;global.max_server_players; i+=1)
-                {
-                    if scr_socket_verify( i) {
-                        if ds_exists(map_load_queues[i],ds_type_queue) == false map_load_queues[i] = ds_queue_create();
-                        ds_queue_enqueue( map_load_queues[i], get_mapentity); //tell all players to unload this
-                        show_debug_message(" -queued map entity to player socket: " + string(i));
-                    }
-                }
-            }
-        break;
-        
-        
-        case enum_server_packets.map_request_door_security: 
-            var get_mapentity = buffer_read(connection_buffer,buffer_u16);
-            var sub_map = global.map_saved_constructions[? string(get_mapentity)];
-            
-            if scr_ds_map_verify( sub_map ) {
-                //transmit back the door security color!
-                scr_cpacket_map_door_security_reply( connection_id, get_mapentity , sub_map[? "security_color"]);
-            }
-        break;
-        
-        
-        case enum_server_packets.map_request_securitydata:
-            show_debug_message("===client requested map security data: " + string(connection_id));
-            
-            //transmit data
-            var encapsulate_map = ds_map_create();
-            ds_map_add_list(encapsulate_map,"security",global.list_security_levels);
-            var TXstring = json_encode(encapsulate_map);
-            var TXbase64 = base64_encode(TXstring);
-            scr_cpacket_map_security_reply(connection_id,TXbase64);
-            
-            //cleanup
-            encapsulate_map[? "security"] = -1;
-            ds_map_destroy(encapsulate_map);
-            
-            //update clearances
-            var get_socket_player = list_sockets[| connection_id];
-            if scr_socket_verify(get_socket_player) {
-            
-                var get_ply_entity = list_player[| get_socket_player];
-                if scr_entityslot_is_valid(get_ply_entity) {
-                    scr_server_entity_securityupdate(get_ply_entity);
-                }
-            }
-        break;
-        
-        
-        case enum_server_packets.movement_location_request:
-            var entity_number = buffer_read(connection_buffer,buffer_u32);
-            var found_map = list_entities[| entity_number];
-            
-            show_debug_message("===location of " + string(entity_number) + " requested");
-            
-            if scr_ds_map_verify(found_map){
-                show_debug_message(" -entity existed!");
-                var xx = found_map[? "x"];
-                var yy = found_map[? "y"];
-                var dir = found_map[? "dir"];
-                var spd = found_map[? "spd"];
                 
-                //send location for the client to set itself to!
-                scr_cpacket_location_sync(connection_id,xx,yy,dir,spd);
-            }
-            else
-            {
-                show_debug_message("entity did not exist! Told client to drop it.");
-                scr_cpacket_entity_drop(connection_id,entity_number);
-            }
-        break;
-        
-        
-        case enum_server_packets.movement_location_update:
-            var entity_number  = buffer_read(connection_buffer,buffer_u32);
-            var found_map = list_entities[| entity_number];
-            
-            if scr_ds_map_verify(found_map) {
-                show_debug_message("===location of entity: " + string(entity_number) + " updated.");
-            
-                //set the location based off of this!
-                if found_map[? "x"] &gt; -800 or found_map[? "y"] &gt; -800 {
-                    //clamping for inbound objects
-                    found_map[? "x"] = clamp(buffer_read(connection_buffer,buffer_f32), 10, global.map_xlimit);
-                    found_map[? "y"] = clamp(buffer_read(connection_buffer,buffer_f32), 10, global.map_ylimit);
+                case enum_server_packets.movement_location_request:
+                    var entity_number = buffer_read(connection_buffer,buffer_u32);
+                    var found_map = list_entities[| entity_number];
                     
-                    found_map[? "last_update_x"] = found_map[? "x"];
-                    found_map[? "last_update_y"] = found_map[? "y"];
-                }
-                else
-                {
-                    //some special stuff happens far out in negative regions so
-                    found_map[? "x"] = buffer_read(connection_buffer,buffer_f32);
-                    found_map[? "y"] = buffer_read(connection_buffer,buffer_f32);
+                    show_debug_message("===location of " + string(entity_number) + " requested");
                     
-                    found_map[? "last_update_x"] = found_map[? "x"];
-                    found_map[? "last_update_y"] = found_map[? "y"];
-                }
-                
-                //update collision box
-                if instance_exists(found_map[? "SS_collision"]) == false 
-                    found_map[? "SS_collision"] = instance_create(found_map[? "x"],found_map[? "y"],obj_serverside_player);
-                
-                with found_map[? "SS_collision"] {
-                    x = found_map[? "x"];
-                    y = found_map[? "y"];
-                }
-                
-                //forces update
-                scr_item_updateflag_allplayers(entity_number,true);
-            }
-            else
-            {
-                show_debug_message("===Location of entity: " + string(entity_number) + " could not be updated, entity missing. Client told to drop it.");
-                scr_cpacket_entity_drop(connection_id,entity_number);
-            }
-        break;
-        
-        case enum_server_packets.entity_request_all:
-            //mark all player flags as update forced!
-            scr_server_entity_flag_updateall();
-        break;
-        
-        
-        case enum_server_packets.entity_create:
-            var getx = buffer_read(connection_buffer,buffer_f32);
-            var gety = buffer_read(connection_buffer,buffer_f32);
-            var get_objectindex = buffer_read(connection_buffer,buffer_u16);
-            show_debug_message("Server created entity: " + string(object_get_name( get_objectindex )));
-            var new_entity = scr_entity_template_library(get_objectindex,getx,gety,0,0,false,-1);
-            scr_server_entity_add(new_entity); //add to main list//make a test entity
-        break;
-        
-        case enum_server_packets.entity_create_direction:
-            var getx = buffer_read(connection_buffer,buffer_f32);
-            var gety = buffer_read(connection_buffer,buffer_f32);
-            var get_objectindex = buffer_read(connection_buffer,buffer_u16);
-            var throw_direction = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
-        
-            var new_entity = scr_entity_template_library(get_objectindex,getx,gety,0,0,false,-1);
-            scr_server_entity_add(new_entity); //add to main list//make a test entity
-            new_entity[? "dir"] = throw_direction;
-        break;
-
-        
-        
-        case enum_server_packets.entity_store:
-            //item being stored!
-            var entity_number  = buffer_read(connection_buffer,buffer_u32);
-            var found_map = list_entities[| entity_number];
-            
-            //box to put it in (any entity supports this!
-            var storagebox_entity_number  = buffer_read(connection_buffer,buffer_u32);
-            var storagebox_map = list_entities[| storagebox_entity_number];
-            
-            //check if we can even access these!
-            if scr_ds_map_verify(found_map)
-            and scr_ds_map_verify(storagebox_map) {
-                if string(entity_number) != string(storagebox_entity_number) {
-                
-                    //decide if pickup is valid!
-                    if found_map[? "is_size"] &gt; storagebox_map[? "contains_size"] //too big to store in inventory, so we grab
-                    and is_undefined(storagebox_map[? "player_socket"]) == false //is not undefined player
-                    and storagebox_map[? "player_socket"] == connection_id { //is the player that requested a grab (otherwise it's a place into inventory check)
-                        //pickup and store inside!
-                        show_debug_message("===entity: " + string(entity_number) + " Grabbed by: " + string(storagebox_entity_number));
+                    if scr_ds_map_verify(found_map){
+                        show_debug_message(" -entity existed!");
+                        var xx = found_map[? "x"];
+                        var yy = found_map[? "y"];
+                        var dir = found_map[? "dir"];
+                        var spd = found_map[? "spd"];
                         
-                        if found_map[? "constructed"] == false {
-                            //GRABBING HOLD OF ENTITY!
-                            if found_map[? "is_size"] &gt;= enum_itemsize.huge {
-                                show_debug_message(" -too big to move");
-                                scr_cpacket_failed_action(connection_id,"Too big to move.");
+                        //send location for the client to set itself to!
+                        scr_cpacket_location_sync(connection_id,xx,yy,dir,spd);
+                    }
+                    else
+                    {
+                        show_debug_message("entity did not exist! Told client to drop it.");
+                        scr_cpacket_entity_drop(connection_id,entity_number);
+                    }
+                break;
+                
+                
+                case enum_server_packets.movement_location_update:
+                    var entity_number  = buffer_read(connection_buffer,buffer_u32);
+                    var found_map = list_entities[| entity_number];
+                    
+                    if scr_ds_map_verify(found_map) {
+                        show_debug_message("===location of entity: " + string(entity_number) + " updated.");
+                    
+                        //set the location based off of this!
+                        if found_map[? "x"] &gt; -800 or found_map[? "y"] &gt; -800 {
+                            //clamping for inbound objects
+                            found_map[? "x"] = clamp(buffer_read(connection_buffer,buffer_f32), 10, global.map_xlimit);
+                            found_map[? "y"] = clamp(buffer_read(connection_buffer,buffer_f32), 10, global.map_ylimit);
+                            
+                            found_map[? "last_update_x"] = found_map[? "x"];
+                            found_map[? "last_update_y"] = found_map[? "y"];
+                        }
+                        else
+                        {
+                            //some special stuff happens far out in negative regions so
+                            found_map[? "x"] = buffer_read(connection_buffer,buffer_f32);
+                            found_map[? "y"] = buffer_read(connection_buffer,buffer_f32);
+                            
+                            found_map[? "last_update_x"] = found_map[? "x"];
+                            found_map[? "last_update_y"] = found_map[? "y"];
+                        }
+                        
+                        //update collision box
+                        if instance_exists(found_map[? "SS_collision"]) == false 
+                            found_map[? "SS_collision"] = instance_create(found_map[? "x"],found_map[? "y"],obj_serverside_player);
+                        
+                        with found_map[? "SS_collision"] {
+                            x = found_map[? "x"];
+                            y = found_map[? "y"];
+                        }
+                        
+                        //forces update
+                        scr_item_updateflag_allplayers(entity_number,true);
+                    }
+                    else
+                    {
+                        show_debug_message("===Location of entity: " + string(entity_number) + " could not be updated, entity missing. Client told to drop it.");
+                        scr_cpacket_entity_drop(connection_id,entity_number);
+                    }
+                break;
+                
+                case enum_server_packets.entity_request_all:
+                    //mark all player flags as update forced!
+                    scr_server_entity_flag_updateall();
+                break;
+                
+                
+                case enum_server_packets.entity_create:
+                    var getx = buffer_read(connection_buffer,buffer_f32);
+                    var gety = buffer_read(connection_buffer,buffer_f32);
+                    var get_objectindex = buffer_read(connection_buffer,buffer_u16);
+                    show_debug_message("Server created entity: " + string(object_get_name( get_objectindex )));
+                    var new_entity = scr_entity_template_library(get_objectindex,getx,gety,0,0,false,-1);
+                    scr_server_entity_add(new_entity); //add to main list//make a test entity
+                break;
+                
+                case enum_server_packets.entity_create_direction:
+                    var getx = buffer_read(connection_buffer,buffer_f32);
+                    var gety = buffer_read(connection_buffer,buffer_f32);
+                    var get_objectindex = buffer_read(connection_buffer,buffer_u16);
+                    var throw_direction = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
+                
+                    var new_entity = scr_entity_template_library(get_objectindex,getx,gety,0,0,false,-1);
+                    scr_server_entity_add(new_entity); //add to main list//make a test entity
+                    new_entity[? "dir"] = throw_direction;
+                break;
+        
+                
+                
+                case enum_server_packets.entity_store:
+                    //item being stored!
+                    var entity_number  = buffer_read(connection_buffer,buffer_u32);
+                    var found_map = list_entities[| entity_number];
+                    
+                    //box to put it in (any entity supports this!
+                    var storagebox_entity_number  = buffer_read(connection_buffer,buffer_u32);
+                    var storagebox_map = list_entities[| storagebox_entity_number];
+                    
+                    //check if we can even access these!
+                    if scr_ds_map_verify(found_map)
+                    and scr_ds_map_verify(storagebox_map) {
+                        if string(entity_number) != string(storagebox_entity_number) {
+                        
+                            //decide if pickup is valid!
+                            if found_map[? "is_size"] &gt; storagebox_map[? "contains_size"] //too big to store in inventory, so we grab
+                            and is_undefined(storagebox_map[? "player_socket"]) == false //is not undefined player
+                            and storagebox_map[? "player_socket"] == connection_id { //is the player that requested a grab (otherwise it's a place into inventory check)
+                                //pickup and store inside!
+                                show_debug_message("===entity: " + string(entity_number) + " Grabbed by: " + string(storagebox_entity_number));
+                                
+                                if found_map[? "constructed"] == false {
+                                    //GRABBING HOLD OF ENTITY!
+                                    if found_map[? "is_size"] &gt;= enum_itemsize.huge {
+                                        show_debug_message(" -too big to move");
+                                        scr_cpacket_failed_action(connection_id,"Too big to move.");
+                                    }
+                                    else
+                                    {
+                                        show_debug_message(" -success!");
+                                        //grab the entity!
+                                        storagebox_map[? "grabbing_entity"] = entity_number;
+                                        scr_cpacket_entity_grab_update(connection_id,entity_number);
+                                    }
+                                }
+                                else
+                                {
+                                    //entity bolted down
+                                    show_debug_message(" -entity is constructed");
+                                    scr_cpacket_failed_action(connection_id,"Object is bolted down!");
+                                }
                             }
                             else
                             {
-                                show_debug_message(" -success!");
-                                //grab the entity!
-                                storagebox_map[? "grabbing_entity"] = entity_number;
-                                scr_cpacket_entity_grab_update(connection_id,entity_number);
+                                //pickup and store inside!
+                                show_debug_message("===entity: " + string(entity_number) + " placed in inventory of: " + string(storagebox_entity_number));
+                            
+                                
+                                //storage can only happen if the inventory for it is capable!
+                                var allow_storage = true;
+                                
+                                
+                                //limit by sizes, huge cannot fit in anything unless done by unique means
+                                if found_map[? "is_size"] &gt; storagebox_map[? "contains_size"] {
+                                    allow_storage = false;
+                                    show_debug_message(" -too big to store");
+                                    scr_cpacket_failed_action(connection_id,"Container is too small to store this!");
+                                }
+                                
+                                //certain things cannot store liquids
+                                if found_map[? "is_liquid"] == true and storagebox_map[? "contains_type_liquid"] == false {
+                                    allow_storage = false;
+                                    show_debug_message(" -Cannot store liquids with this container!");
+                                    scr_cpacket_failed_action(connection_id,"Cannot store liquids with this container!");
+                                }
+                                
+                                //cannot store in itself
+                                if storagebox_map == found_map {
+                                    allow_storage = false;
+                                    show_debug_message(" -same item as container");
+                                    scr_cpacket_failed_action(connection_id,"Cannot store a container inside itself!");
+                                }
+                                
+                                //check class compatability
+                                var allow_class_storage = scr_server_entity_classstoragecheck( found_map[? "is_class"], storagebox_map[? "contains_class"], connection_id);
+                                
+                                
+                                //if storage is possible allow you to put it safely away
+                                if allow_storage == true and allow_class_storage == true {
+                                    if ds_map_size(storagebox_map[? "contains_map"]) &lt; storagebox_map[? "contains_max"] { //is inventory full?
+                                    
+                                        //remove from previous inventory before we add it to something else (even it's old inventory possibly!!)
+                                        var get_host_entity = -1;
+                                        if found_map[? "inside_of_id"] != -1 {
+                                            var get_host_entity = found_map[? "inside_of_id"];
+                                            var get_host_entity_map = list_entities[| get_host_entity ];
+                                            var host_entity_inventory = get_host_entity_map[? "contains_map"];
+                                            //delete the old key!
+                                            ds_map_delete(host_entity_inventory,string(entity_number));
+                                        }
+                                    
+                                        //set the location based off of this!
+                                        found_map[? "inside_of_id"] = storagebox_entity_number; //store inside of id!
+                                        found_map[? "x"] = item_storage_pos; //hide it away from grabby paws
+                                        found_map[? "y"] = item_storage_pos; //hide it away from grabby paws
+                                        found_map[? "dir"] = 0; //stop moving we got grabbed.
+                                        found_map[? "spd"] = 0;
+                                        found_map[? "constructed"] = false; //cease constructed state
+                                        
+                                        
+                                        //add to the inventory of the other object!
+                                        var storage_map = storagebox_map[? "contains_map"];
+                                        storage_map[? string(entity_number)] = entity_number; //store the entity inside a key pointing to that entity! we can itterate later using ds_map_next!
+                                        
+                                        //call a security update if we are a security card!
+                                        if asset_get_index(found_map[? "object_index"]) == obj_puppet_securitycard {
+                                            scr_server_entity_securityupdate(get_host_entity); //updates the entity we were inside before
+                                            scr_server_entity_securityupdate(storagebox_entity_number); //updates the entity we were inside now
+                                        }
+                                        
+                                        //forces update, mark all player flags as update forced!
+                                        scr_item_updateflag_allplayers(entity_number,true);
+                                        scr_item_updateflag_allplayers(storagebox_entity_number,true);
+                                        
+                                        
+                                        //update all players of this action
+                                        scr_server_storagebox_object_update_all_players(entity_number,storagebox_entity_number);
+                                        
+                                    }
+                                    else
+                                    {
+                                        show_debug_message(" -container full");
+                                        scr_cpacket_failed_action(connection_id,"Container is full!");
+                                    }
+                                }
                             }
                         }
                         else
                         {
-                            //entity bolted down
-                            show_debug_message(" -entity is constructed");
-                            scr_cpacket_failed_action(connection_id,"Object is bolted down!");
+                            show_debug_message(" -Cannot place an object inside itself!");
+                            scr_cpacket_failed_action(connection_id,"Cannot place an object inside itself!");
                         }
+                    }
+                break;
+                
+                
+                case enum_server_packets.player_release_grab:
+                    show_debug_message("=== Player released object from grab: " + string(connection_id));
+                    //remove from this players grab
+                    var get_socket_player = list_sockets[| connection_id];
+                    if scr_socket_verify( get_socket_player) {
+                    
+                        var get_ply_entity = list_player[| get_socket_player];
+                        if scr_entityslot_is_valid(get_ply_entity) {
+                            
+                        
+                            var get_ply_map = list_entities[| get_ply_entity];
+                            if scr_ds_map_verify(get_ply_map) {
+                                //remove grab
+                                show_debug_message(" -Entity: " + string(get_ply_map[? "entity_number"]) + " released grab.");
+                                get_ply_map[? "grabbing_entity"] = -1; 
+                                scr_cpacket_entity_grab_update(connection_id,-1);
+                            }
+                        }
+                    }
+                break;
+                
+                
+                case enum_server_packets.entity_throw:
+                    //flows into place, but gets the direction and speed first!
+                    var entity_thrown = true;
+                    var throw_direction = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
+                    var throw_speed = buffer_read(connection_buffer,buffer_u16);
+                    
+                case enum_server_packets.entity_construct: //ONLY for small objects that are mounted into the floors, NOT FOR MACHINES! 
+                    if entity_thrown == false {
+                        var constructing_entity = true;
+                    }
+                case enum_server_packets.entity_place:
+                    //item being removed from storage
+                    var entity_number  = buffer_read(connection_buffer,buffer_u32);
+                    var found_map = list_entities[| entity_number];
+                    
+                    //storage it was in previously
+                    var storagebox_entity_number  = buffer_read(connection_buffer,buffer_u32);
+                    var storagebox_map = list_entities[| storagebox_entity_number];
+                    
+                    
+                    //remove from this players grab
+                    var get_socket_player = list_sockets[| connection_id];
+                    if scr_socket_verify(get_socket_player) {
+                    
+                        var get_ply_entity = list_player[| get_socket_player];
+                        if scr_entityslot_is_valid(get_ply_entity) {
+                            
+                        
+                            var get_ply_map = list_entities[| get_ply_entity];
+                            if scr_ds_map_verify(get_ply_map) {
+                                //remove grab
+                                show_debug_message(" -Entity: " + string(get_ply_map[? "entity_number"]) + " released grab.");
+                                get_ply_map[? "grabbing_entity"] = -1; 
+                                scr_cpacket_entity_grab_update(connection_id,-1);
+                            }
+                        }
+                    }
+                    
+                    
+                    //check if we can even access these!
+                    if scr_ds_map_verify(found_map)
+                    and scr_ds_map_verify(storagebox_map) {
+                        show_debug_message("===entity: " + string(entity_number) + " placed on ground. ");
+                        
+                        //set the location based off of this!
+                        found_map[? "inside_of_id"] = -1; //not stored inside anyone now
+                        found_map[? "x"] = buffer_read(connection_buffer,buffer_f32);
+                        found_map[? "y"] = buffer_read(connection_buffer,buffer_f32);
+                        found_map[? "last_update_x"] = found_map[? "x"];
+                        found_map[? "last_update_y"] = found_map[? "y"];
+                        
+                        //deconstruct if we did not have a construction flag!
+                        found_map[? "constructed"] = constructing_entity; //destruct when placed down without a construction flag!
+                        
+                        if entity_thrown == true {
+                            //do not update these normally, let the server handle thrown stuff more.
+                            found_map[? "dir"] = throw_direction;
+                            found_map[? "spd"] = throw_speed;
+                        }
+                        
+                        //update collision box
+                        with found_map[? "SS_collision"] {
+                            x = found_map[? "x"];
+                            y = found_map[? "y"];
+                        }
+                        //remove from the inventory of the other object!
+                        ds_map_delete(storagebox_map[? "contains_map"],string(entity_number));
+                        
+                        //call a security update if we are a player! this needs to be after it is deleted from the inventory!
+                        if asset_get_index(found_map[? "object_index"]) == obj_puppet_securitycard {
+                            scr_server_entity_securityupdate(storagebox_entity_number); //updates the entity we were inside before
+                        }
+                        
+                        //forces update, mark all player flags as update forced!
+                        scr_item_updateflag_allplayers(entity_number,true);
+                        scr_item_updateflag_allplayers(storagebox_entity_number,true);
+                        
+                        //update all players of this action
+                        scr_server_storagebox_object_update_all_players(entity_number,storagebox_entity_number);
+                        
+                        //if object is a player update it on thier end!
+                        var get_socket = found_map[? "player_socket"];
+                        if scr_socket_verify(get_socket) {
+                            //manipulate as needed
+                            var getx = found_map[? "x"]; 
+                            var gety = found_map[? "y"]; 
+                            scr_cpacket_location_sync(get_socket,getx,gety,0,0); //transmitting speed doesn't matter here...
+                        }
+                    }
+                break;
+                
+                
+                case enum_server_packets.entity_deconstruct: 
+                    //get entity
+                    var get_mapentity = buffer_read(connection_buffer,buffer_u16);
+                
+                    //deconstruct building!
+                    scr_blueprint_build_entity( get_mapentity, -1, connection_id, false);
+                    
+                    //delete building
+                    scr_server_entity_remove(get_mapentity);
+                break;
+                
+                
+                case enum_server_packets.entity_drop:
+                    //flag the entity as something not loaded!
+                    var entity_number = buffer_read(connection_buffer,buffer_u32);
+                    //show_debug_message("===Entity dropped: " + string(entity_number));
+                    
+                    if scr_ds_map_verify(list_entities[| entity_number]) {
+                        //tell client that this entity is also unloaded
+                        scr_cpacket_entity_drop(connection_id,entity_number);
+                        //set the object as needing to update when it can
+                        scr_item_set_update_flag( entity_number, list_sockets[| connection_id], true);
                     }
                     else
                     {
-                        //pickup and store inside!
-                        show_debug_message("===entity: " + string(entity_number) + " placed in inventory of: " + string(storagebox_entity_number));
-                    
-                        
-                        //storage can only happen if the inventory for it is capable!
-                        var allow_storage = true;
-                        
-                        
-                        //limit by sizes, huge cannot fit in anything unless done by unique means
-                        if found_map[? "is_size"] &gt; storagebox_map[? "contains_size"] {
-                            allow_storage = false;
-                            show_debug_message(" -too big to store");
-                            scr_cpacket_failed_action(connection_id,"Container is too small to store this!");
-                        }
-                        
-                        //certain things cannot store liquids
-                        if found_map[? "is_liquid"] == true and storagebox_map[? "contains_type_liquid"] == false {
-                            allow_storage = false;
-                            show_debug_message(" -Cannot store liquids with this container!");
-                            scr_cpacket_failed_action(connection_id,"Cannot store liquids with this container!");
-                        }
-                        
-                        //cannot store in itself
-                        if storagebox_map == found_map {
-                            allow_storage = false;
-                            show_debug_message(" -same item as container");
-                            scr_cpacket_failed_action(connection_id,"Cannot store a container inside itself!");
-                        }
-                        
-                        //check class compatability
-                        var allow_class_storage = scr_server_entity_classstoragecheck( found_map[? "is_class"], storagebox_map[? "contains_class"], connection_id);
-                        
-                        
-                        //if storage is possible allow you to put it safely away
-                        if allow_storage == true and allow_class_storage == true {
-                            if ds_map_size(storagebox_map[? "contains_map"]) &lt; storagebox_map[? "contains_max"] { //is inventory full?
-                            
-                                //remove from previous inventory before we add it to something else (even it's old inventory possibly!!)
-                                var get_host_entity = -1;
-                                if found_map[? "inside_of_id"] != -1 {
-                                    var get_host_entity = found_map[? "inside_of_id"];
-                                    var get_host_entity_map = list_entities[| get_host_entity ];
-                                    var host_entity_inventory = get_host_entity_map[? "contains_map"];
-                                    //delete the old key!
-                                    ds_map_delete(host_entity_inventory,string(entity_number));
-                                }
-                            
-                                //set the location based off of this!
-                                found_map[? "inside_of_id"] = storagebox_entity_number; //store inside of id!
-                                found_map[? "x"] = item_storage_pos; //hide it away from grabby paws
-                                found_map[? "y"] = item_storage_pos; //hide it away from grabby paws
-                                found_map[? "dir"] = 0; //stop moving we got grabbed.
-                                found_map[? "spd"] = 0;
-                                found_map[? "constructed"] = false; //cease constructed state
-                                
-                                
-                                //add to the inventory of the other object!
-                                var storage_map = storagebox_map[? "contains_map"];
-                                storage_map[? string(entity_number)] = entity_number; //store the entity inside a key pointing to that entity! we can itterate later using ds_map_next!
-                                
-                                //call a security update if we are a security card!
-                                if asset_get_index(found_map[? "object_index"]) == obj_puppet_securitycard {
-                                    scr_server_entity_securityupdate(get_host_entity); //updates the entity we were inside before
-                                    scr_server_entity_securityupdate(storagebox_entity_number); //updates the entity we were inside now
-                                }
-                                
-                                //forces update, mark all player flags as update forced!
-                                scr_item_updateflag_allplayers(entity_number,true);
-                                scr_item_updateflag_allplayers(storagebox_entity_number,true);
-                                
-                                
-                                //update all players of this action
-                                scr_server_storagebox_object_update_all_players(entity_number,storagebox_entity_number);
-                                
-                            }
-                            else
-                            {
-                                show_debug_message(" -container full");
-                                scr_cpacket_failed_action(connection_id,"Container is full!");
-                            }
-                        }
+                        show_debug_message(" -Bad entity was attempting to be dropped: " + string(entity_number));
                     }
-                }
-                else
-                {
-                    show_debug_message(" -Cannot place an object inside itself!");
-                    scr_cpacket_failed_action(connection_id,"Cannot place an object inside itself!");
-                }
-            }
-        break;
-        
-        
-        case enum_server_packets.player_release_grab:
-            show_debug_message("=== Player released object from grab: " + string(connection_id));
-            //remove from this players grab
-            var get_socket_player = list_sockets[| connection_id];
-            if scr_socket_verify( get_socket_player) {
-            
-                var get_ply_entity = list_player[| get_socket_player];
-                if scr_entityslot_is_valid(get_ply_entity) {
+                break;
+                
+                
+                case enum_server_packets.entity_inventory_request:
+                    //request the inventory of any entity we need.
+                    var entity_number  = buffer_read(connection_buffer,buffer_u32);
+                    var instance_id_requesting  = buffer_read(connection_buffer,buffer_s32);
                     
+                    scr_cpacket_inventory_update(connection_id,instance_id_requesting,entity_number);
+                break;
                 
-                    var get_ply_map = list_entities[| get_ply_entity];
-                    if scr_ds_map_verify(get_ply_map) {
-                        //remove grab
-                        show_debug_message(" -Entity: " + string(get_ply_map[? "entity_number"]) + " released grab.");
-                        get_ply_map[? "grabbing_entity"] = -1; 
-                        scr_cpacket_entity_grab_update(connection_id,-1);
-                    }
-                }
-            }
-        break;
-        
-        
-        case enum_server_packets.entity_throw:
-            //flows into place, but gets the direction and speed first!
-            var entity_thrown = true;
-            var throw_direction = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
-            var throw_speed = buffer_read(connection_buffer,buffer_u16);
-            
-        case enum_server_packets.entity_construct: //ONLY for small objects that are mounted into the floors, NOT FOR MACHINES! 
-            if entity_thrown == false {
-                var constructing_entity = true;
-            }
-        case enum_server_packets.entity_place:
-            //item being removed from storage
-            var entity_number  = buffer_read(connection_buffer,buffer_u32);
-            var found_map = list_entities[| entity_number];
-            
-            //storage it was in previously
-            var storagebox_entity_number  = buffer_read(connection_buffer,buffer_u32);
-            var storagebox_map = list_entities[| storagebox_entity_number];
-            
-            
-            //remove from this players grab
-            var get_socket_player = list_sockets[| connection_id];
-            if scr_socket_verify(get_socket_player) {
-            
-                var get_ply_entity = list_player[| get_socket_player];
-                if scr_entityslot_is_valid(get_ply_entity) {
+                
+                /****************************************************
+                    USE and requesting extra data is HEAVILY context based!
+                ****************************************************/
+                
+                case enum_server_packets.entity_interact:
+                    //flag the entity as something not loaded!
+                    var entity_number = buffer_read(connection_buffer,buffer_u32);
+                    var instance_id_requesting = buffer_read(connection_buffer,buffer_s32);
+                    var input_control_states = buffer_read(connection_buffer,buffer_u8); 
+                    return_instance_or_object = enum_entity_reply.is_entity; //if we return instance or object based stuff.
+                    show_debug_message("===Entity used: " + string(entity_number));
                     
-                
-                    var get_ply_map = list_entities[| get_ply_entity];
-                    if scr_ds_map_verify(get_ply_map) {
-                        //remove grab
-                        show_debug_message(" -Entity: " + string(get_ply_map[? "entity_number"]) + " released grab.");
-                        get_ply_map[? "grabbing_entity"] = -1; 
-                        scr_cpacket_entity_grab_update(connection_id,-1);
-                    }
-                }
-            }
-            
-            
-            //check if we can even access these!
-            if scr_ds_map_verify(found_map)
-            and scr_ds_map_verify(storagebox_map) {
-                show_debug_message("===entity: " + string(entity_number) + " placed on ground. ");
-                
-                //set the location based off of this!
-                found_map[? "inside_of_id"] = -1; //not stored inside anyone now
-                found_map[? "x"] = buffer_read(connection_buffer,buffer_f32);
-                found_map[? "y"] = buffer_read(connection_buffer,buffer_f32);
-                found_map[? "last_update_x"] = found_map[? "x"];
-                found_map[? "last_update_y"] = found_map[? "y"];
-                
-                //deconstruct if we did not have a construction flag!
-                found_map[? "constructed"] = constructing_entity; //destruct when placed down without a construction flag!
-                
-                if entity_thrown == true {
-                    //do not update these normally, let the server handle thrown stuff more.
-                    found_map[? "dir"] = throw_direction;
-                    found_map[? "spd"] = throw_speed;
-                }
-                
-                //update collision box
-                with found_map[? "SS_collision"] {
-                    x = found_map[? "x"];
-                    y = found_map[? "y"];
-                }
-                //remove from the inventory of the other object!
-                ds_map_delete(storagebox_map[? "contains_map"],string(entity_number));
-                
-                //call a security update if we are a player! this needs to be after it is deleted from the inventory!
-                if asset_get_index(found_map[? "object_index"]) == obj_puppet_securitycard {
-                    scr_server_entity_securityupdate(storagebox_entity_number); //updates the entity we were inside before
-                }
-                
-                //forces update, mark all player flags as update forced!
-                scr_item_updateflag_allplayers(entity_number,true);
-                scr_item_updateflag_allplayers(storagebox_entity_number,true);
-                
-                //update all players of this action
-                scr_server_storagebox_object_update_all_players(entity_number,storagebox_entity_number);
-                
-                //if object is a player update it on thier end!
-                var get_socket = found_map[? "player_socket"];
-                if scr_socket_verify(get_socket) {
-                    //manipulate as needed
-                    var getx = found_map[? "x"]; 
-                    var gety = found_map[? "y"]; 
-                    scr_cpacket_location_sync(get_socket,getx,gety,0,0); //transmitting speed doesn't matter here...
-                }
-            }
-        break;
-        
-        
-        case enum_server_packets.entity_deconstruct: 
-            //get entity
-            var get_mapentity = buffer_read(connection_buffer,buffer_u16);
-        
-            //deconstruct building!
-            scr_blueprint_build_entity( get_mapentity, -1, connection_id, false);
-            
-            //delete building
-            scr_server_entity_remove(get_mapentity);
-        break;
-        
-        
-        case enum_server_packets.entity_drop:
-            //flag the entity as something not loaded!
-            var entity_number = buffer_read(connection_buffer,buffer_u32);
-            //show_debug_message("===Entity dropped: " + string(entity_number));
-            
-            if scr_ds_map_verify(list_entities[| entity_number]) {
-                //tell client that this entity is also unloaded
-                scr_cpacket_entity_drop(connection_id,entity_number);
-                //set the object as needing to update when it can
-                scr_item_set_update_flag( entity_number, list_sockets[| connection_id], true);
-            }
-            else
-            {
-                show_debug_message(" -Bad entity was attempting to be dropped: " + string(entity_number));
-            }
-        break;
-        
-        
-        case enum_server_packets.entity_inventory_request:
-            //request the inventory of any entity we need.
-            var entity_number  = buffer_read(connection_buffer,buffer_u32);
-            var instance_id_requesting  = buffer_read(connection_buffer,buffer_s32);
-            
-            scr_cpacket_inventory_update(connection_id,instance_id_requesting,entity_number);
-        break;
-        
-        
-        /****************************************************
-            USE and requesting extra data is HEAVILY context based!
-        ****************************************************/
-        
-        case enum_server_packets.entity_interact:
-            //flag the entity as something not loaded!
-            var entity_number = buffer_read(connection_buffer,buffer_u32);
-            var instance_id_requesting = buffer_read(connection_buffer,buffer_s32);
-            var input_control_states = buffer_read(connection_buffer,buffer_u8); 
-            return_instance_or_object = enum_entity_reply.is_entity; //if we return instance or object based stuff.
-            show_debug_message("===Entity used: " + string(entity_number));
-            
-            if scr_ds_map_verify(list_entities[| entity_number]) {
-                //extract map from entity
-                var found_map =  list_entities[| entity_number];
-                
-                //show structure
-                show_debug_message(" -object: " + string(found_map[? "object_index"]));
-                show_debug_message(" -id: " + string(instance_id_requesting));
-                show_debug_message(" -control flags: " + string(input_control_states));
-                
-                //load up a list to transmit
-                var transmission_list = ds_list_create();    
-                var fabricator_mode = 0;
-                
-                //context based actions!
-                switch asset_get_index(found_map[? "object_index"]) {
-                    case obj_machine_elecassem:
-                        if fabricator_mode == 0 fabricator_mode = 2;
-                    case obj_machine_blueprinter:
-                        if fabricator_mode == 0 fabricator_mode = 1;
-                    case obj_machine_fabricator:
-                        //check the inventory of the table for crafting the part we want!
-                        if fabricator_mode == 0 {
-                            get_obj_to_craft = scr_blueprint_build_entity( global.crafting_array[input_control_states,1]
-                                                                         , entity_number
-                                                                         , connection_id
-                                                                         , true);
-                        }
-                        else if fabricator_mode == 1 {
-                            get_obj_to_craft = scr_blueprint_build_entity( global.blueprint_array[input_control_states,1]
-                                                                         , entity_number
-                                                                         , connection_id
-                                                                         , true);
-                        }
-                        else if fabricator_mode == 2 {
-                            get_obj_to_craft = scr_blueprint_build_entity( global.electro_crafting_array[input_control_states,1]
-                                                                         , entity_number
-                                                                         , connection_id
-                                                                         , true);
-                        }
-                                                                  
-                        if get_obj_to_craft != -1 {
-                            //spawn constructed object in inventory of table
-                            var new_item = scr_entity_template_library( get_obj_to_craft
-                                                                      , item_storage_pos
-                                                                      , item_storage_pos
-                                                                      , 0
-                                                                      , 0
-                                                                      , false
-                                                                      , entity_number);
-                            var output_ent = scr_server_entity_add(new_item);
-                            
-                            //add item to table inventory
-                            var storage_map = found_map[? "contains_map"];
-                            storage_map[? string(output_ent)] = output_ent //store the entity inside a key pointing to that entity! we can itterate later using ds_map_next!
+                    if scr_ds_map_verify(list_entities[| entity_number]) {
+                        //extract map from entity
+                        var found_map =  list_entities[| entity_number];
                         
-                            scr_server_storagebox_object_update_all_players(output_ent,entity_number);
+                        //show structure
+                        show_debug_message(" -object: " + string(found_map[? "object_index"]));
+                        show_debug_message(" -id: " + string(instance_id_requesting));
+                        show_debug_message(" -control flags: " + string(input_control_states));
                         
-                            //This plays the animation!
-                            scr_server_entity_activate_updateall( string( entity_number) , 120);
-                        }
-                    break;
-                
-                    case obj_puppet_securitytool:
-                        if input_control_states == 0 {
-                            //get security data, for security cards!
-                            show_debug_message("entity triggered: " + string( entity_number));
-                            var get_inventory_map = found_map[? "contains_map"];
-                            
-                            //search for security cards to modify
-                            var current_key = ds_map_find_first(get_inventory_map);
-                            if is_undefined(current_key) == false {
-                                var card_map = list_entities[| current_key];
+                        //load up a list to transmit
+                        var transmission_list = ds_list_create();    
+                        var fabricator_mode = 0;
+                        
+                        //context based actions!
+                        switch asset_get_index(found_map[? "object_index"]) {
+                            case obj_machine_elecassem:
+                                if fabricator_mode == 0 fabricator_mode = 2;
+                            case obj_machine_blueprinter:
+                                if fabricator_mode == 0 fabricator_mode = 1;
+                            case obj_machine_fabricator:
+                                //check the inventory of the table for crafting the part we want!
+                                if fabricator_mode == 0 {
+                                    get_obj_to_craft = scr_blueprint_build_entity( global.crafting_array[input_control_states,1]
+                                                                                 , entity_number
+                                                                                 , connection_id
+                                                                                 , true);
+                                }
+                                else if fabricator_mode == 1 {
+                                    get_obj_to_craft = scr_blueprint_build_entity( global.blueprint_array[input_control_states,1]
+                                                                                 , entity_number
+                                                                                 , connection_id
+                                                                                 , true);
+                                }
+                                else if fabricator_mode == 2 {
+                                    get_obj_to_craft = scr_blueprint_build_entity( global.electro_crafting_array[input_control_states,1]
+                                                                                 , entity_number
+                                                                                 , connection_id
+                                                                                 , true);
+                                }
+                                                                          
+                                if get_obj_to_craft != -1 {
+                                    //spawn constructed object in inventory of table
+                                    var new_item = scr_entity_template_library( get_obj_to_craft
+                                                                              , item_storage_pos
+                                                                              , item_storage_pos
+                                                                              , 0
+                                                                              , 0
+                                                                              , false
+                                                                              , entity_number);
+                                    var output_ent = scr_server_entity_add(new_item);
+                                    
+                                    //add item to table inventory
+                                    var storage_map = found_map[? "contains_map"];
+                                    storage_map[? string(output_ent)] = output_ent //store the entity inside a key pointing to that entity! we can itterate later using ds_map_next!
                                 
-                                if scr_ds_map_verify(card_map) {
-                                    if asset_get_index(card_map[? "object_index"]) == obj_puppet_securitycard {
-                                        //flag that we will be returning a object_index, used by the security tool when bringing up the editing menu
-                                        return_instance_or_object = enum_entity_reply.is_object;
-                                        entity_number = current_key; //change the entity to the keycard! this is required for the tool to modify it!
-                                        //^^^ sets the UI keycard editing menu to view the keycard as it's host!
-                                        
-                                        //get seculist
-                                        var seclist = card_map[? "security_levels"];
-                                        //transmit the card's security data!
-                                        for (var i=0; i&lt;ds_list_size(seclist); i+=1)
-                                        {
-                                            transmission_list[| i] = seclist[| i];
-                                        }
-                                    }
-                                    else
-                                    {
-                                        scr_cpacket_failed_action(connection_id,"Object is not a security card!");
-                                    }
+                                    scr_server_storagebox_object_update_all_players(output_ent,entity_number);
+                                
+                                    //This plays the animation!
+                                    scr_server_entity_activate_updateall( string( entity_number) , 120);
                                 }
-                                else
-                                {
-                                    scr_cpacket_failed_action(connection_id,"No card inserted...");
-                                }
-                            }
-                            else
-                            {
-                                scr_cpacket_failed_action(connection_id,"No card inserted...");
-                            }
-                        }
-                    break;
-                    
-                    case obj_puppet_securitycard:
-                        //get security data
-                        show_debug_message("entity triggered: " + string( entity_number));
-                        transmission_list[| 0] = enum_tooltip_spflags.is_security_data;
+                            break;
                         
-                        //get seculist
-                        var seclist = found_map[? "security_levels"];
-                        
-                        if is_undefined(seclist) == false {
-                            var flipbit = input_control_states-1; //if we pass it a value above 0 it will flip the index-1 of that!
-                            //transmit the card's security data!
-                            for (var i=0; i&lt;ds_list_size(global.list_security_levels); i+=1) {
+                            case obj_puppet_securitytool:
                                 if input_control_states == 0 {
-                                    //transmit
-                                    transmission_list[| 1 + i] = seclist[| i];
-                                    show_debug_message(" -sec: " + string( seclist[| i]));
-                                }
-                                else
-                                {
-                                    if i == flipbit {
-                                        //flip it!
-                                        if is_undefined(seclist[| i]) == false and seclist[| i] == 1 {
-                                            seclist[| i] = 0;
+                                    //get security data, for security cards!
+                                    show_debug_message("entity triggered: " + string( entity_number));
+                                    var get_inventory_map = found_map[? "contains_map"];
+                                    
+                                    //search for security cards to modify
+                                    var current_key = ds_map_find_first(get_inventory_map);
+                                    if is_undefined(current_key) == false {
+                                        var card_map = list_entities[| current_key];
+                                        
+                                        if scr_ds_map_verify(card_map) {
+                                            if asset_get_index(card_map[? "object_index"]) == obj_puppet_securitycard {
+                                                //flag that we will be returning a object_index, used by the security tool when bringing up the editing menu
+                                                return_instance_or_object = enum_entity_reply.is_object;
+                                                entity_number = current_key; //change the entity to the keycard! this is required for the tool to modify it!
+                                                //^^^ sets the UI keycard editing menu to view the keycard as it's host!
+                                                
+                                                //get seculist
+                                                var seclist = card_map[? "security_levels"];
+                                                //transmit the card's security data!
+                                                for (var i=0; i&lt;ds_list_size(seclist); i+=1)
+                                                {
+                                                    transmission_list[| i] = seclist[| i];
+                                                }
+                                            }
+                                            else
+                                            {
+                                                scr_cpacket_failed_action(connection_id,"Object is not a security card!");
+                                            }
                                         }
                                         else
                                         {
-                                            seclist[| i] = 1;
-                                        }
-                                    }
-                                    
-                                    //and transmit
-                                    show_debug_message(" -sec: " + string( seclist[| i]));
-                                    transmission_list[| 1 + i] = seclist[| i];
-                                }
-                            }
-                        }
-                    break;
-                
-                    case obj_puppet_powercell:
-                        transmission_list[| 0] = enum_tooltip_spflags.is_powercell_data; //tooltip bullshit
-                    
-                        if input_control_states == 0 {
-                            //get cell power
-                            transmission_list[| 1] = clamp(found_map[? "Charge"],0,100); 
-                        }
-                        else if input_control_states == 1 {
-                            //use cell
-                            transmission_list[| 1] = clamp(found_map[? "Charge"] - 1,0,100); 
-                        }
-                        else if input_control_states == 2 {
-                            //recharge power cell
-                            found_map[? "Charge"] = 100;
-                        }
-                    break;
-                    
-                    case obj_puppet_player:
-                        if input_control_states == 0 {
-                            //get cell power
-                            transmission_list[| 0] = found_map[? "player_nickname"];
-                        }
-                    break;
-                    
-                    case obj_puppet_laserrifle:
-                        var power_per_shot = 2;
-                        var get_inventory = found_map[? "contains_map"];
-                        
-                        if scr_ds_map_verify(get_inventory) {
-                            var bat_ent = ds_map_find_first(get_inventory); //only one slot in here anyway.
-                            
-                            if is_undefined( bat_ent) == false {
-                                var bat_map = list_entities[| bat_ent];
-                                
-                                if scr_ds_map_verify( bat_map) {
-                                    //if all of this exists, now check if it's actually a battery
-                                    if asset_get_index(bat_map[? "object_index"]) == obj_puppet_powercell {
-                                        if input_control_states == 0 {
-                                            //if actually a powercell, transmit the cell power
-                                            transmission_list[| 0] = bat_map[? "Charge"];
-                                        }
-                                        else if input_control_states == 1 {
-                                            //if actually a powercell, transmit the cell power after a shot is fired!
-                                            bat_map[? "Charge"] = clamp( floor(bat_map[? "Charge"] - power_per_shot), 0 , 100);
-                                            transmission_list[| 0] = bat_map[? "Charge"];
+                                            scr_cpacket_failed_action(connection_id,"No card inserted...");
                                         }
                                     }
                                     else
                                     {
-                                        //Not a power cell
+                                        scr_cpacket_failed_action(connection_id,"No card inserted...");
+                                    }
+                                }
+                            break;
+                            
+                            case obj_puppet_securitycard:
+                                //get security data
+                                show_debug_message("entity triggered: " + string( entity_number));
+                                transmission_list[| 0] = enum_tooltip_spflags.is_security_data;
+                                
+                                //get seculist
+                                var seclist = found_map[? "security_levels"];
+                                
+                                if is_undefined(seclist) == false {
+                                    var flipbit = input_control_states-1; //if we pass it a value above 0 it will flip the index-1 of that!
+                                    //transmit the card's security data!
+                                    for (var i=0; i&lt;ds_list_size(global.list_security_levels); i+=1) {
+                                        if input_control_states == 0 {
+                                            //transmit
+                                            transmission_list[| 1 + i] = seclist[| i];
+                                            show_debug_message(" -sec: " + string( seclist[| i]));
+                                        }
+                                        else
+                                        {
+                                            if i == flipbit {
+                                                //flip it!
+                                                if is_undefined(seclist[| i]) == false and seclist[| i] == 1 {
+                                                    seclist[| i] = 0;
+                                                }
+                                                else
+                                                {
+                                                    seclist[| i] = 1;
+                                                }
+                                            }
+                                            
+                                            //and transmit
+                                            show_debug_message(" -sec: " + string( seclist[| i]));
+                                            transmission_list[| 1 + i] = seclist[| i];
+                                        }
+                                    }
+                                }
+                            break;
+                        
+                            case obj_puppet_powercell:
+                                transmission_list[| 0] = enum_tooltip_spflags.is_powercell_data; //tooltip bullshit
+                            
+                                if input_control_states == 0 {
+                                    //get cell power
+                                    transmission_list[| 1] = clamp(found_map[? "Charge"],0,100); 
+                                }
+                                else if input_control_states == 1 {
+                                    //use cell
+                                    transmission_list[| 1] = clamp(found_map[? "Charge"] - 1,0,100); 
+                                }
+                                else if input_control_states == 2 {
+                                    //recharge power cell
+                                    found_map[? "Charge"] = 100;
+                                }
+                            break;
+                            
+                            case obj_puppet_player:
+                                if input_control_states == 0 {
+                                    //get cell power
+                                    transmission_list[| 0] = found_map[? "player_nickname"];
+                                }
+                            break;
+                            
+                            case obj_puppet_laserrifle:
+                                var power_per_shot = 2;
+                                var get_inventory = found_map[? "contains_map"];
+                                
+                                if scr_ds_map_verify(get_inventory) {
+                                    var bat_ent = ds_map_find_first(get_inventory); //only one slot in here anyway.
+                                    
+                                    if is_undefined( bat_ent) == false {
+                                        var bat_map = list_entities[| bat_ent];
+                                        
+                                        if scr_ds_map_verify( bat_map) {
+                                            //if all of this exists, now check if it's actually a battery
+                                            if asset_get_index(bat_map[? "object_index"]) == obj_puppet_powercell {
+                                                if input_control_states == 0 {
+                                                    //if actually a powercell, transmit the cell power
+                                                    transmission_list[| 0] = bat_map[? "Charge"];
+                                                }
+                                                else if input_control_states == 1 {
+                                                    //if actually a powercell, transmit the cell power after a shot is fired!
+                                                    bat_map[? "Charge"] = clamp( floor(bat_map[? "Charge"] - power_per_shot), 0 , 100);
+                                                    transmission_list[| 0] = bat_map[? "Charge"];
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //Not a power cell
+                                                transmission_list[| 0] = 0;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //cell power does not exist
+                                            transmission_list[| 0] = 0;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        //cell power does not exist
                                         transmission_list[| 0] = 0;
                                     }
                                 }
                                 else
                                 {
-                                    //cell power does not exist
+                                    //rifle inventory lost? backup stuff....
                                     transmission_list[| 0] = 0;
                                 }
-                            }
-                            else
-                            {
-                                //cell power does not exist
-                                transmission_list[| 0] = 0;
-                            }
-                        }
-                        else
-                        {
-                            //rifle inventory lost? backup stuff....
-                            transmission_list[| 0] = 0;
-                        }
-                    break;
-                    
-                    case obj_machine_STC:
-                        if input_control_states == 0 {
-                            //allow power
-                            if found_map[? "constructed"] == true {
-                                //only if not updated before
-                                show_debug_message("entity triggered: " + string( entity_number));
-                                var get_inventory_map = found_map[? "contains_map"];
+                            break;
                             
-                                //loop through all slots 
-                                var inv_size = ds_map_size(get_inventory_map);
-                                var found_blueprint_object = -1;
-                                var found_construct_object = -1;
-                                var no_blueprint_found = true;
-                                
-                                //search for blueprints to use!
-                                var current_key = ds_map_find_first(get_inventory_map);
-                                for (var i=0; i&lt;inv_size; i+=1)
-                                {
-                                    var item_map = list_entities[| current_key];
+                            case obj_machine_STC:
+                                if input_control_states == 0 {
+                                    //allow power
+                                    if found_map[? "constructed"] == true {
+                                        //only if not updated before
+                                        show_debug_message("entity triggered: " + string( entity_number));
+                                        var get_inventory_map = found_map[? "contains_map"];
                                     
-                                    if object_get_parent( asset_get_index(item_map[? "object_index"]) ) == obj_blueprint_parent {
-                                        //get ent! 
-                                        found_blueprint_object = asset_get_index(item_map[? "object_index"]);
-                                        found_construct_object = scr_blueprint_build_entity( found_blueprint_object, entity_number, connection_id, true);
-                                        no_blueprint_found = false;
+                                        //loop through all slots 
+                                        var inv_size = ds_map_size(get_inventory_map);
+                                        var found_blueprint_object = -1;
+                                        var found_construct_object = -1;
+                                        var no_blueprint_found = true;
                                         
-                                        //kill loop
-                                        break; 
-                                    }
-                                    else
-                                    {
-                                        //next index
-                                        current_key = ds_map_find_next(get_inventory_map, current_key);
-                                    }
-                                }
-                                
-                                if no_blueprint_found == true {
-                                    scr_cpacket_failed_action( connection_id, "No Blueprint to assemble."); 
-                                }
-                                else
-                                {
-                                    if found_construct_object != -1 {
-                                        //set construct state!
-                                        found_map[? "object_building"] = found_construct_object; //construct this!
-                                    
-                                        //this plays the constructing animation
-                                        scr_server_entity_activate_updateall( string( entity_number) , 300);
-                                    }
-                                }
-                            }
-                        }
-                        else if input_control_states == 1 {
-                            //ASSEMBLE INTO BUILDING
-                            var obj_build = found_map[? "object_building"];
-                            
-                            var new_building_map = scr_entity_template_library(obj_build,found_map[? "x"],found_map[? "y"],0,0,false,-1);
-                            new_building_map[? "constructed"] = true;
-                            scr_server_entity_add( new_building_map);
-                            
-                            //remove STC
-                            scr_server_entity_remove( entity_number);
-                        }
-                    break;
-                    
-                    case obj_machine_chargingstation:
-                        if input_control_states == 0 {
-                            //allow power
-                            if found_map[? "constructed"] == true {
-                                //only if not updated before
-                                show_debug_message("entity triggered: " + string( entity_number));
-                                var get_inventory_map = found_map[? "contains_map"];
-                                
-                                //loop through all slots and refill energy 
-                                var inv_size = ds_map_size(get_inventory_map);
-                                
-                                
-                                
-                                //search for batteries to recharge! (whole inventory)
-                                var current_key = ds_map_find_first(get_inventory_map);
-                                for (var i=0; i&lt;inv_size; i+=1)
-                                {
-                                    var bat_map = list_entities[| current_key];
-                                    if asset_get_index(bat_map[? "object_index"]) == obj_puppet_powercell {
-                                        //recharge
-                                        bat_map[? "Charge"] = 100;
-                                    }
-                                    //next index
-                                    current_key = ds_map_find_next(get_inventory_map, current_key);
-                                }
-                                
-                                
-                                //this plays the charing animation!
-                                scr_server_entity_activate_updateall( string( entity_number) , 30);
-                            }
-                        }
-                        else if input_control_states == 1 {
-                            //power was lost?
-                        }
-                    break;
-                    
-                    case obj_puppet_microwave:
-                        //only if not updated before
-                        if input_control_states == 0 {
-                            var get_inventory_map = found_map[? "contains_map"];
-                            
-                            //loop through all slots and refill energy 
-                            var inv_size = ds_map_size(get_inventory_map);
-                            
-                            //find batteries to drain!
-                            var current_key = ds_map_find_first(get_inventory_map);
-                            for (var i=0; i&lt;inv_size; i+=1)
-                            {
-                                var item_map = list_entities[| current_key];
-                                if asset_get_index(item_map[? "object_index"]) == obj_puppet_powercell {
-                                    //discharge and cook something, once the client end is done trigger again and cook!
-                                    if item_map[? "Charge"] &gt; 0 {
-                                        //discharge
-                                        item_map[? "Charge"] -= 1;
-                                        
-                                        //this plays the animation!
-                                        scr_server_entity_activate_updateall( string( entity_number) , 120);
-                                    }
-                                    else
-                                    {
-                                        scr_cpacket_failed_action(connection_id,"Powercell is empty.");
-                                    }
-                                }
-                                //next index
-                                current_key = ds_map_find_next(get_inventory_map, current_key);
-                            }
-                        }
-                        else if input_control_states == 1 {
-                            //cook the food inside!
-                        }
-                    break;
-                    
-                    case obj_puppet_coffeemaker:
-                        //only if not updated before
-                        if input_control_states == 0 {
-                            var get_inventory_map = found_map[? "contains_map"];
-                            
-                            //loop through all slots, drain battery and then brew coffee
-                            var inv_size = ds_map_size(get_inventory_map);
-                            var powered = false;
-                            var brewing = false;
-                            
-                            //look for batteries to drain!
-                            var get_battery = scr_inventory_scanfor_object(get_inventory_map,obj_puppet_powercell);
-                            if get_battery != -1 {
-                                var item_map = list_entities[| get_battery];
-                                if item_map[? "Charge"] &gt; 0 {
-                                    item_map[? "Charge"] -= 1;
-                                    powered = true;
-                                }
-                            }
-                            
-                            if powered == true {
-                                //look for coffee packs!
-                                var get_packet = scr_inventory_scanfor_object(get_inventory_map,obj_puppet_coffeepack);
-                                if get_packet != -1 {
-                                    scr_server_entity_remove(get_packet);
-                                    brewing = true;
-                                }
-                                
-                                if brewing == true {
-                                    var current_key = ds_map_find_first(get_inventory_map);
-                                    for (var i=0; i&lt;inv_size; i+=1)
-                                    {
-                                        if i &lt; inv_size {
-                                            //fill a cup if present, try till we run out of inventory!
+                                        //search for blueprints to use!
+                                        var current_key = ds_map_find_first(get_inventory_map);
+                                        for (var i=0; i&lt;inv_size; i+=1)
+                                        {
                                             var item_map = list_entities[| current_key];
-                                            if scr_ds_map_verify(item_map) {
-                                                if item_map[? "contains_type_liquid"] == true {
-                                                    //fill cup if present!
-                                                    var get_sub_inventory_map = item_map[? "contains_map"];
-                                                    //check if it has a free slot!
-                                                    if ds_map_size(get_sub_inventory_map) &lt; item_map[? "contains_max"] {
-                                                        //fill with hot coffee!!!
-                                                        var new_entity_map = scr_entity_template_library(obj_puppet_coffee_hot,item_storage_pos,item_storage_pos,0,0,false,current_key);
-                                                        var new_entity_slot = scr_server_entity_add(new_entity_map); //add to main list//make a test entity
-                                                        get_sub_inventory_map[? string(new_entity_slot)] = string(new_entity_slot); //add to the host inventory
-                                                    
-                                                        //update all players of this action
-                                                        scr_server_storagebox_object_update_all_players(new_entity_slot, current_key);
-                                                        
-                                                        //end loop!
-                                                        break;
-                                                    }
-                                                }
+                                            
+                                            if object_get_parent( asset_get_index(item_map[? "object_index"]) ) == obj_blueprint_parent {
+                                                //get ent! 
+                                                found_blueprint_object = asset_get_index(item_map[? "object_index"]);
+                                                found_construct_object = scr_blueprint_build_entity( found_blueprint_object, entity_number, connection_id, true);
+                                                no_blueprint_found = false;
+                                                
+                                                //kill loop
+                                                break; 
+                                            }
+                                            else
+                                            {
+                                                //next index
+                                                current_key = ds_map_find_next(get_inventory_map, current_key);
+                                            }
+                                        }
+                                        
+                                        if no_blueprint_found == true {
+                                            scr_cpacket_failed_action( connection_id, "No Blueprint to assemble."); 
+                                        }
+                                        else
+                                        {
+                                            if found_construct_object != -1 {
+                                                //set construct state!
+                                                found_map[? "object_building"] = found_construct_object; //construct this!
+                                            
+                                                //this plays the constructing animation
+                                                scr_server_entity_activate_updateall( string( entity_number) , 300);
+                                            }
+                                        }
+                                    }
+                                }
+                                else if input_control_states == 1 {
+                                    //ASSEMBLE INTO BUILDING
+                                    var obj_build = found_map[? "object_building"];
+                                    
+                                    var new_building_map = scr_entity_template_library(obj_build,found_map[? "x"],found_map[? "y"],0,0,false,-1);
+                                    new_building_map[? "constructed"] = true;
+                                    scr_server_entity_add( new_building_map);
+                                    
+                                    //remove STC
+                                    scr_server_entity_remove( entity_number);
+                                }
+                            break;
+                            
+                            case obj_machine_chargingstation:
+                                if input_control_states == 0 {
+                                    //allow power
+                                    if found_map[? "constructed"] == true {
+                                        //only if not updated before
+                                        show_debug_message("entity triggered: " + string( entity_number));
+                                        var get_inventory_map = found_map[? "contains_map"];
+                                        
+                                        //loop through all slots and refill energy 
+                                        var inv_size = ds_map_size(get_inventory_map);
+                                        
+                                        
+                                        
+                                        //search for batteries to recharge! (whole inventory)
+                                        var current_key = ds_map_find_first(get_inventory_map);
+                                        for (var i=0; i&lt;inv_size; i+=1)
+                                        {
+                                            var bat_map = list_entities[| current_key];
+                                            if asset_get_index(bat_map[? "object_index"]) == obj_puppet_powercell {
+                                                //recharge
+                                                bat_map[? "Charge"] = 100;
                                             }
                                             //next index
                                             current_key = ds_map_find_next(get_inventory_map, current_key);
                                         }
-                                        else
-                                        {
-                                            //spill everywhere!!!
-                                            var new_entity_map = scr_entity_template_library(obj_puppet_coffee_hot,found_map[? "x"]+irandom_range(-8,8),found_map[? "y"]+irandom_range(-8,8),0,0,false,-1);
-                                            var new_entity_slot = scr_server_entity_add(new_entity_map); //add to main list//make a test entity
+                                        
+                                        
+                                        //this plays the charing animation!
+                                        scr_server_entity_activate_updateall( string( entity_number) , 30);
+                                    }
+                                }
+                                else if input_control_states == 1 {
+                                    //power was lost?
+                                }
+                            break;
+                            
+                            case obj_puppet_microwave:
+                                //only if not updated before
+                                if input_control_states == 0 {
+                                    var get_inventory_map = found_map[? "contains_map"];
+                                    
+                                    //loop through all slots and refill energy 
+                                    var inv_size = ds_map_size(get_inventory_map);
+                                    
+                                    //find batteries to drain!
+                                    var current_key = ds_map_find_first(get_inventory_map);
+                                    for (var i=0; i&lt;inv_size; i+=1)
+                                    {
+                                        var item_map = list_entities[| current_key];
+                                        if asset_get_index(item_map[? "object_index"]) == obj_puppet_powercell {
+                                            //discharge and cook something, once the client end is done trigger again and cook!
+                                            if item_map[? "Charge"] &gt; 0 {
+                                                //discharge
+                                                item_map[? "Charge"] -= 1;
+                                                
+                                                //this plays the animation!
+                                                scr_server_entity_activate_updateall( string( entity_number) , 120);
+                                            }
+                                            else
+                                            {
+                                                scr_cpacket_failed_action(connection_id,"Powercell is empty.");
+                                            }
+                                        }
+                                        //next index
+                                        current_key = ds_map_find_next(get_inventory_map, current_key);
+                                    }
+                                }
+                                else if input_control_states == 1 {
+                                    //cook the food inside!
+                                }
+                            break;
+                            
+                            case obj_puppet_coffeemaker:
+                                //only if not updated before
+                                if input_control_states == 0 {
+                                    var get_inventory_map = found_map[? "contains_map"];
+                                    
+                                    //loop through all slots, drain battery and then brew coffee
+                                    var inv_size = ds_map_size(get_inventory_map);
+                                    var powered = false;
+                                    var brewing = false;
+                                    
+                                    //look for batteries to drain!
+                                    var get_battery = scr_inventory_scanfor_object(get_inventory_map,obj_puppet_powercell);
+                                    if get_battery != -1 {
+                                        var item_map = list_entities[| get_battery];
+                                        if item_map[? "Charge"] &gt; 0 {
+                                            item_map[? "Charge"] -= 1;
+                                            powered = true;
                                         }
                                     }
                                     
-                                    
-                                    //This plays the animation!
-                                    scr_server_entity_activate_updateall( string( entity_number) , 120);
+                                    if powered == true {
+                                        //look for coffee packs!
+                                        var get_packet = scr_inventory_scanfor_object(get_inventory_map,obj_puppet_coffeepack);
+                                        if get_packet != -1 {
+                                            scr_server_entity_remove(get_packet);
+                                            brewing = true;
+                                        }
+                                        
+                                        if brewing == true {
+                                            var current_key = ds_map_find_first(get_inventory_map);
+                                            for (var i=0; i&lt;inv_size; i+=1)
+                                            {
+                                                if i &lt; inv_size {
+                                                    //fill a cup if present, try till we run out of inventory!
+                                                    var item_map = list_entities[| current_key];
+                                                    if scr_ds_map_verify(item_map) {
+                                                        if item_map[? "contains_type_liquid"] == true {
+                                                            //fill cup if present!
+                                                            var get_sub_inventory_map = item_map[? "contains_map"];
+                                                            //check if it has a free slot!
+                                                            if ds_map_size(get_sub_inventory_map) &lt; item_map[? "contains_max"] {
+                                                                //fill with hot coffee!!!
+                                                                var new_entity_map = scr_entity_template_library(obj_puppet_coffee_hot,item_storage_pos,item_storage_pos,0,0,false,current_key);
+                                                                var new_entity_slot = scr_server_entity_add(new_entity_map); //add to main list//make a test entity
+                                                                get_sub_inventory_map[? string(new_entity_slot)] = string(new_entity_slot); //add to the host inventory
+                                                            
+                                                                //update all players of this action
+                                                                scr_server_storagebox_object_update_all_players(new_entity_slot, current_key);
+                                                                
+                                                                //end loop!
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                    //next index
+                                                    current_key = ds_map_find_next(get_inventory_map, current_key);
+                                                }
+                                                else
+                                                {
+                                                    //spill everywhere!!!
+                                                    var new_entity_map = scr_entity_template_library(obj_puppet_coffee_hot,found_map[? "x"]+irandom_range(-8,8),found_map[? "y"]+irandom_range(-8,8),0,0,false,-1);
+                                                    var new_entity_slot = scr_server_entity_add(new_entity_map); //add to main list//make a test entity
+                                                }
+                                            }
+                                            
+                                            
+                                            //This plays the animation!
+                                            scr_server_entity_activate_updateall( string( entity_number) , 120);
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                    break;
-                    
-                    
-                    case obj_machine_indoorlamp:
-                        //get the light's powered state
-                        if input_control_states == 0 {
-                            //old entity fix
-                            if is_undefined(found_map[? "light_charge"]) == true found_map[? "light_charge"] = 0;
-                            if found_map[? "light_charge"] &gt; 10 {
-                                transmission_list[| 0] = found_map[? "light_charge"] * 200;
-                                found_map[? "machine_has_power"] = true;
-                            }
-                            else
-                            {
-                                transmission_list[| 0] = 0;
-                                found_map[? "machine_has_power"] = false;
-                            }
-                        }
-                    break;
-                }
-                
-                //transmit data
-                var TXstring = ds_list_write(transmission_list);
-                var TXbase64 = base64_encode(TXstring);
-                scr_cpacket_entity_reply(connection_id,entity_number,instance_id_requesting,TXbase64,input_control_states,return_instance_or_object);
-                
-                //cleanup
-                ds_list_destroy(transmission_list);
-                
-                //set the object as needing to update when it can
-                scr_item_set_update_flag(entity_number, list_sockets[| connection_id], true);
-            }
-            else
-            {
-                show_debug_message(" -Bad entity was attempting to be used: " + string(entity_number));
-            }
-        break;
-        
-        
-        //security tool bullshit.... related to setting door data...
-        case enum_server_packets.security_tool_requestdoor: 
-            var get_mapentity = buffer_read(connection_buffer,buffer_u16);
-            var sub_map = global.map_saved_constructions[? string(get_mapentity)];
-            
-            //load up a list to transmit
-            var transmission_list = ds_list_create();  
-            
-            if scr_ds_map_verify( sub_map ) {
-                //get security data, for door!
-                show_debug_message("map entity triggered: " + string( get_mapentity));
-                
-                //get seculist
-                var seclist = sub_map[? "security_clearance"];
-                
-                //transmit the doors's security data!
-                for (var i=0; i&lt;ds_list_size(seclist); i+=1)
-                {
-                    transmission_list[| i] = seclist[| i];
-                }
-            }
-            
-            //transmit data, christ this is gonna be a weird packet...
-            var TXstring = ds_list_write(transmission_list);
-            var TXbase64 = base64_encode(TXstring);
-            scr_cpacket_entity_reply(connection_id, get_mapentity, obj_puppet_securitytool, TXbase64, 1, enum_entity_reply.is_object);
-            
-            //cleanup
-            ds_list_destroy(transmission_list);
-        break;
-        
-        
-        case enum_server_packets.security_tool_toggledoorsecurity:
-            var get_mapentity = buffer_read(connection_buffer,buffer_u16);
-            var instance_id_requesting = buffer_read(connection_buffer,buffer_s32);
-            var sub_map = global.map_saved_constructions[? string(get_mapentity)];
-            var flipbit = buffer_read(connection_buffer,buffer_u8) - 1;
-            
-            //load up a list to transmit
-            var transmission_list = ds_list_create();  
-            
-            //get security data
-            show_debug_message("map entity triggered: " + string( get_mapentity));
-            
-            if scr_ds_map_verify( sub_map ) {
-                //get seculist
-                var seclist = sub_map[? "security_clearance"];
-                transmission_list[| 0] = 1; //takes up space because the tooltip stuff means that the security menu expects the first entry to be an spflag
-                
-                if is_undefined(seclist) == false {
-                    //transmit the card's security data!
-                    for (var i=0; i&lt;ds_list_size(global.list_security_levels); i+=1) {
-                        var get_security_map = global.list_security_levels[| i];
-                    
-                        if i == flipbit {
-                            //flip it!
-                            if is_undefined(seclist[| i]) == false and seclist[| i] == 1 {
-                                //disable, set color
-                                seclist[| i] = 0;
-                                
-                                //transmit back the door security color!
-                                sub_map[? "security_color"] = -1; //disabled
-                                scr_cpacket_map_door_security_reply( connection_id, get_mapentity , sub_map[? "security_color"]);
-                            }
-                            else
-                            {
-                                //enable, set color
-                                seclist[| i] = 1;
-                                
-                                //transmit back the door security color!
-                                sub_map[? "security_color"] = get_security_map[? "color"]; //enabled!
-                                scr_cpacket_map_door_security_reply( connection_id, get_mapentity , sub_map[? "security_color"]);
-                            }
+                            break;
+                            
+                            
+                            case obj_machine_indoorlamp:
+                                //get the light's powered state
+                                if input_control_states == 0 {
+                                    //old entity fix
+                                    if is_undefined(found_map[? "light_charge"]) == true found_map[? "light_charge"] = 0;
+                                    if found_map[? "light_charge"] &gt; 10 {
+                                        transmission_list[| 0] = found_map[? "light_charge"] * 200;
+                                        found_map[? "machine_has_power"] = true;
+                                    }
+                                    else
+                                    {
+                                        transmission_list[| 0] = 0;
+                                        found_map[? "machine_has_power"] = false;
+                                    }
+                                }
+                            break;
                         }
                         
-                        //and transmit
-                        show_debug_message(" -sec: " + string( seclist[| i]));
-                        transmission_list[| 1 + i] = seclist[| i];
+                        //transmit data
+                        var TXstring = ds_list_write(transmission_list);
+                        var TXbase64 = base64_encode(TXstring);
+                        scr_cpacket_entity_reply(connection_id,entity_number,instance_id_requesting,TXbase64,input_control_states,return_instance_or_object);
+                        
+                        //cleanup
+                        ds_list_destroy(transmission_list);
+                        
+                        //set the object as needing to update when it can
+                        scr_item_set_update_flag(entity_number, list_sockets[| connection_id], true);
                     }
-                }
+                    else
+                    {
+                        show_debug_message(" -Bad entity was attempting to be used: " + string(entity_number));
+                    }
+                break;
+                
+                
+                //security tool bullshit.... related to setting door data...
+                case enum_server_packets.security_tool_requestdoor: 
+                    var get_mapentity = buffer_read(connection_buffer,buffer_u16);
+                    var sub_map = global.map_saved_constructions[? string(get_mapentity)];
+                    
+                    //load up a list to transmit
+                    var transmission_list = ds_list_create();  
+                    
+                    if scr_ds_map_verify( sub_map ) {
+                        //get security data, for door!
+                        show_debug_message("map entity triggered: " + string( get_mapentity));
+                        
+                        //get seculist
+                        var seclist = sub_map[? "security_clearance"];
+                        
+                        //transmit the doors's security data!
+                        for (var i=0; i&lt;ds_list_size(seclist); i+=1)
+                        {
+                            transmission_list[| i] = seclist[| i];
+                        }
+                    }
+                    
+                    //transmit data, christ this is gonna be a weird packet...
+                    var TXstring = ds_list_write(transmission_list);
+                    var TXbase64 = base64_encode(TXstring);
+                    scr_cpacket_entity_reply(connection_id, get_mapentity, obj_puppet_securitytool, TXbase64, 1, enum_entity_reply.is_object);
+                    
+                    //cleanup
+                    ds_list_destroy(transmission_list);
+                break;
+                
+                
+                case enum_server_packets.security_tool_toggledoorsecurity:
+                    var get_mapentity = buffer_read(connection_buffer,buffer_u16);
+                    var instance_id_requesting = buffer_read(connection_buffer,buffer_s32);
+                    var sub_map = global.map_saved_constructions[? string(get_mapentity)];
+                    var flipbit = buffer_read(connection_buffer,buffer_u8) - 1;
+                    
+                    //load up a list to transmit
+                    var transmission_list = ds_list_create();  
+                    
+                    //get security data
+                    show_debug_message("map entity triggered: " + string( get_mapentity));
+                    
+                    if scr_ds_map_verify( sub_map ) {
+                        //get seculist
+                        var seclist = sub_map[? "security_clearance"];
+                        transmission_list[| 0] = 1; //takes up space because the tooltip stuff means that the security menu expects the first entry to be an spflag
+                        
+                        if is_undefined(seclist) == false {
+                            //transmit the card's security data!
+                            for (var i=0; i&lt;ds_list_size(global.list_security_levels); i+=1) {
+                                var get_security_map = global.list_security_levels[| i];
+                            
+                                if i == flipbit {
+                                    //flip it!
+                                    if is_undefined(seclist[| i]) == false and seclist[| i] == 1 {
+                                        //disable, set color
+                                        seclist[| i] = 0;
+                                        
+                                        //transmit back the door security color!
+                                        sub_map[? "security_color"] = -1; //disabled
+                                        scr_cpacket_map_door_security_reply( connection_id, get_mapentity , sub_map[? "security_color"]);
+                                    }
+                                    else
+                                    {
+                                        //enable, set color
+                                        seclist[| i] = 1;
+                                        
+                                        //transmit back the door security color!
+                                        sub_map[? "security_color"] = get_security_map[? "color"]; //enabled!
+                                        scr_cpacket_map_door_security_reply( connection_id, get_mapentity , sub_map[? "security_color"]);
+                                    }
+                                }
+                                
+                                //and transmit
+                                show_debug_message(" -sec: " + string( seclist[| i]));
+                                transmission_list[| 1 + i] = seclist[| i];
+                            }
+                        }
+                    }
+                    
+                    //transmit data, christ this is gonna be a weird packet...
+                    var TXstring = ds_list_write(transmission_list);
+                    var TXbase64 = base64_encode(TXstring);
+                    scr_cpacket_entity_reply(connection_id, get_mapentity, instance_id_requesting, TXbase64, flipbit, enum_entity_reply.is_entity);
+                    
+                    //cleanup
+                    ds_list_destroy(transmission_list);
+                break;
+                
+                default:
+                    show_debug_message("===Unknown opcode... " + string( opcode));
+                break;
             }
             
-            //transmit data, christ this is gonna be a weird packet...
-            var TXstring = ds_list_write(transmission_list);
-            var TXbase64 = base64_encode(TXstring);
-            scr_cpacket_entity_reply(connection_id, get_mapentity, instance_id_requesting, TXbase64, flipbit, enum_entity_reply.is_entity);
-            
-            //cleanup
-            ds_list_destroy(transmission_list);
-        break;
-        
-        default:
-            show_debug_message("===Unknown opcode... " + string( opcode));
-        break;
-    }
-    
-    //packet info
-    if opcode != enum_server_packets.heartbeat_request {
-        show_debug_message("Packet from socket: " + string(                connection_id ));
-        if is_undefined(list_sockets[| connection_id]) == false {
-            show_debug_message(" -is player number: " + string( list_sockets[| connection_id]));
-        }
-        else
-        {
-            show_debug_message(" -is player number: NOT YET SET");
+            //packet info
+            if opcode != enum_server_packets.heartbeat_request {
+                show_debug_message("Packet from socket: " + string(                connection_id ));
+                if is_undefined(list_sockets[| connection_id]) == false {
+                    show_debug_message(" -is player number: " + string( list_sockets[| connection_id]));
+                }
+                else
+                {
+                    show_debug_message(" -is player number: NOT YET SET");
+                }
+            }
         }
     }
 }

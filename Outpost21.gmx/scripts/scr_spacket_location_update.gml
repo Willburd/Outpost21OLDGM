@@ -1,5 +1,6 @@
 ///scr_spacket_location_update( entity id, new x, new y);
 var send_buffer = buffer_create(1,buffer_grow,1);
+buffer_write(send_buffer,buffer_u8,210); //packet-start magic number
 buffer_write(send_buffer,buffer_u16, enum_server_packets.movement_location_update);
 buffer_write(send_buffer,buffer_u32, argument0);
 buffer_write(send_buffer,buffer_f32, argument1);

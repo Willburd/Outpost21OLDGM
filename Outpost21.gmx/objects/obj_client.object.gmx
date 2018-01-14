@@ -258,733 +258,752 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
     //scr_consoleout("Client has received packet: ");
     var connection_buffer = ds_queue_dequeue(client_packet_queue);
     var connection_bufsize = buffer_get_size(connection_buffer);
-    
-    var client_destination_number = buffer_read(connection_buffer,buffer_u8);
+    var packet_found = false;
     
     if connection_bufsize &gt; 0 {
-        //get the opcode off the packet!!
-        var opcode = buffer_read(connection_buffer,buffer_u16);
-        
-        switch opcode {
-        
-            case enum_client_packets.request_seen:
-                if room == rm_menu {
-                    scr_consoleout("  server replied!");
-                    /*
-                    //remove menu
-                    with obj_mainmenu instance_destroy();
-                
-                    //connection recognized.    
-                    var get_username = get_string("Login name","emailorsomething?");
-                    var get_password = get_string("Password","Not in use yet");
-                    
-                    //password salt and encode!
-                    var get_password = md5_string_unicode( string(get_password) + md5_string_unicode(get_username) );
-                    
-                    //transmit
-                    scr_spacket_login_request(get_username,get_password);
-                    */
-                    
-                    if instance_exists(obj_login_menu) == false {
-                        with obj_server_menu instance_destroy(); //safety
-                        instance_create(192,144,obj_login_menu);
-                    }
+        while(buffer_tell(connection_buffer) &lt; buffer_get_size(connection_buffer)) {
+            if packet_found == false {
+                //search for magic packet
+                var foundByte = buffer_read(connection_buffer,buffer_u8);
+                if foundByte == 210 {
+                    packet_found = true;
+                    show_debug_message("MAGIC FOUND");
                 }
                 else
                 {
-                    scr_consoleout("  Server re-sent connection packet?");
+                    show_debug_message("not magic: " + string(foundByte));
                 }
-            break;    
-        
+            }
+            else 
+            {
+                packet_found = false;
+                var client_destination_number = buffer_read(connection_buffer,buffer_u8);
             
-            case  enum_client_packets.login_newuser:
-                //confirm make new user?
-                var char_getname = buffer_read(connection_buffer,buffer_string);
-                var char_getpass = buffer_read(connection_buffer,buffer_string);
+            
+                //get the opcode off the packet!!
+                var opcode = buffer_read(connection_buffer,buffer_u16);
                 
-                with obj_login_menu instance_destroy(); //safety
-                with instance_create(192,160,obj_questionbox_newuser) {
-                    my_text = "User does not exist?#Create user: " + string(char_getname) + "?";
-                    stored_name = char_getname;
-                    stored_hash = char_getpass;
-                }
-            break;
-            
-            
-            case  enum_client_packets.login_failed:
-                var char_getname = buffer_read(connection_buffer,buffer_string);
-                scr_consoleout("Login failed! user: " + string(char_getname));
+                switch opcode {
                 
-                //login attempt failed!
-                scr_client_errormessage("Password did not match for user: " + string(char_getname));
-            break;
-            
-            
-            case  enum_client_packets.login_success: 
-                scr_consoleout("login success!");
-                var char_getname = buffer_read(connection_buffer,buffer_string);
-                //login attempt success!
-                //var get_charname = get_string("Character name?","Beeper");
-                
-                //transmit
-                //scr_spacket_character_query(get_charname); //old character request
-                if room == rm_menu {
-                    with obj_login_menu instance_destroy(); //safety
-                
-                    if !instance_exists(obj_charmenu_controller) {
-                        //remove title screen stuff
-                        with obj_weatherflower instance_destroy();
-                        with obj_weather_partmaker instance_destroy();
+                    case enum_client_packets.request_seen:
+                        if room == rm_menu {
+                            scr_consoleout("  server replied!");
+                            /*
+                            //remove menu
+                            with obj_mainmenu instance_destroy();
                         
-                        //make the char menu
-                        with instance_create(768,0,obj_charmenu_controller) {
-                            player_name = char_getname;
-                            scr_spacket_character_get_all_owned(player_name);
+                            //connection recognized.    
+                            var get_username = get_string("Login name","emailorsomething?");
+                            var get_password = get_string("Password","Not in use yet");
+                            
+                            //password salt and encode!
+                            var get_password = md5_string_unicode( string(get_password) + md5_string_unicode(get_username) );
+                            
+                            //transmit
+                            scr_spacket_login_request(get_username,get_password);
+                            */
+                            
+                            if instance_exists(obj_login_menu) == false {
+                                with obj_server_menu instance_destroy(); //safety
+                                instance_create(192,144,obj_login_menu);
+                            }
                         }
-                    }
-                }
-                else
-                {
-                    scr_consoleout("  Login success during a game?");
-                }
-            break;
-            
-            
-            case  enum_client_packets.character_transmit_data: 
-                show_debug_message("====character_transmit_data");
-                var char_data = buffer_read(connection_buffer,buffer_string);
-                var decode_string = base64_decode(char_data);
-                scr_consoleout("character was found");
-            
-                //add this to the character menu!
-                with obj_charmenu_controller {
-                    show_debug_message(decode_string);
-                    temp_charmap = json_decode( decode_string);
-                    ds_map_add_map( character_map, string(ds_map_size(character_map)), temp_charmap);
-                }
-            break;
-            
-            
-            case enum_client_packets.map_object_load:
-                var get_map_entity = buffer_read(connection_buffer,buffer_u16); //map object id
-                var get_objectindex = buffer_read(connection_buffer,buffer_u16);
-                global.max_map_load_entities = buffer_read(connection_buffer,buffer_u16);
-                var getx = buffer_read(connection_buffer,buffer_f32);
-                var gety = buffer_read(connection_buffer,buffer_f32);
-                var gethpprec = buffer_read(connection_buffer,buffer_u8);
-                var getdir = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
-                
-                //scr_consoleout("Map data received, map_entity: " + string(get_map_entity))
-                //scr_consoleout(" -object: " + string(get_objectindex) );
-                //scr_consoleout(" -remaining: " + string(global.max_map_load_entities-1) );
-                
-                //remove present walls as a cautionary measure?
-                with obj_construction {
-                    if x == getx and y == gety {
-                        scr_consoleout("Map data dropped, map_entity: " + string(get_map_entity))
-                        instance_destroy();
-                    }
-                }
-                
-                //add loaded wall
-                with instance_create(getx,gety,get_objectindex) {
-                    construction_id = get_map_entity;
-                    wall_health_perc = gethpprec;
-                    image_angle = getdir;
-                    //update tile
-                    event_user(13);
-                }
-                
-                //update loading total
-                if global.client_loading_progress &lt; 0.80 {//global.client_loading == true {
-                    if global.max_map_load_entities &gt; global.client_loading_wall_total global.client_loading_wall_total = global.max_map_load_entities;
-                    global.client_loading_progress = 1-(global.max_map_load_entities/global.client_loading_wall_total);
-                    
-                    var getdis = point_distance(global.player_startx,global.player_starty,getx,gety);
-                    
-                    if global.client_loading_progress &gt; 0.10 {
-                        if global.last_load_distance &lt; (getdis*0.80)  global.last_load_distance = getdis*0.80;
-                    }
-                }
-                else if global.client_loading_progress &lt; 0.90 {
-                    global.last_load_distance = room_width*2;
-                }
-            break;
-            
-            
-            case enum_client_packets.map_object_drop:
-                var get_map_entity = buffer_read(connection_buffer,buffer_u16); //map object id
-                var getx = buffer_read(connection_buffer,buffer_f32);
-                var gety = buffer_read(connection_buffer,buffer_f32);
-                
-                with obj_construction {
-                    if construction_id == get_map_entity {
-                        scr_consoleout("Map data dropped, map_entity: " + string(get_map_entity))
-                        instance_destroy();
-                    }
-                }
-            break;
-            
-            
-            case enum_client_packets.map_door_open:
-                var get_map_entity = buffer_read(connection_buffer,buffer_u16); //map object id
-                var get_inst = obj_door;
-                
-                if is_undefined(list_door_cache[| get_map_entity]) == false 
-                and instance_exists(list_door_cache[| get_map_entity]) == true 
-                and list_door_cache[| get_map_entity].object_index == obj_door {
-                    var get_inst = list_door_cache[| get_map_entity];
-                }
-                
-                with get_inst {
-                    if construction_id == get_map_entity {
-                        scr_consoleout("Map door opened: " + string(get_map_entity));
-                        other.list_door_cache[| get_map_entity] = id; //load instance into cache!
-                        alarm[0] = global.door_opening_duration + 10;
-                    }
-                }
-            break;
-            
-            
-            case enum_client_packets.map_door_security_reply:
-                var get_map_entity = buffer_read(connection_buffer,buffer_u16); //map object id
-                var get_security_color = buffer_read(connection_buffer,buffer_s32); //security color
-                var get_inst = obj_door;
-                
-                if is_undefined(list_door_cache[| get_map_entity]) == false 
-                and instance_exists(list_door_cache[| get_map_entity]) == true 
-                and list_door_cache[| get_map_entity].object_index == obj_door {
-                    var get_inst = list_door_cache[| get_map_entity];
-                }
-                
-                with get_inst {
-                    if construction_id == get_map_entity {
-                        scr_consoleout("Map door security color set: " + string(get_map_entity) + " color was: " + string(get_security_color));
-                        other.list_door_cache[| get_map_entity] = id; //load instance into cache!
-                        security_color = get_security_color;
-                    }
-                }
-            break;
-            
-            
-            case  enum_client_packets.character_locked: 
-                scr_consoleout("  character found, entity locked!");
-                my_player_entity_number = buffer_read(connection_buffer,buffer_u32);
-                my_inventory_entity_number = my_player_entity_number; //initial lock sets this! 
-                //assumes we want the player entity!
-                scr_consoleout("entity id replied to client: " + string(my_player_entity_number));
-                //this is pretty much always the first time lock in packet
-                alarm[3] = 20; //change room!
-            break;
-            
-            
-            case enum_client_packets.player_entity_return:
-                my_player_entity_number = buffer_read(connection_buffer,buffer_u32);
-                var get_object = scr_client_player_object_configure( buffer_read(connection_buffer,buffer_u16) );
-                var getx = buffer_read(connection_buffer,buffer_f32);
-                var gety = buffer_read(connection_buffer,buffer_f32);
-                var getremove_ent = buffer_read(connection_buffer,buffer_u8); //remove entity in only some cases.
-                scr_consoleout("entity id replied to client: " + string(my_player_entity_number));
-                
-                //refresh host object if needed
-                if instance_exists(obj_hostobject) == false {
-                    //player to location
-                    scr_consoleout("Player object was not found, creating new one using: " + string(object_get_name(get_object)) + " entity: " + string(my_player_entity_number));
-                    my_player = instance_create(getx,gety,get_object);
-                    global.player_startx = getx;
-                    global.player_starty = gety;
-                }
-                else
-                {
-                    //player location synched 
-                    with obj_hostobject {
-                        scr_consoleout("Instance of " + string(object_get_name(object_index)) + " player swapped, is entity: " + string( other.my_player_entity_number));
-                        other.my_player = id;
-                        if object_index != get_object {
-                            instance_change( get_object, true);
-                            scr_consoleout("Converted to: " + string(object_get_name(get_object)));
+                        else
+                        {
+                            scr_consoleout("  Server re-sent connection packet?");
                         }
-                    }
-                }
+                    break;    
                 
-                //only remove entity if we are told to!
-                if getremove_ent == true {
-                    //update puppets to remove vacant players
-                    with obj_puppet {
-                        if entityid == other.my_player_entity_number {
-                            //force unload
-                            scr_consoleout("Instance of " + string(object_get_name(object_index)) + " player swapped, entity removed: " + string( entityid));
-                            scr_spacket_entity_drop( entityid);
-                            instance_destroy(); 
+                    
+                    case  enum_client_packets.login_newuser:
+                        //confirm make new user?
+                        var char_getname = buffer_read(connection_buffer,buffer_string);
+                        var char_getpass = buffer_read(connection_buffer,buffer_string);
+                        
+                        with obj_login_menu instance_destroy(); //safety
+                        with instance_create(192,160,obj_questionbox_newuser) {
+                            my_text = "User does not exist?#Create user: " + string(char_getname) + "?";
+                            stored_name = char_getname;
+                            stored_hash = char_getpass;
                         }
-                    }
-                }
-            break;
-            
-            
-            case enum_client_packets.movement_location_sync:
-                //set the location based off of this!
-                var getx = buffer_read(connection_buffer,buffer_f32);
-                var gety = buffer_read(connection_buffer,buffer_f32);
-                var getdir = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
-                var getspd = buffer_read(connection_buffer,buffer_u16); //speed
-                
-                //update previous data
-                player_lastx = getx;
-                player_lasty = gety;
-                player_lastdir = getdir;
-                player_lastspd = getspd;
-                
-                //player location synched 
-                with obj_hostobject {
-                    mouse_get_x = getx;
-                    mouse_get_y = gety;
-                    x = getx;
-                    y = gety;
-                }
-                //request some stats too!
-            break;
-            
-            
-            case enum_client_packets.entity_load:
-                //set the location based off of this!
-                var entity_num = buffer_read(connection_buffer,buffer_u32);
-                var get_object = buffer_read(connection_buffer,buffer_u16);
-                var getx = buffer_read(connection_buffer,buffer_f32);
-                var gety = buffer_read(connection_buffer,buffer_f32);
-                var getdir = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
-                var getspd = buffer_read(connection_buffer,buffer_u16); //speed
-                var getconstruct = buffer_read(connection_buffer,buffer_u8); //build flag
-                var getdepthmod = buffer_read(connection_buffer,buffer_s16); 
-                
-                if is_undefined(list_entity_cache[| entity_num]) or instance_exists(list_entity_cache[| entity_num]) == false {
-                    //it is up to the object itself to retrieve valid data of itself!
-                    scr_consoleout("entity loaded: " + string(entity_num));
-                    scr_consoleout(" -new instance created");
-                    list_entity_cache[| entity_num] = instance_create(getx,gety,get_object);
-                }
-                
-                with list_entity_cache[| entity_num] {
-                    //construct
-                    constructed = getconstruct;
-                
-                    //update puppet guts
-                    entityid = entity_num;
-                    depth_modifier = getdepthmod;
+                    break;
                     
-                    goalx = getx;
-                    goaly = gety;
                     
-                    goaldir = getdir;
-                    goalspd = getspd;
-                    
-                    //request graphics update
-                    event_user(0);
-                }
-            break;
-        
-            
-            case enum_client_packets.entity_drop:
-                //set the location based off of this!
-                var entity_num = buffer_read(connection_buffer,buffer_u32);
-                
-                //scr_consoleout("entity dropped: " + string(entity_num));
-                
-                if is_undefined(list_entity_cache[| entity_num]) == false and instance_exists(list_entity_cache[| entity_num]) == true {
-                    //it is up to the object itself to retrieve valid data of itself!
-                    with list_entity_cache[| entity_num] instance_destroy();
-                    list_entity_cache[| entity_num] = noone; //force clean
-                }
-            break;
-            
-            
-            case enum_client_packets.entity_activate:
-                //sets the internal goal_state values
-                var entity_num = buffer_read(connection_buffer,buffer_u32);
-                var state_value = buffer_read(connection_buffer,buffer_u32);
-                
-                scr_consoleout("entity activated: " + string(entity_num));
-                
-                if is_undefined(list_entity_cache[| entity_num]) == false and instance_exists(list_entity_cache[| entity_num]) == true {
-                    //it is up to the object itself to retrieve valid data of itself!
-                    with list_entity_cache[| entity_num] {
-                        goal_state_value = state_value;   
-                    }
-                }
-            break;
-            
-            case enum_client_packets.storagebox_object_update:
-                //entity changed inventories in some way, and now all inventory objects need to be updated.
-                var entity_num = buffer_read(connection_buffer,buffer_u32);
-                var storagebox_entity_num = buffer_read(connection_buffer,buffer_u32);
-                scr_consoleout("entity: " + string(entity_num) + " wants to update storage inside entity: " + string(storagebox_entity_num));
-                
-                scr_inventory_scanfor_updated_item(entity_num,storagebox_entity_num); //update inventory if needed!
-            break;
-            
-            
-            case enum_client_packets.force_reset:
-                //drop everything, we got kicked or disconnected violently
-                scr_consoleout("Critical error packet..." );
-                show_message_async("An error occured: #" + string(buffer_read(connection_buffer,buffer_string)));
-                game_restart();
-            break;
-            
-            
-            case enum_client_packets.failed_action:
-                //drop everything, we got kicked or disconnected violently
-                scr_consoleout("Player action failed!" );
-                scr_client_errormessage(string(buffer_read(connection_buffer,buffer_string))); 
-            break;
-            
-            
-            case enum_client_packets.server_alive:
-                //client auto disconnect
-                global.server_alive = true; //resets to true, the alarm sets it to false, and locks input if the alarm isn't met that cycle!
-                global.timeout_time = global.timeout_time_max;
-            break;
-
-            
-            case enum_client_packets.inventory_update:
-                //recieve updated inventory and pass into the object that requested it!
-                var get_objectid_return = buffer_read(connection_buffer,buffer_s32);
-                var get_inventory_total_size = buffer_read(connection_buffer,buffer_u8);
-                var get_base64 = buffer_read(connection_buffer,buffer_string);
-                var get_str = base64_decode(get_base64);
-                
-                scr_consoleout("Inventory recieved for instance: " + string(get_objectid_return) );
-                
-                //convert data into a list!
-                var decoded_list = ds_list_create();
-                ds_list_read(decoded_list,get_str);
-                
-                //set the inventory of the initial sent object!
-                with get_objectid_return {
-                    //inventory size
-                    inventory_slots_tot_max = get_inventory_total_size;
-                    inventory_slots_hor_max = min(ceil(inventory_slots_tot_max/2),6);
-                    
-                    inventory_sized = floor(ds_list_size(decoded_list)/2);
-                    
-                    scr_consoleout("Inventory verified, size: " + string(inventory_sized) );
-                    
-                    //stores inventory
-                    for (var i=0; i&lt;ds_list_size(decoded_list); i+=1)
-                    {
-                        array_inventory[i,0] = decoded_list[| (i*2)+0]; //entity id
-                        array_inventory[i,1] = decoded_list[| (i*2)+1]; //object_index
-                    }
-                }
-                
-                //clean up
-                ds_list_destroy(decoded_list);
-            break;
-            
-            
-            case enum_client_packets.entity_grab_update:
-                //set the client grabbing entity from the server
-                var entity_num = buffer_read(connection_buffer,buffer_u32);
-                global.client_grab_entity = entity_num; //use client instance cache to do facing direction stuff!!
-                if global.client_grab_entity == 4294967295 global.client_grab_entity = -1; //lazy signage fix.
-            break;
-            
-            
-            
-            
-            case enum_client_packets.map_security_reply:
-                //getting the names and colors of security levels!
-                scr_consoleout("===Security level data sent from server! Updating security map to match! ");
-                //make map if needed
-                if ds_exists(global.list_security_levels,ds_type_list) == false global.list_security_levels = ds_list_create();
-                //extract security data sent from server
-                var datacollected = buffer_read(connection_buffer,buffer_string);
-                var extract_string = base64_decode(datacollected);
-                var encapsulating_map = json_decode(extract_string)
-                
-                //replace old data
-                var get_list = encapsulating_map[? "security"];
-                if ds_exists(global.list_security_levels,ds_type_list) ds_list_destroy(global.list_security_levels);
-                global.list_security_levels = get_list;
-                
-                //cleanup
-                encapsulating_map[? "security"] = -1;
-                ds_map_destroy(encapsulating_map);
-            break;
-            
-            
-            case enum_client_packets.player_security_reply:
-                //getting the player's own security status!
-                scr_consoleout("===Security CLEARANCE for player sent from server. ");
-                //make map if needed
-                if ds_exists(global.list_player_security_clearance,ds_type_list) == false global.list_player_security_clearance = ds_list_create();
-                //extract security data sent from server
-                var datacollected = buffer_read(connection_buffer,buffer_string);
-                var extract_string = base64_decode(datacollected);
-                ds_list_clear(global.list_player_security_clearance); //cleanout
-                ds_list_read(global.list_player_security_clearance,extract_string);
-                //debug
-                for (i=0; i&lt;ds_list_size(global.list_player_security_clearance); i+=1)
-                {
-                    scr_consoleout(" -sec data: " + string(global.list_player_security_clearance));
-                }
-            break;
-            
-            
-            /******************************************************
-                Context based replys to server data processing
-            *****************************************************/
-            
-            case enum_client_packets.entity_reply:
-                //set the location based off of this!
-                var entity_num = buffer_read(connection_buffer,buffer_u32);
-                var instanceid = buffer_read(connection_buffer,buffer_s32);
-                var datacollected = buffer_read(connection_buffer,buffer_string);
-                var input_control_states = buffer_read(connection_buffer,buffer_u8);
-                var mode_type_instance_or_object = buffer_read(connection_buffer,buffer_u8);
-                
-                var extract_string = base64_decode(datacollected);
-                var extract_list = ds_list_create();
-                ds_list_read(extract_list,extract_string);
-                
-                scr_consoleout("entity used reply: " + string(entity_num));
-                
-                if is_undefined(instanceid) == false {
-                    if mode_type_instance_or_object == enum_entity_reply.is_entity and instance_exists(instanceid) { //if using an instance!
-                        scr_consoleout(" -invoked in instance: " + string(instanceid));
-                        scr_consoleout(" -object: " + string(object_get_name(instanceid.object_index)));
-                    
-                        switch instanceid.object_index {
+                    case  enum_client_packets.login_failed:
+                        var char_getname = buffer_read(connection_buffer,buffer_string);
+                        scr_consoleout("Login failed! user: " + string(char_getname));
                         
-                            case obj_securitymenu:
-                                //for currently in use security tool menus, just toggle the states of locked and unlocked stuff!
-                                //allow dot or not
-                                for (i=0; i&lt;ds_list_size(extract_list)-1; i+=1) {
-                                    var get_security_map = global.list_security_levels[| i];
-                                            
-                                    // it is i + 1 because this also feeds us back the tooltip menu spflag
-                                    if is_undefined( get_security_map) == false and ds_exists( get_security_map, ds_type_map) {
-                                        if  (is_undefined(extract_list[| i+1]) == false //OR if the card's clearance is not undefined
-                                        and extract_list[| i+1] != 0) { //and if the cards's clearance is not false
-                                            instanceid.list_security_dots[ i] = get_security_map[? "color"]; //enabled!
-                                        }
-                                        else
-                                        {
-                                            instanceid.list_security_dots[ i] = -1; //no color, disabled
-                                        }
-                                        
-                                        //debug out
-                                        scr_consoleout(" -index: " + string(i) + " clr: " + string(instanceid.list_security_dots[ i]));
-                                    }
-                                }
-                            break;
+                        //login attempt failed!
+                        scr_client_errormessage("Password did not match for user: " + string(char_getname));
+                    break;
+                    
+                    
+                    case  enum_client_packets.login_success: 
+                        scr_consoleout("login success!");
+                        var char_getname = buffer_read(connection_buffer,buffer_string);
+                        //login attempt success!
+                        //var get_charname = get_string("Character name?","Beeper");
                         
+                        //transmit
+                        //scr_spacket_character_query(get_charname); //old character request
+                        if room == rm_menu {
+                            with obj_login_menu instance_destroy(); //safety
                         
-                            case obj_puppet_powercell:
-                                var flagstuff = extract_list[| 0]; //just the flag from the tooltip spflag things
+                            if !instance_exists(obj_charmenu_controller) {
+                                //remove title screen stuff
+                                with obj_weatherflower instance_destroy();
+                                with obj_weather_partmaker instance_destroy();
                                 
-                                if input_control_states == 0 {
-                                    //get power in cell
-                                    scr_consoleout(" -powercell charge requested");
-                                    instanceid.power_cell_charge = extract_list[| 1];
+                                //make the char menu
+                                with instance_create(768,0,obj_charmenu_controller) {
+                                    player_name = char_getname;
+                                    scr_spacket_character_get_all_owned(player_name);
                                 }
-                                else if input_control_states == 1 {
-                                    //use power cell
-                                    scr_consoleout(" -powercell charge used");
-                                    instanceid.power_cell_charge = extract_list[| 1];
-                                }
-                                else if input_control_states == 2 {
-                                    //recharge power cell
-                                    scr_consoleout(" -powercell charge refilled");
-                                    instanceid.power_cell_charge = 100;
-                                }
-                            break;
+                            }
+                        }
+                        else
+                        {
+                            scr_consoleout("  Login success during a game?");
+                        }
+                    break;
+                    
+                    
+                    case  enum_client_packets.character_transmit_data: 
+                        show_debug_message("====character_transmit_data");
+                        var char_data = buffer_read(connection_buffer,buffer_string);
+                        var decode_string = base64_decode(char_data);
+                        scr_consoleout("character was found");
+                    
+                        //add this to the character menu!
+                        with obj_charmenu_controller {
+                            show_debug_message(decode_string);
+                            temp_charmap = json_decode( decode_string);
+                            ds_map_add_map( character_map, string(ds_map_size(character_map)), temp_charmap);
+                        }
+                    break;
+                    
+                    
+                    case enum_client_packets.map_object_load:
+                        var get_map_entity = buffer_read(connection_buffer,buffer_u16); //map object id
+                        var get_objectindex = buffer_read(connection_buffer,buffer_u16);
+                        global.max_map_load_entities = buffer_read(connection_buffer,buffer_u16);
+                        var getx = buffer_read(connection_buffer,buffer_f32);
+                        var gety = buffer_read(connection_buffer,buffer_f32);
+                        var gethpprec = buffer_read(connection_buffer,buffer_u8);
+                        var getdir = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
+                        
+                        //scr_consoleout("Map data received, map_entity: " + string(get_map_entity))
+                        //scr_consoleout(" -object: " + string(get_objectindex) );
+                        //scr_consoleout(" -remaining: " + string(global.max_map_load_entities-1) );
+                        
+                        //remove present walls as a cautionary measure?
+                        with obj_construction {
+                            if x == getx and y == gety {
+                                scr_consoleout("Map data dropped, map_entity: " + string(get_map_entity))
+                                instance_destroy();
+                            }
+                        }
+                        
+                        //add loaded wall
+                        with instance_create(getx,gety,get_objectindex) {
+                            construction_id = get_map_entity;
+                            wall_health_perc = gethpprec;
+                            image_angle = getdir;
+                            //update tile
+                            event_user(13);
+                        }
+                        
+                        //update loading total
+                        if global.client_loading_progress &lt; 0.80 {//global.client_loading == true {
+                            if global.max_map_load_entities &gt; global.client_loading_wall_total global.client_loading_wall_total = global.max_map_load_entities;
+                            global.client_loading_progress = 1-(global.max_map_load_entities/global.client_loading_wall_total);
                             
-                            case obj_location_target:
-                                //select action based off of mode!
-                                if instanceid.target_mode == enum_targeter.shooting {
-                                    //if firing a weapon!
-                                    switch global.equiped_object {
-                                        case obj_puppet_laserrifle:
-                                            //pretty much just getting the ammo count loaded, if just checking it or if fired and checking.
-                                            global.equiped_ammo = ceil(extract_list[| 0]/2); //fires two charges a shot
-                                        break;
-                                    }
-                                }
-                            break;
+                            var getdis = point_distance(global.player_startx,global.player_starty,getx,gety);
                             
-                            case obj_tooltip:
-                                enum enum_tooltip_spflags {
-                                    is_security_data = -277,
-                                    is_powercell_data = -290,
+                            if global.client_loading_progress &gt; 0.10 {
+                                if global.last_load_distance &lt; (getdis*0.80)  global.last_load_distance = getdis*0.80;
+                            }
+                        }
+                        else if global.client_loading_progress &lt; 0.90 {
+                            global.last_load_distance = room_width*2;
+                        }
+                    break;
+                    
+                    
+                    case enum_client_packets.map_object_drop:
+                        var get_map_entity = buffer_read(connection_buffer,buffer_u16); //map object id
+                        var getx = buffer_read(connection_buffer,buffer_f32);
+                        var gety = buffer_read(connection_buffer,buffer_f32);
+                        
+                        with obj_construction {
+                            if construction_id == get_map_entity {
+                                scr_consoleout("Map data dropped, map_entity: " + string(get_map_entity))
+                                instance_destroy();
+                            }
+                        }
+                    break;
+                    
+                    
+                    case enum_client_packets.map_door_open:
+                        var get_map_entity = buffer_read(connection_buffer,buffer_u16); //map object id
+                        var get_inst = obj_door;
+                        
+                        if is_undefined(list_door_cache[| get_map_entity]) == false 
+                        and instance_exists(list_door_cache[| get_map_entity]) == true 
+                        and list_door_cache[| get_map_entity].object_index == obj_door {
+                            var get_inst = list_door_cache[| get_map_entity];
+                        }
+                        
+                        with get_inst {
+                            if construction_id == get_map_entity {
+                                scr_consoleout("Map door opened: " + string(get_map_entity));
+                                other.list_door_cache[| get_map_entity] = id; //load instance into cache!
+                                alarm[0] = global.door_opening_duration + 10;
+                            }
+                        }
+                    break;
+                    
+                    
+                    case enum_client_packets.map_door_security_reply:
+                        var get_map_entity = buffer_read(connection_buffer,buffer_u16); //map object id
+                        var get_security_color = buffer_read(connection_buffer,buffer_s32); //security color
+                        var get_inst = obj_door;
+                        
+                        if is_undefined(list_door_cache[| get_map_entity]) == false 
+                        and instance_exists(list_door_cache[| get_map_entity]) == true 
+                        and list_door_cache[| get_map_entity].object_index == obj_door {
+                            var get_inst = list_door_cache[| get_map_entity];
+                        }
+                        
+                        with get_inst {
+                            if construction_id == get_map_entity {
+                                scr_consoleout("Map door security color set: " + string(get_map_entity) + " color was: " + string(get_security_color));
+                                other.list_door_cache[| get_map_entity] = id; //load instance into cache!
+                                security_color = get_security_color;
+                            }
+                        }
+                    break;
+                    
+                    
+                    case  enum_client_packets.character_locked: 
+                        scr_consoleout("  character found, entity locked!");
+                        my_player_entity_number = buffer_read(connection_buffer,buffer_u32);
+                        my_inventory_entity_number = my_player_entity_number; //initial lock sets this! 
+                        //assumes we want the player entity!
+                        scr_consoleout("entity id replied to client: " + string(my_player_entity_number));
+                        //this is pretty much always the first time lock in packet
+                        alarm[3] = 20; //change room!
+                    break;
+                    
+                    
+                    case enum_client_packets.player_entity_return:
+                        my_player_entity_number = buffer_read(connection_buffer,buffer_u32);
+                        var get_object = scr_client_player_object_configure( buffer_read(connection_buffer,buffer_u16) );
+                        var getx = buffer_read(connection_buffer,buffer_f32);
+                        var gety = buffer_read(connection_buffer,buffer_f32);
+                        var getremove_ent = buffer_read(connection_buffer,buffer_u8); //remove entity in only some cases.
+                        scr_consoleout("entity id replied to client: " + string(my_player_entity_number));
+                        
+                        //refresh host object if needed
+                        if instance_exists(obj_hostobject) == false {
+                            //player to location
+                            scr_consoleout("Player object was not found, creating new one using: " + string(object_get_name(get_object)) + " entity: " + string(my_player_entity_number));
+                            my_player = instance_create(getx,gety,get_object);
+                            global.player_startx = getx;
+                            global.player_starty = gety;
+                        }
+                        else
+                        {
+                            //player location synched 
+                            with obj_hostobject {
+                                scr_consoleout("Instance of " + string(object_get_name(object_index)) + " player swapped, is entity: " + string( other.my_player_entity_number));
+                                other.my_player = id;
+                                if object_index != get_object {
+                                    instance_change( get_object, true);
+                                    scr_consoleout("Converted to: " + string(object_get_name(get_object)));
                                 }
+                            }
+                        }
+                        
+                        //only remove entity if we are told to!
+                        if getremove_ent == true {
+                            //update puppets to remove vacant players
+                            with obj_puppet {
+                                if entityid == other.my_player_entity_number {
+                                    //force unload
+                                    scr_consoleout("Instance of " + string(object_get_name(object_index)) + " player swapped, entity removed: " + string( entityid));
+                                    scr_spacket_entity_drop( entityid);
+                                    instance_destroy(); 
+                                }
+                            }
+                        }
+                    break;
+                    
+                    
+                    case enum_client_packets.movement_location_sync:
+                        //set the location based off of this!
+                        var getx = buffer_read(connection_buffer,buffer_f32);
+                        var gety = buffer_read(connection_buffer,buffer_f32);
+                        var getdir = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
+                        var getspd = buffer_read(connection_buffer,buffer_u16); //speed
+                        
+                        //update previous data
+                        player_lastx = getx;
+                        player_lasty = gety;
+                        player_lastdir = getdir;
+                        player_lastspd = getspd;
+                        
+                        //player location synched 
+                        with obj_hostobject {
+                            mouse_get_x = getx;
+                            mouse_get_y = gety;
+                            x = getx;
+                            y = gety;
+                        }
+                        //request some stats too!
+                    break;
+                    
+                    
+                    case enum_client_packets.entity_load:
+                        //set the location based off of this!
+                        var entity_num = buffer_read(connection_buffer,buffer_u32);
+                        var get_object = buffer_read(connection_buffer,buffer_u16);
+                        var getx = buffer_read(connection_buffer,buffer_f32);
+                        var gety = buffer_read(connection_buffer,buffer_f32);
+                        var getdir = (buffer_read(connection_buffer,buffer_u16) / 65534) * 360;
+                        var getspd = buffer_read(connection_buffer,buffer_u16); //speed
+                        var getconstruct = buffer_read(connection_buffer,buffer_u8); //build flag
+                        var getdepthmod = buffer_read(connection_buffer,buffer_s16); 
+                        
+                        if is_undefined(list_entity_cache[| entity_num]) or instance_exists(list_entity_cache[| entity_num]) == false {
+                            //it is up to the object itself to retrieve valid data of itself!
+                            scr_consoleout("entity loaded: " + string(entity_num));
+                            scr_consoleout(" -new instance created");
+                            list_entity_cache[| entity_num] = instance_create(getx,gety,get_object);
+                        }
+                        
+                        with list_entity_cache[| entity_num] {
+                            //construct
+                            constructed = getconstruct;
+                        
+                            //update puppet guts
+                            entityid = entity_num;
+                            depth_modifier = getdepthmod;
                             
-                                //update with the network query made
-                                scr_consoleout(" -Tooltip requested data: " + string(string(extract_list[| 0])));
+                            goalx = getx;
+                            goaly = gety;
+                            
+                            goaldir = getdir;
+                            goalspd = getspd;
+                            
+                            //request graphics update
+                            event_user(0);
+                        }
+                    break;
+                
+                    
+                    case enum_client_packets.entity_drop:
+                        //set the location based off of this!
+                        var entity_num = buffer_read(connection_buffer,buffer_u32);
+                        
+                        //scr_consoleout("entity dropped: " + string(entity_num));
+                        
+                        if is_undefined(list_entity_cache[| entity_num]) == false and instance_exists(list_entity_cache[| entity_num]) == true {
+                            //it is up to the object itself to retrieve valid data of itself!
+                            with list_entity_cache[| entity_num] instance_destroy();
+                            list_entity_cache[| entity_num] = noone; //force clean
+                        }
+                    break;
+                    
+                    
+                    case enum_client_packets.entity_activate:
+                        //sets the internal goal_state values
+                        var entity_num = buffer_read(connection_buffer,buffer_u32);
+                        var state_value = buffer_read(connection_buffer,buffer_u32);
+                        
+                        scr_consoleout("entity activated: " + string(entity_num));
+                        
+                        if is_undefined(list_entity_cache[| entity_num]) == false and instance_exists(list_entity_cache[| entity_num]) == true {
+                            //it is up to the object itself to retrieve valid data of itself!
+                            with list_entity_cache[| entity_num] {
+                                goal_state_value = state_value;   
+                            }
+                        }
+                    break;
+                    
+                    case enum_client_packets.storagebox_object_update:
+                        //entity changed inventories in some way, and now all inventory objects need to be updated.
+                        var entity_num = buffer_read(connection_buffer,buffer_u32);
+                        var storagebox_entity_num = buffer_read(connection_buffer,buffer_u32);
+                        scr_consoleout("entity: " + string(entity_num) + " wants to update storage inside entity: " + string(storagebox_entity_num));
+                        
+                        scr_inventory_scanfor_updated_item(entity_num,storagebox_entity_num); //update inventory if needed!
+                    break;
+                    
+                    
+                    case enum_client_packets.force_reset:
+                        //drop everything, we got kicked or disconnected violently
+                        scr_consoleout("Critical error packet..." );
+                        show_message_async("An error occured: #" + string(buffer_read(connection_buffer,buffer_string)));
+                        game_restart();
+                    break;
+                    
+                    
+                    case enum_client_packets.failed_action:
+                        //drop everything, we got kicked or disconnected violently
+                        scr_consoleout("Player action failed!" );
+                        scr_client_errormessage(string(buffer_read(connection_buffer,buffer_string))); 
+                    break;
+                    
+                    
+                    case enum_client_packets.server_alive:
+                        //client auto disconnect
+                        global.server_alive = true; //resets to true, the alarm sets it to false, and locks input if the alarm isn't met that cycle!
+                        global.timeout_time = global.timeout_time_max;
+                    break;
+        
+                    
+                    case enum_client_packets.inventory_update:
+                        //recieve updated inventory and pass into the object that requested it!
+                        var get_objectid_return = buffer_read(connection_buffer,buffer_s32);
+                        var get_inventory_total_size = buffer_read(connection_buffer,buffer_u8);
+                        var get_base64 = buffer_read(connection_buffer,buffer_string);
+                        var get_str = base64_decode(get_base64);
+                        
+                        scr_consoleout("Inventory recieved for instance: " + string(get_objectid_return) );
+                        
+                        //convert data into a list!
+                        var decoded_list = ds_list_create();
+                        ds_list_read(decoded_list,get_str);
+                        
+                        //set the inventory of the initial sent object!
+                        with get_objectid_return {
+                            //inventory size
+                            inventory_slots_tot_max = get_inventory_total_size;
+                            inventory_slots_hor_max = min(ceil(inventory_slots_tot_max/2),6);
+                            
+                            inventory_sized = floor(ds_list_size(decoded_list)/2);
+                            
+                            scr_consoleout("Inventory verified, size: " + string(inventory_sized) );
+                            
+                            //stores inventory
+                            for (var i=0; i&lt;ds_list_size(decoded_list); i+=1)
+                            {
+                                array_inventory[i,0] = decoded_list[| (i*2)+0]; //entity id
+                                array_inventory[i,1] = decoded_list[| (i*2)+1]; //object_index
+                            }
+                        }
+                        
+                        //clean up
+                        ds_list_destroy(decoded_list);
+                    break;
+                    
+                    
+                    case enum_client_packets.entity_grab_update:
+                        //set the client grabbing entity from the server
+                        var entity_num = buffer_read(connection_buffer,buffer_u32);
+                        global.client_grab_entity = entity_num; //use client instance cache to do facing direction stuff!!
+                        if global.client_grab_entity == 4294967295 global.client_grab_entity = -1; //lazy signage fix.
+                    break;
+                    
+                    
+                    
+                    
+                    case enum_client_packets.map_security_reply:
+                        //getting the names and colors of security levels!
+                        scr_consoleout("===Security level data sent from server! Updating security map to match! ");
+                        //make map if needed
+                        if ds_exists(global.list_security_levels,ds_type_list) == false global.list_security_levels = ds_list_create();
+                        //extract security data sent from server
+                        var datacollected = buffer_read(connection_buffer,buffer_string);
+                        var extract_string = base64_decode(datacollected);
+                        var encapsulating_map = json_decode(extract_string)
+                        
+                        //replace old data
+                        var get_list = encapsulating_map[? "security"];
+                        if ds_exists(global.list_security_levels,ds_type_list) ds_list_destroy(global.list_security_levels);
+                        global.list_security_levels = get_list;
+                        
+                        //cleanup
+                        encapsulating_map[? "security"] = -1;
+                        ds_map_destroy(encapsulating_map);
+                    break;
+                    
+                    
+                    case enum_client_packets.player_security_reply:
+                        //getting the player's own security status!
+                        scr_consoleout("===Security CLEARANCE for player sent from server. ");
+                        //make map if needed
+                        if ds_exists(global.list_player_security_clearance,ds_type_list) == false global.list_player_security_clearance = ds_list_create();
+                        //extract security data sent from server
+                        var datacollected = buffer_read(connection_buffer,buffer_string);
+                        var extract_string = base64_decode(datacollected);
+                        ds_list_clear(global.list_player_security_clearance); //cleanout
+                        ds_list_read(global.list_player_security_clearance,extract_string);
+                        //debug
+                        for (i=0; i&lt;ds_list_size(global.list_player_security_clearance); i+=1)
+                        {
+                            scr_consoleout(" -sec data: " + string(global.list_player_security_clearance));
+                        }
+                    break;
+                    
+                    
+                    /******************************************************
+                        Context based replys to server data processing
+                    *****************************************************/
+                    
+                    case enum_client_packets.entity_reply:
+                        //set the location based off of this!
+                        var entity_num = buffer_read(connection_buffer,buffer_u32);
+                        var instanceid = buffer_read(connection_buffer,buffer_s32);
+                        var datacollected = buffer_read(connection_buffer,buffer_string);
+                        var input_control_states = buffer_read(connection_buffer,buffer_u8);
+                        var mode_type_instance_or_object = buffer_read(connection_buffer,buffer_u8);
+                        
+                        var extract_string = base64_decode(datacollected);
+                        var extract_list = ds_list_create();
+                        ds_list_read(extract_list,extract_string);
+                        
+                        scr_consoleout("entity used reply: " + string(entity_num));
+                        
+                        if is_undefined(instanceid) == false {
+                            if mode_type_instance_or_object == enum_entity_reply.is_entity and instance_exists(instanceid) { //if using an instance!
+                                scr_consoleout(" -invoked in instance: " + string(instanceid));
+                                scr_consoleout(" -object: " + string(object_get_name(instanceid.object_index)));
+                            
+                                switch instanceid.object_index {
                                 
-                                if is_string(extract_list[| 0]) {
-                                    scr_consoleout(" -Was text");
-                                    instanceid.network_query = string(extract_list[| 0]);
-                                }
-                                else
-                                {
-                                    switch extract_list[| 0] {
-                                        case enum_tooltip_spflags.is_security_data:
-                                            scr_consoleout(" -Was security flags");
-                                            
-                                            for (var i=0; i&lt;ds_list_size(extract_list); i+=1)
-                                            {
-                                                var get_security_map = global.list_security_levels[| i];
-                                                if is_undefined( get_security_map) == false and ds_exists( get_security_map, ds_type_map) {
-                                                    //if the main security data map exists 
-                                                    //fillout security list!
-                                                    if is_undefined(extract_list[| i + 1]) == false and extract_list[| i + 1] != 0 {
-                                                        instanceid.list_security_dots[ i] = get_security_map[? "color"] //insert color
-                                                        scr_consoleout(" -index: " + string(i) + " clr:" + string(get_security_map[? "color"]))
-                                                    }
-                                                    else
-                                                    {
-                                                        scr_consoleout(" -index: " + string(i) + " clr: -1");
-                                                        instanceid.list_security_dots[ i] = -1;
-                                                    }
+                                    case obj_securitymenu:
+                                        //for currently in use security tool menus, just toggle the states of locked and unlocked stuff!
+                                        //allow dot or not
+                                        for (i=0; i&lt;ds_list_size(extract_list)-1; i+=1) {
+                                            var get_security_map = global.list_security_levels[| i];
+                                                    
+                                            // it is i + 1 because this also feeds us back the tooltip menu spflag
+                                            if is_undefined( get_security_map) == false and ds_exists( get_security_map, ds_type_map) {
+                                                if  (is_undefined(extract_list[| i+1]) == false //OR if the card's clearance is not undefined
+                                                and extract_list[| i+1] != 0) { //and if the cards's clearance is not false
+                                                    instanceid.list_security_dots[ i] = get_security_map[? "color"]; //enabled!
                                                 }
                                                 else
                                                 {
-                                                    scr_consoleout(" -index: " + string(i) + " clr: -1");
-                                                    instanceid.list_security_dots[ i] = -1;
+                                                    instanceid.list_security_dots[ i] = -1; //no color, disabled
                                                 }
-                                            }
-                                        break;
-                                        
-                                        case enum_tooltip_spflags.is_powercell_data:
-                                            scr_consoleout(" -Was powercell text");
-                                            instanceid.network_query = string(extract_list[| 1]);
-                                        break;
-                                    }
-                                }
-                                
-                            break;
-                            
-                            case obj_machine_indoorlamp:
-                                scr_consoleout(" -recharging instance specific light: " + string(instanceid));
-                                //FORCE the light to a certain value!!
-                                with instanceid {
-                                    scr_consoleout(" -found, set val is: " + string(extract_list[| 0]));
-                                    alarm[0] = extract_list[| 0]; //life of light, plus some stuff for lag
-                                }
-                            break;
-                            
-                        }
-                    }
-                    else if mode_type_instance_or_object == enum_entity_reply.is_object and object_exists(instanceid) {
-                        //unique entities using object to decide instead!!
-                        scr_consoleout(" -invoked in object_index: " + string(object_get_name(instanceid)));
-                        
-                        switch instanceid {
-                            case obj_puppet_securitytool:
-                                //spawn security menu based off of list returned! if menu already exists just change it!
-                                if instance_exists(obj_securitymenu) == false instance_create(obj_hostobject.x,obj_hostobject.y,obj_securitymenu);
-                                
-                                with obj_securitymenu {
-                                    //load up the security menu, each index needs to be setup!
-                                    //var bigger_list = ds_list_size(datacollected);
-                                    //if bigger_list &lt; ds_list_size( global.list_player_security_clearance)  bigger_list = ds_list_size( global.list_player_security_clearance);
-                                    var bigger_list = ds_list_size(global.list_security_levels); //get the actual total of security levels in the outpost
-                                    
-                                    //location to be on screen
-                                    var mouse_guix = device_mouse_x_to_gui(0);
-                                    var mouse_guiy = device_mouse_y_to_gui(0);
-                                    guix = mouse_guix;
-                                    guiy = 32//mouse_guiy;
-                                    
-                                    ///setup the entity!
-                                    my_entity = entity_num; //set by mouse on create
-                                    menu_is_inventory = true;
-                                    context_menu_width = 0;
-                                    door_editing_mode = (input_control_states == 1); //is false if editing cards, true of editing a map object (likely door)
-                                    
-                                    
-                                    for (var i=0; i&lt;bigger_list; i+=1)
-                                    {
-                                        var get_security_map = global.list_security_levels[| i];
-                                        
-                                        if is_undefined( get_security_map) == false and ds_exists( get_security_map, ds_type_map) {
-                                            //if the main security data map exists 
-                                            
-                                            //log default data
-                                            context_menu[i,0] = get_security_map[? "name"]; //Name
-                                            context_menu[i,1] = get_security_map[? "color"]; //Color, depricated? might be of use someday.
-                                            
-                                            //check if it should be locked or not
-                                            if (is_undefined(global.list_player_security_clearance[| i]) == false //if the player's clearance is not undefined
-                                            and global.list_player_security_clearance[| i] != 0) //and if the player's clearance is not false
-                                            or (is_undefined(extract_list[| i]) == false //OR if the card's clearance is not undefined
-                                            and extract_list[| i] != 0) { //and if the cards's clearance is not false
-                                                //allow this entry into the map!
-                                                context_menu[i,2] = false; //Entry unlocked
-                                            }
-                                            else
-                                            {
-                                                context_menu[i,2] = true; //Entry locked
-                                            }
-                                            
-                                            //allow dot or not
-                                            if  (is_undefined(extract_list[| i]) == false //OR if the card's clearance is not undefined
-                                            and extract_list[| i] != 0) { //and if the cards's clearance is not false
-                                                list_security_dots[ i] = get_security_map[? "color"]; //enabled!
-                                            }
-                                            else
-                                            {
-                                                list_security_dots[ i] = -1; //no color, disabled
+                                                
+                                                //debug out
+                                                scr_consoleout(" -index: " + string(i) + " clr: " + string(instanceid.list_security_dots[ i]));
                                             }
                                         }
-                                    }
+                                    break;
+                                
+                                
+                                    case obj_puppet_powercell:
+                                        var flagstuff = extract_list[| 0]; //just the flag from the tooltip spflag things
+                                        
+                                        if input_control_states == 0 {
+                                            //get power in cell
+                                            scr_consoleout(" -powercell charge requested");
+                                            instanceid.power_cell_charge = extract_list[| 1];
+                                        }
+                                        else if input_control_states == 1 {
+                                            //use power cell
+                                            scr_consoleout(" -powercell charge used");
+                                            instanceid.power_cell_charge = extract_list[| 1];
+                                        }
+                                        else if input_control_states == 2 {
+                                            //recharge power cell
+                                            scr_consoleout(" -powercell charge refilled");
+                                            instanceid.power_cell_charge = 100;
+                                        }
+                                    break;
                                     
-                                    //trigger display update
-                                    event_user(0);
+                                    case obj_location_target:
+                                        //select action based off of mode!
+                                        if instanceid.target_mode == enum_targeter.shooting {
+                                            //if firing a weapon!
+                                            switch global.equiped_object {
+                                                case obj_puppet_laserrifle:
+                                                    //pretty much just getting the ammo count loaded, if just checking it or if fired and checking.
+                                                    global.equiped_ammo = ceil(extract_list[| 0]/2); //fires two charges a shot
+                                                break;
+                                            }
+                                        }
+                                    break;
+                                    
+                                    case obj_tooltip:
+                                        enum enum_tooltip_spflags {
+                                            is_security_data = -277,
+                                            is_powercell_data = -290,
+                                        }
+                                    
+                                        //update with the network query made
+                                        scr_consoleout(" -Tooltip requested data: " + string(string(extract_list[| 0])));
+                                        
+                                        if is_string(extract_list[| 0]) {
+                                            scr_consoleout(" -Was text");
+                                            instanceid.network_query = string(extract_list[| 0]);
+                                        }
+                                        else
+                                        {
+                                            switch extract_list[| 0] {
+                                                case enum_tooltip_spflags.is_security_data:
+                                                    scr_consoleout(" -Was security flags");
+                                                    
+                                                    for (var i=0; i&lt;ds_list_size(extract_list); i+=1)
+                                                    {
+                                                        var get_security_map = global.list_security_levels[| i];
+                                                        if is_undefined( get_security_map) == false and ds_exists( get_security_map, ds_type_map) {
+                                                            //if the main security data map exists 
+                                                            //fillout security list!
+                                                            if is_undefined(extract_list[| i + 1]) == false and extract_list[| i + 1] != 0 {
+                                                                instanceid.list_security_dots[ i] = get_security_map[? "color"] //insert color
+                                                                scr_consoleout(" -index: " + string(i) + " clr:" + string(get_security_map[? "color"]))
+                                                            }
+                                                            else
+                                                            {
+                                                                scr_consoleout(" -index: " + string(i) + " clr: -1");
+                                                                instanceid.list_security_dots[ i] = -1;
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            scr_consoleout(" -index: " + string(i) + " clr: -1");
+                                                            instanceid.list_security_dots[ i] = -1;
+                                                        }
+                                                    }
+                                                break;
+                                                
+                                                case enum_tooltip_spflags.is_powercell_data:
+                                                    scr_consoleout(" -Was powercell text");
+                                                    instanceid.network_query = string(extract_list[| 1]);
+                                                break;
+                                            }
+                                        }
+                                        
+                                    break;
+                                    
+                                    case obj_machine_indoorlamp:
+                                        scr_consoleout(" -recharging instance specific light: " + string(instanceid));
+                                        //FORCE the light to a certain value!!
+                                        with instanceid {
+                                            scr_consoleout(" -found, set val is: " + string(extract_list[| 0]));
+                                            alarm[0] = extract_list[| 0]; //life of light, plus some stuff for lag
+                                        }
+                                    break;
+                                    
                                 }
-                            break;
-                        
-                            case obj_machine_indoorlamp:
-                                scr_consoleout(" -recharging entity specific light: " + string(entity_num));
-                                with obj_machine_indoorlamp {
-                                    if entityid == entity_num {
-                                        //refill light alarm!
-                                        scr_consoleout(" -found, set val is: " + string(datacollected[| 0]));
-                                        if is_undefined(extract_list[| 0]) == false alarm[0] = extract_list[| 0]; //life of light, plus some stuff for lag!
-                                    }
+                            }
+                            else if mode_type_instance_or_object == enum_entity_reply.is_object and object_exists(instanceid) {
+                                //unique entities using object to decide instead!!
+                                scr_consoleout(" -invoked in object_index: " + string(object_get_name(instanceid)));
+                                
+                                switch instanceid {
+                                    case obj_puppet_securitytool:
+                                        //spawn security menu based off of list returned! if menu already exists just change it!
+                                        if instance_exists(obj_securitymenu) == false instance_create(obj_hostobject.x,obj_hostobject.y,obj_securitymenu);
+                                        
+                                        with obj_securitymenu {
+                                            //load up the security menu, each index needs to be setup!
+                                            //var bigger_list = ds_list_size(datacollected);
+                                            //if bigger_list &lt; ds_list_size( global.list_player_security_clearance)  bigger_list = ds_list_size( global.list_player_security_clearance);
+                                            var bigger_list = ds_list_size(global.list_security_levels); //get the actual total of security levels in the outpost
+                                            
+                                            //location to be on screen
+                                            var mouse_guix = device_mouse_x_to_gui(0);
+                                            var mouse_guiy = device_mouse_y_to_gui(0);
+                                            guix = mouse_guix;
+                                            guiy = 32//mouse_guiy;
+                                            
+                                            ///setup the entity!
+                                            my_entity = entity_num; //set by mouse on create
+                                            menu_is_inventory = true;
+                                            context_menu_width = 0;
+                                            door_editing_mode = (input_control_states == 1); //is false if editing cards, true of editing a map object (likely door)
+                                            
+                                            
+                                            for (var i=0; i&lt;bigger_list; i+=1)
+                                            {
+                                                var get_security_map = global.list_security_levels[| i];
+                                                
+                                                if is_undefined( get_security_map) == false and ds_exists( get_security_map, ds_type_map) {
+                                                    //if the main security data map exists 
+                                                    
+                                                    //log default data
+                                                    context_menu[i,0] = get_security_map[? "name"]; //Name
+                                                    context_menu[i,1] = get_security_map[? "color"]; //Color, depricated? might be of use someday.
+                                                    
+                                                    //check if it should be locked or not
+                                                    if (is_undefined(global.list_player_security_clearance[| i]) == false //if the player's clearance is not undefined
+                                                    and global.list_player_security_clearance[| i] != 0) //and if the player's clearance is not false
+                                                    or (is_undefined(extract_list[| i]) == false //OR if the card's clearance is not undefined
+                                                    and extract_list[| i] != 0) { //and if the cards's clearance is not false
+                                                        //allow this entry into the map!
+                                                        context_menu[i,2] = false; //Entry unlocked
+                                                    }
+                                                    else
+                                                    {
+                                                        context_menu[i,2] = true; //Entry locked
+                                                    }
+                                                    
+                                                    //allow dot or not
+                                                    if  (is_undefined(extract_list[| i]) == false //OR if the card's clearance is not undefined
+                                                    and extract_list[| i] != 0) { //and if the cards's clearance is not false
+                                                        list_security_dots[ i] = get_security_map[? "color"]; //enabled!
+                                                    }
+                                                    else
+                                                    {
+                                                        list_security_dots[ i] = -1; //no color, disabled
+                                                    }
+                                                }
+                                            }
+                                            
+                                            //trigger display update
+                                            event_user(0);
+                                        }
+                                    break;
+                                
+                                    case obj_machine_indoorlamp:
+                                        scr_consoleout(" -recharging entity specific light: " + string(entity_num));
+                                        with obj_machine_indoorlamp {
+                                            if entityid == entity_num {
+                                                //refill light alarm!
+                                                scr_consoleout(" -found, set val is: " + string(datacollected[| 0]));
+                                                if is_undefined(extract_list[| 0]) == false alarm[0] = extract_list[| 0]; //life of light, plus some stuff for lag!
+                                            }
+                                        }
+                                    break;
                                 }
-                            break;
+                            }
+                            
+                            
                         }
-                    }
+                        
+                        //remove list
+                        ds_list_destroy(extract_list);
+                    break;
                     
                     
+                    default:
+                        scr_consoleout("Unknown opcode... " + string( opcode));
+                        var outstring = ""
+                        while buffer_tell(connection_buffer) &lt; buffer_get_size(connection_buffer) {
+                            var get_dat = buffer_read(connection_buffer,buffer_u8);
+                            outstring += chr( get_dat);
+                        }
+                        show_message_async("Unknown opcode: " + string(outstring));
+                        show_debug_message("Unknown opcode: " + string(outstring));
+                    break;
                 }
                 
-                //remove list
-                ds_list_destroy(extract_list);
-            break;
-            
-            
-            default:
-                scr_consoleout("Unknown opcode... " + string( opcode));
-                var outstring = ""
-                while buffer_tell(connection_buffer) &lt; buffer_get_size(connection_buffer) {
-                    var get_dat = buffer_read(connection_buffer,buffer_u8);
-                    outstring += chr( get_dat);
-                }
-                show_message_async("Unknown opcode: " + string(outstring));
-                show_debug_message("Unknown opcode: " + string(outstring));
-            break;
+                debug_buffer_size = "Opcode recieved: " + string(opcode) + " size: " + string(buffer_get_size(connection_buffer));
+            }
         }
-        
-        debug_buffer_size = "Opcode recieved: " + string(opcode) + " size: " + string(buffer_get_size(connection_buffer));
     }
     else
     {
         show_message("Bad packed received? Buffer of size 0...");
     }
-    
-    
+
     buffer_delete(connection_buffer);
 }
 
@@ -1051,7 +1070,7 @@ if async_load[? "type"] == network_type_data {
     //scr_consoleout("Client has received packet: ");
     var connection_buffer = async_load[? "buffer"];
     var connection_bufsize = async_load[? "size"];
-    
+
     var storage_buffer = buffer_create(1,buffer_grow,1);
     buffer_copy(connection_buffer,0,connection_bufsize,storage_buffer,0);
     ds_queue_enqueue( client_packet_queue, storage_buffer);

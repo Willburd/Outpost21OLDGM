@@ -29,6 +29,7 @@ if scr_ds_map_verify(get_map) {
     
     //send inventory data!
     var send_buffer = buffer_create(1,buffer_grow,1);
+    buffer_write(send_buffer,buffer_u8,210); //packet-start magic number
     buffer_write(send_buffer,buffer_u8,argument0);
     buffer_write(send_buffer,buffer_u16, enum_client_packets.inventory_update);
     buffer_write(send_buffer,buffer_s32, argument1); //instance id of object to set the inventory in, signed because noone is a -

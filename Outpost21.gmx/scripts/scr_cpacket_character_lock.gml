@@ -1,5 +1,6 @@
 ///scr_cpacket_character_lock( connection id, entity locked to);
 var send_buffer = buffer_create(1,buffer_grow,1);
+buffer_write(send_buffer,buffer_u8,210); //packet-start magic number
 buffer_write(send_buffer,buffer_u8,argument0);
 buffer_write(send_buffer,buffer_u16, enum_client_packets.character_locked);
 buffer_write(send_buffer,buffer_u32, argument1);

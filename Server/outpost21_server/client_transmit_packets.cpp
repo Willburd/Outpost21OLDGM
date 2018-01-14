@@ -4,6 +4,7 @@
 int client_transmission_packets::cPacket_request_seen(client_struct& inputClient) {
     //construct buffer to send data
     byte_buffer send_buffer;
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
     send_buffer.buffer_write_u8( inputClient.myNumber); //client number
     send_buffer.buffer_write_u16( client_transmission_packets::request_seen); //opcode
 
@@ -16,37 +17,37 @@ int client_transmission_packets::cPacket_request_seen(client_struct& inputClient
 int client_transmission_packets::cPacket_login_failed(client_struct& inputClient, std::string nameUsed) {
     //construct buffer to send data
     byte_buffer send_buffer;
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
     send_buffer.buffer_write_u8( inputClient.myNumber); //client number
     send_buffer.buffer_write_u16( client_transmission_packets::login_failed); //opcode
 
     //transmit
-    //send_buffer.buffer_debug();
     return inputClient.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());
 };
 
 int client_transmission_packets::cPacket_login_success(client_struct& inputClient, std::string nameUsed) {
     //construct buffer to send data
     byte_buffer send_buffer;
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
+
     send_buffer.buffer_write_u8( inputClient.myNumber); //client number
     send_buffer.buffer_write_u16( client_transmission_packets::login_success); //opcode
     send_buffer.buffer_write_string( nameUsed);
 
     //transmit
-    //send_buffer.buffer_debug();
     return inputClient.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());
 };
 
 int client_transmission_packets::cpacket_character_transmit_data(client_struct& inputClient, std::string jsonStringOfEntity) {
-    sf::Packet;
-
     //construct buffer to send data
     byte_buffer send_buffer;
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
+
     send_buffer.buffer_write_u8( inputClient.myNumber); //client number
     send_buffer.buffer_write_u16( client_transmission_packets::character_transmit_data); //opcode
     send_buffer.buffer_write_string( jsonStringOfEntity);
 
     //transmit
-    //send_buffer.buffer_debug();
     return inputClient.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());
 }
 
@@ -66,6 +67,8 @@ int client_transmission_packets::cpacket_character_transmit_data(client_struct& 
 int client_transmission_packets::cpacket_entity_drop(client_struct& inputClient, int input_EntityNumber) {
     //construct buffer to send data
     byte_buffer send_buffer;
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
+
     send_buffer.buffer_write_u8( inputClient.myNumber );
     send_buffer.buffer_write_u16( client_transmission_packets::entity_drop);
     send_buffer.buffer_write_u32( input_EntityNumber );
@@ -85,7 +88,9 @@ int client_transmission_packets::cpacket_server_alive(client_struct& inputClient
     std::cout << "-Heartbeat" << std::endl;
     //construct buffer to send data
     byte_buffer send_buffer;
-    send_buffer.buffer_write_u8( 0); //client number
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
+
+    send_buffer.buffer_write_u8( inputClient.myNumber ); //client number
     send_buffer.buffer_write_u16( client_transmission_packets::server_alive); //opcode
 
     //transmit

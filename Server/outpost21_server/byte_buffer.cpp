@@ -7,7 +7,7 @@ void byte_buffer::buffer_debug() {
     std::cout << "sizeof: " << (unsigned int)received << std::endl;
     std::cout << "Numbs: ";
     for(unsigned int i = 0; i < (unsigned int)received; i++) {
-         std::cout << (int)data[i] << ",";
+         std::cout << int(data[i]) << ",";
     }
     std::cout << std::endl;
 
@@ -25,9 +25,9 @@ unsigned int byte_buffer::buffer_get_pos() {
 
 
 uint8_t  byte_buffer::buffer_read_u8() {
+    uint8_t collected = data[buffer_place];
     buffer_place += 1;
-
-    return data[buffer_place];
+    return collected;
 }
 
 uint16_t byte_buffer::buffer_read_u16() {
@@ -132,9 +132,15 @@ void byte_buffer::buffer_write_f32(float input) {
 void byte_buffer::buffer_write_string(std::string input) {
     unsigned int string_pos = 0;
 
-    while(string_pos < input.length()) {
+    while(string_pos < input.length()+1) {
         //pump string into buffer
-        data[buffer_place] = input.at(string_pos);
+        if(string_pos < input.length()) {
+            data[buffer_place] = input.at(string_pos);
+        }
+        else
+        {
+            data[buffer_place] = (char)0x00; //string cap
+        }
 
         buffer_place += 1;
         received += 1;

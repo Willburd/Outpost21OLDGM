@@ -1,5 +1,6 @@
 ///scr_cpacket_map_object_drop(connection id, map entity id, send x, send y);
 var send_buffer = buffer_create(1,buffer_grow,1);
+buffer_write(send_buffer,buffer_u8,210); //packet-start magic number
 buffer_write(send_buffer,buffer_u8,argument0);
 show_debug_message("Send map data(dropping) to socket: " + string(argument0));
 buffer_write(send_buffer,buffer_u16, enum_client_packets.map_object_drop);

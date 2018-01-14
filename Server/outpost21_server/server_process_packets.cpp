@@ -36,8 +36,6 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
 
         bool quit = false;
         while(quit == false) {
-
-
             // TCP socket:
             byte_buffer* current_packet = new byte_buffer;
             if (client.mySocket.receive(current_packet->data, 255, current_packet->received) != sf::Socket::Done)
@@ -48,182 +46,200 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
             }
             else
             {
-                //extract packet's opcode!
-                uint16_t packetOpcode = current_packet->buffer_read_u16();
-                std::cout << "=====Packet Opcode " << packetOpcode << " Inside thread: " << threadId << std::endl;
+                //pop first magic byte off!
+                bool foundPacket = false;
 
+                while(current_packet->buffer_get_pos() < current_packet->received) {
+                    if(foundPacket == false)
+                    {
+                        unsigned char getbyte = current_packet->buffer_read_u8();
+                        if(getbyte == 210) {
+                            foundPacket = true;
+                            std::cout << "MAGIC FOUND!" << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        //found packet, next time we check it we'll be looking for magic numbers
+                        foundPacket = false;
+                        //extract packet's opcode!
+                        uint16_t packetOpcode = current_packet->buffer_read_u16();
+                        std::cout << "=====Packet Opcode " << packetOpcode << " Inside thread: " << threadId << std::endl;
 
-                switch(packetOpcode) {
-                    case server_recieving_packets::login_requested:
-                        {
-                            std::cout << "-Login requested" << std::endl;
-
-                            //login attempt!
-                            std::string buffer_login_name      = current_packet->buffer_read_string(); //stores length and ignores null terminator!
-                            std::string buffer_login_passhash  = current_packet->buffer_read_string(); //stores length and ignores null terminator!
-
-                            std::cout << " Login name: " << buffer_login_name << "|" << std::endl;
-                            std::cout << " passhash  : " << buffer_login_passhash << "|" << std::endl;
-
-                            //confirmed password
-                            bool password_accepted = false;
-                            std::string get_pass_data = "";
-
-                            //load user data
-                            INIReader reader( serverObj.serverdata_file_path);
-                            if (reader.ParseError() < 0) {
-                                std::cout << "Can't load '" << serverObj.serverdata_file_path << "'" << std::endl;
-                                get_pass_data = "";
-                                password_accepted = false;
-                            }
-                            else
-                            {
-                                std::cout << "Config loaded from '" << serverObj.serverdata_file_path << "'" << std::endl;
-
-                                //get passhash from server data
-                                get_pass_data = reader.Get("UserData", buffer_login_name,"");
-                                password_accepted = true;
-                            }
-
-                            //extracted passhash
-                            std::cout << " E-hash    : " << get_pass_data << "|" << std::endl;
-
-                            //login checks
-                            if(get_pass_data.length() > 0) {
-                                if(password_accepted == false) {
-                                    //send new user confirmations!
-                                    std::cout << "New user signup" << std::endl;
-                                }
-                                else if(password_accepted == true)
+                        switch(packetOpcode) {
+                            case server_recieving_packets::login_requested:
                                 {
-                                    //confirm loaded password
-                                    bool login_success = (get_pass_data == buffer_login_passhash);
+                                    std::cout << "-Login requested" << std::endl;
 
+                                    //login attempt!
+                                    std::string buffer_login_name      = current_packet->buffer_read_string(); //stores length and ignores null terminator!
+                                    std::string buffer_login_passhash  = current_packet->buffer_read_string(); //stores length and ignores null terminator!
 
-                                    if(login_success == true) {
-                                        std::cout << "Login correct!" << std::endl;
-                                        client_transmission_packets::cPacket_login_success( client, buffer_login_name);
+                                    std::cout << " Login name: " << buffer_login_name << "|" << std::endl;
+                                    std::cout << " passhash  : " << buffer_login_passhash << "|" << std::endl;
+
+                                    //confirmed password
+                                    bool password_accepted = false;
+                                    std::string get_pass_data = "";
+
+                                    //load user data
+                                    INIReader reader( serverObj.serverdata_file_path);
+                                    if (reader.ParseError() < 0) {
+                                        std::cout << "Can't load '" << serverObj.serverdata_file_path << "'" << std::endl;
+                                        get_pass_data = "";
+                                        password_accepted = false;
                                     }
                                     else
                                     {
-                                        std::cout << "Login wrong!" << std::endl;
-                                        client_transmission_packets::cPacket_login_failed( client, buffer_login_name);
+                                        std::cout << "Config loaded from '" << serverObj.serverdata_file_path << "'" << std::endl;
+
+                                        //get passhash from server data
+                                        get_pass_data = reader.Get("UserData", buffer_login_name,"");
+                                        password_accepted = true;
                                     }
-                                }
-                            }
-                        }
-                    break;
 
-                    case server_recieving_packets::heartbeat_request:
-                        {
-                            client_transmission_packets::cpacket_server_alive( client);
-                        }
-                    break;
+                                    //extracted passhash
+                                    std::cout << " E-hash    : " << get_pass_data << "|" << std::endl;
 
-                    case server_recieving_packets::login_newuser: break;
-                    //character acquisition
-                    case server_recieving_packets::character_get_all_owned:
-                        {
-                            std::cout << "===all owned characters requested" << std::endl;
+                                    //login checks
+                                    if(get_pass_data.length() > 0) {
+                                        if(password_accepted == false) {
+                                            //send new user confirmations!
+                                            std::cout << "New user signup" << std::endl;
+                                        }
+                                        else if(password_accepted == true)
+                                        {
+                                            //confirm loaded password
+                                            bool login_success = (get_pass_data == buffer_login_passhash);
 
-                            //check for character existance!
-                            std::string user_getname  = current_packet->buffer_read_string();
 
-                            //loop through all entities
-                            std::map<unsigned int, entity*>::iterator it;
-                            for (it = serverObj.entity_map.begin(); it != serverObj.entity_map.end(); it++) {
-                                entity* check_entity = it->second;
-
-                                //if the slot exists at all
-                                if(check_entity != nullptr) {
-                                    //check if entity had player data and send it
-                                    if(check_entity->entity_getObjectIndex() == "obj_puppet_player") {
-                                        if(check_entity->myStringVars["player_name"] == user_getname) {
-                                            //debug out
-                                            std::cout << " -sent entity: " << it->first << std::endl;
-                                            std::cout << " -char name: " << check_entity->myStringVars["player_nickname"] << std::endl;
-                                            //construct a string to transmit
-                                            std::string transmit_string = serverObj.entityJsonEncode( check_entity);
-                                            std::string base64_transmit = base64_encode(reinterpret_cast<unsigned const char*>(transmit_string.c_str()),(unsigned int)transmit_string.length());
-                                            //send data to player
-                                            client_transmission_packets::cpacket_character_transmit_data( client, base64_transmit);
+                                            if(login_success == true) {
+                                                std::cout << "Login correct!" << std::endl;
+                                                client_transmission_packets::cPacket_login_success( client, buffer_login_name);
+                                            }
+                                            else
+                                            {
+                                                std::cout << "Login wrong!" << std::endl;
+                                                client_transmission_packets::cPacket_login_failed( client, buffer_login_name);
+                                            }
                                         }
                                     }
                                 }
-                            }
+                            break;
+
+                            case server_recieving_packets::heartbeat_request:
+                                {
+                                    client_transmission_packets::cpacket_server_alive( client);
+                                }
+                            break;
+
+                            case server_recieving_packets::login_newuser: break;
+                            //character acquisition
+                            case server_recieving_packets::character_get_all_owned:
+                                {
+                                    std::cout << "===all owned characters requested" << std::endl;
+
+                                    //check for character existance!
+                                    std::string user_getname  = current_packet->buffer_read_string();
+
+                                    //loop through all entities
+                                    std::map<unsigned int, entity*>::iterator it;
+                                    for (it = serverObj.entity_map.begin(); it != serverObj.entity_map.end(); it++) {
+                                        entity* check_entity = it->second;
+
+                                        //if the slot exists at all
+                                        if(check_entity != nullptr) {
+                                            //check if entity had player data and send it
+                                            if(check_entity->entity_getObjectIndex() == "obj_puppet_player") {
+                                                if(check_entity->myStringVars["player_name"] == user_getname) {
+                                                    //debug out
+                                                    std::cout << " ---sent entity: " << it->first << std::endl;
+                                                    std::cout << " -char name: " << check_entity->myStringVars["player_nickname"] << std::endl;
+                                                    //construct a string to transmit
+                                                    std::string transmit_string = serverObj.entityJsonEncode( check_entity);
+                                                    std::string base64_transmit = base64_encode(reinterpret_cast<unsigned const char*>(transmit_string.c_str()),(unsigned int)transmit_string.length());
+                                                    //send data to player
+                                                    client_transmission_packets::cpacket_character_transmit_data( client, base64_transmit);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            break;
+
+                            case server_recieving_packets::character_query:
+                                current_packet->buffer_debug();
+                            break;
+
+                            case server_recieving_packets::character_created:
+                                current_packet->buffer_debug();
+                            break;
+
+                            case server_recieving_packets::character_loaded: break;
+                            //player entity
+                            case server_recieving_packets::player_object_request: break;
+                            case server_recieving_packets::player_release_grab: break;
+                            case server_recieving_packets::map_request_whole: break;
+                            case server_recieving_packets::client_map_preloaded: break;
+                            case server_recieving_packets::client_ready_for_map_download: break;
+                            case server_recieving_packets::map_object_create: break;
+                            case server_recieving_packets::map_object_destroy: break;
+                            case server_recieving_packets::map_request_securitydata: break;
+                            case server_recieving_packets::map_request_door_security: break;
+                            //movement
+                            case server_recieving_packets::movement_location_request: break;
+                            case server_recieving_packets::movement_location_update: break;
+                            //inventory
+                            case server_recieving_packets::entity_request_all: break;
+
+                            case server_recieving_packets::entity_create:
+                                {
+                                    double buffer_getx = current_packet->buffer_read_f32();
+                                    double buffer_gety = current_packet->buffer_read_f32();
+                                    std::string buffer_get_objectindex = serverObj.getAssetOfIndex( current_packet->buffer_read_u16() );
+
+                                    std::cout << "Server created entity: " << buffer_get_objectindex << std::endl;
+                                    entity* make_entity = entityLibrary::entity_template_library(  buffer_get_objectindex,buffer_getx,buffer_gety,0,0,false,-1);
+                                    serverObj.entity_add(make_entity); //add to main list//make a test entity
+                                }
+                            break;
+                            case server_recieving_packets::entity_create_direction:
+                                {
+                                    double buffer_getx = current_packet->buffer_read_f32();
+                                    double buffer_gety = current_packet->buffer_read_f32();
+                                    std::string buffer_get_objectindex = serverObj.getAssetOfIndex( current_packet->buffer_read_u16() );
+                                    float buffer_getdirection = (current_packet->buffer_read_u16() / 65534) * 360;
+
+                                    std::cout << "Server created entity, with direction: " << buffer_get_objectindex << std::endl;
+                                    entity* make_entity = entityLibrary::entity_template_library(buffer_get_objectindex,buffer_getx,buffer_gety,buffer_getdirection,0,false,-1);
+                                    serverObj.entity_add(make_entity); //add to main list//make a test entity
+                                }
+                            break;
+                            case server_recieving_packets::entity_store: break;
+                            case server_recieving_packets::entity_throw: break; //flows into place
+                            case server_recieving_packets::entity_place: break;
+                            case server_recieving_packets::entity_drop:
+                                {
+                                    //flag the entity as something not loaded!
+                                    int entity_number = current_packet->buffer_read_u32();
+                                    //show_debug_message("===Entity dropped: " + string(entity_number));
+
+                                    //tell client that this entity is also unloaded
+                                    client_transmission_packets::cpacket_entity_drop( client, entity_number);
+                                    //set the object as needing to update when it can
+                                    serverObj.set_update_flag( entity_number, client.myNumber, true);
+                                }
+                            break; //not placing, unloading an entity from client inputs!
+                            case server_recieving_packets::entity_construct: break;
+                            case server_recieving_packets::entity_deconstruct: break;
+                            case server_recieving_packets::entity_inventory_request: break;
+                            case server_recieving_packets::entity_interact: break;
+                            //security tool editing doors
+                            case server_recieving_packets::security_tool_requestdoor: break;
+                            case server_recieving_packets::security_tool_toggledoorsecurity: break;
+
                         }
-                    break;
-
-                    case server_recieving_packets::character_query:
-                        current_packet->buffer_debug();
-                    break;
-
-                    case server_recieving_packets::character_created:
-                        current_packet->buffer_debug();
-                    break;
-
-                    case server_recieving_packets::character_loaded: break;
-                    //player entity
-                    case server_recieving_packets::player_object_request: break;
-                    case server_recieving_packets::player_release_grab: break;
-                    case server_recieving_packets::map_request_whole: break;
-                    case server_recieving_packets::client_map_preloaded: break;
-                    case server_recieving_packets::client_ready_for_map_download: break;
-                    case server_recieving_packets::map_object_create: break;
-                    case server_recieving_packets::map_object_destroy: break;
-                    case server_recieving_packets::map_request_securitydata: break;
-                    case server_recieving_packets::map_request_door_security: break;
-                    //movement
-                    case server_recieving_packets::movement_location_request: break;
-                    case server_recieving_packets::movement_location_update: break;
-                    //inventory
-                    case server_recieving_packets::entity_request_all: break;
-
-                    case server_recieving_packets::entity_create:
-                        {
-                            double buffer_getx = current_packet->buffer_read_f32();
-                            double buffer_gety = current_packet->buffer_read_f32();
-                            std::string buffer_get_objectindex = serverObj.getAssetOfIndex( current_packet->buffer_read_u16() );
-
-                            std::cout << "Server created entity: " << buffer_get_objectindex << std::endl;
-                            entity* make_entity = entityLibrary::entity_template_library(  buffer_get_objectindex,buffer_getx,buffer_gety,0,0,false,-1);
-                            serverObj.entity_add(make_entity); //add to main list//make a test entity
-                        }
-                    break;
-                    case server_recieving_packets::entity_create_direction:
-                        {
-                            double buffer_getx = current_packet->buffer_read_f32();
-                            double buffer_gety = current_packet->buffer_read_f32();
-                            std::string buffer_get_objectindex = serverObj.getAssetOfIndex( current_packet->buffer_read_u16() );
-                            float buffer_getdirection = (current_packet->buffer_read_u16() / 65534) * 360;
-
-                            std::cout << "Server created entity, with direction: " << buffer_get_objectindex << std::endl;
-                            entity* make_entity = entityLibrary::entity_template_library(buffer_get_objectindex,buffer_getx,buffer_gety,buffer_getdirection,0,false,-1);
-                            serverObj.entity_add(make_entity); //add to main list//make a test entity
-                        }
-                    break;
-                    case server_recieving_packets::entity_store: break;
-                    case server_recieving_packets::entity_throw: break; //flows into place
-                    case server_recieving_packets::entity_place: break;
-                    case server_recieving_packets::entity_drop:
-                        {
-                            //flag the entity as something not loaded!
-                            int entity_number = current_packet->buffer_read_u32();
-                            //show_debug_message("===Entity dropped: " + string(entity_number));
-
-                            //tell client that this entity is also unloaded
-                            client_transmission_packets::cpacket_entity_drop( client, entity_number);
-                            //set the object as needing to update when it can
-                            serverObj.set_update_flag( entity_number, client.myNumber, true);
-                        }
-                    break; //not placing, unloading an entity from client inputs!
-                    case server_recieving_packets::entity_construct: break;
-                    case server_recieving_packets::entity_deconstruct: break;
-                    case server_recieving_packets::entity_inventory_request: break;
-                    case server_recieving_packets::entity_interact: break;
-                    //security tool editing doors
-                    case server_recieving_packets::security_tool_requestdoor: break;
-                    case server_recieving_packets::security_tool_toggledoorsecurity: break;
+                    }
 
                 }
             }

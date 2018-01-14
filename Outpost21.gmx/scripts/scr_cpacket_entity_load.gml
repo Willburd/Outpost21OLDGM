@@ -1,5 +1,6 @@
 ///scr_cpacket_entity_load(connection id, send entity id, send object_index, send x, send y, direction, speed, construct flag , depth modifier);
 var send_buffer = buffer_create(1,buffer_grow,1);
+buffer_write(send_buffer,buffer_u8,210); //packet-start magic number
 buffer_write(send_buffer,buffer_u8,argument0);
 buffer_write(send_buffer,buffer_u16, enum_client_packets.entity_load);
 buffer_write(send_buffer,buffer_u32, argument1); //entity id

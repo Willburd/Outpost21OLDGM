@@ -150,17 +150,16 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                         //if the slot exists at all
                                         if(check_entity != nullptr) {
                                             //check if entity had player data and send it
-                                            if(check_entity->entity_getObjectIndex() == "obj_puppet_player") {
-                                                if(check_entity->myStringVars["player_name"] == user_getname) {
-                                                    //debug out
-                                                    std::cout << " ---sent entity: " << it->first << std::endl;
-                                                    std::cout << " -char name: " << check_entity->myStringVars["player_nickname"] << std::endl;
-                                                    //construct a string to transmit
-                                                    std::string transmit_string = serverObj.entityJsonEncode( check_entity);
-                                                    std::string base64_transmit = base64_encode(reinterpret_cast<unsigned const char*>(transmit_string.c_str()),(unsigned int)transmit_string.length());
-                                                    //send data to player
-                                                    client_transmission_packets::cpacket_character_transmit_data( client, base64_transmit);
-                                                }
+                                            if(check_entity->entity_getObjectIndex() == "obj_puppet_player"
+                                            || check_entity->myStringVars["player_name"] == user_getname) {
+                                                //debug out
+                                                std::cout << " ---sent entity: " << it->first << std::endl;
+                                                std::cout << " -char name: " << check_entity->myStringVars["player_nickname"] << std::endl;
+                                                //construct a string to transmit
+                                                std::string transmit_string = serverObj.entityJsonEncode( check_entity);
+                                                std::string base64_transmit = base64_encode(reinterpret_cast<unsigned const char*>(transmit_string.c_str()),(unsigned int)transmit_string.length());
+                                                //send data to player
+                                                client_transmission_packets::cpacket_character_transmit_data( client, base64_transmit);
                                             }
                                         }
                                     }
@@ -168,7 +167,35 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                             break;
 
                             case server_recieving_packets::character_query:
-                                current_packet->buffer_debug();
+                                {
+                                    std::cout << "===specific character by name requested" << std::endl;
+
+                                    //check for character existance!
+                                    std::string char_getname  = current_packet->buffer_read_string();
+
+                                    //loop through all entities
+                                    std::map<unsigned int, entity*>::iterator it;
+                                    for (it = serverObj.entity_map.begin(); it != serverObj.entity_map.end(); it++) {
+                                        entity* check_entity = it->second;
+
+                                        //if the slot exists at all
+                                        if(check_entity != nullptr) {
+
+                                            //check if entity had player data and send it
+                                            if(check_entity->entity_getObjectIndex() == "obj_puppet_player"
+                                            || check_entity->myStringVars["player_nickname"] == char_getname) {
+                                                //debug out
+                                                std::cout << " ---sent entity: " << it->first << std::endl;
+                                                std::cout << " -char name: " << check_entity->myStringVars["player_nickname"] << std::endl;
+                                                //construct a string to transmit
+                                                std::string transmit_string = serverObj.entityJsonEncode( check_entity);
+                                                std::string base64_transmit = base64_encode(reinterpret_cast<unsigned const char*>(transmit_string.c_str()),(unsigned int)transmit_string.length());
+                                                //send data to player
+                                                client_transmission_packets::cpacket_character_transmit_data( client, base64_transmit);
+                                            }
+                                        }
+                                    }
+                                }
                             break;
 
                             case server_recieving_packets::character_created:

@@ -99,7 +99,9 @@ void serverCore::securityLevelRemove( unsigned int index) {
 }
 
 
-void serverCore::entity_add(entity* entityToAdd) {
+int serverCore::entity_add(entity* entityToAdd) {
+    int returnEnt = -1;
+
     for(unsigned int i = 0; i < entity_map.size()+1; i++) {
         if(i == entity_map.size()
         || entity_map[i] == nullptr) {
@@ -109,9 +111,12 @@ void serverCore::entity_add(entity* entityToAdd) {
             ///add at the end of list, or if a blank space is found
             entity_map[i] = entityToAdd;
             entityToAdd->entity_number = i;
+            returnEnt = i;
             break;
         }
     }
+
+    return returnEnt;
 };
 
 
@@ -136,6 +141,59 @@ void serverCore::entity_remove(int entityNumberToRemove) {
         get_ent->y = serverObj.entity_deletion_abyss;
     }
 };
+
+
+void serverCore::entity_storeEntity( int entityToStore, int storageBoxEntity) {
+    ///DIRECT storage, has NO safeties! NO inventory check limits! Can even store inside itself!
+    //push storing entity into storagebox
+    entity* getStorageEntity = entity_map[storageBoxEntity];
+    getStorageEntity->contains_vector.push_back(entityToStore);
+
+    //remove storing entity from old inventory!
+    entity* getStoredEntity = entity_map[entityToStore];
+    if(getStoredEntity->inside_of_id != -1) {
+        entity* oldStorageEntity = entity_map[getStoredEntity->inside_of_id];
+
+        for(std::vector<int>::iterator it = oldStorageEntity->contains_vector.begin(); it != oldStorageEntity->contains_vector.end();) {
+            if(*it == entityToStore) {
+                it = oldStorageEntity->contains_vector.erase(it);
+                break;
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+    //tell storing entity to put itself inside storagebox
+    getStoredEntity->inside_of_id = storageBoxEntity;
+    getStoredEntity->x = entity_item_storage;
+    getStoredEntity->y = entity_item_storage;
+}
+
+void serverCore::entity_releaseEntity( int entityToStore, int storageBoxEntity, double inx, double iny) {
+    ///DIRECT inventory release! NO SAFETIES!
+    //remove storing entity from old inventory!
+    entity* getStoredEntity = entity_map[entityToStore];
+    if(getStoredEntity->inside_of_id != -1) {
+        entity* oldStorageEntity = entity_map[getStoredEntity->inside_of_id];
+
+        for(std::vector<int>::iterator it = oldStorageEntity->contains_vector.begin(); it != oldStorageEntity->contains_vector.end();) {
+            if(*it == entityToStore) {
+                it = oldStorageEntity->contains_vector.erase(it);
+                break;
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+    //tell storing entity to put itself inside storagebox
+    getStoredEntity->inside_of_id = -1;
+    getStoredEntity->x = inx;
+    getStoredEntity->y = iny;
+}
 
 
 void serverCore::set_update_flag( int entityNumberToUpdate, int clientNumber, bool updateFlag) {

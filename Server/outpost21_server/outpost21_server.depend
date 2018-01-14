@@ -266,7 +266,7 @@
 	<SFML/Network.hpp>
 	<pthread.h>
 
-1515928048 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
+1515936298 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
 	"client_transmit_packets.h"
 	"json/json.hpp"
 	<SFML/Network.hpp>
@@ -274,13 +274,13 @@
 	<vector>
 	<map>
 
-1515928143 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.cpp
+1515936357 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.cpp
 	"server_core.h"
 	"json/json.hpp"
 	"entitylibrary/entity_library.h"
 	<fstream>
 
-1515929673 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_process_packets.cpp
+1515934221 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_process_packets.cpp
 	"server_core.h"
 	"base64/base64.h"
 	"server_process_packets.h"

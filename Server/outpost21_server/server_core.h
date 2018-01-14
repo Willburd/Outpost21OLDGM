@@ -85,9 +85,11 @@ class serverCore {
     //add entity
     void securityLevelAdd( unsigned int index,std::string inputName, int inputColor);
     void securityLevelRemove( unsigned int index);
-    void entity_add(entity* entityToAdd); //dynamically add the entity to the vector
+    int entity_add(entity* entityToAdd); //dynamically add the entity to the vector
     void entity_set(entity* entityToAdd, unsigned int entityNumberToAssign); //forcibly set the new entity to a specific index, used for file loading
     void entity_remove(int entityNumberToRemove);
+    void entity_storeEntity(int entityToStore,int storageBoxEntity);
+    void entity_releaseEntity(int entityToStore,int storageBoxEntity, double inx, double iny);
     void set_update_flag( int entityNumberToUpdate, int clientNumber, bool updateFlag);
 
     bool gameMapLoad(std::string mapFilePath);

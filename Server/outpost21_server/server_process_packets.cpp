@@ -215,7 +215,73 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                 }
                             break;
 
-                            case server_recieving_packets::character_created: break;
+                            case server_recieving_packets::character_created:
+                                {
+                                    std::cout << "===character created" << std::endl;
+
+                                    //check for character existance!
+                                    std::string char_getname       = current_packet->buffer_read_string();
+                                    std::string char_getusername   = current_packet->buffer_read_string();
+                                    unsigned int char_getrace      = current_packet->buffer_read_u8();
+                                    unsigned int char_gethomeworld = current_packet->buffer_read_u8();
+                                    unsigned int char_getbody      = current_packet->buffer_read_u8();
+                                    unsigned int char_getjob       = current_packet->buffer_read_u8();
+                                    unsigned int char_getjobprev   = current_packet->buffer_read_u8();
+                                    unsigned int char_getguild     = current_packet->buffer_read_u8();
+                                    unsigned int char_getlang_main = current_packet->buffer_read_u8();
+                                    unsigned int char_getlang_alt  = current_packet->buffer_read_u8();
+                                    unsigned int char_getage       = current_packet->buffer_read_u16();
+
+                                    //a NEW player joined!
+                                    entity* new_entity_data = entityLibrary::entity_template_library("obj_puppet_player",serverObj.entity_item_storage,serverObj.entity_item_storage,0,0,true,-1);
+                                    new_entity_data->myIntVars["stasis"] = 1; //start in stasis
+                                    int new_player_entity = serverObj.entity_add( new_entity_data); //add to main list
+
+                                    new_entity_data->myStringVars["player_name"] = char_getusername; //backstore this, for quick reference if needed!
+                                    new_entity_data->myStringVars["player_nickname"] = char_getname; //backstore this, for quick reference if needed! firstname + lastname on char creation!
+                                    new_entity_data->myIntVars["stasis"] = false; //take player out of stasis
+                                    new_entity_data->myIntVars["stat_race"] = char_getrace;
+                                    new_entity_data->myIntVars["stat_homeworld"] = char_gethomeworld;
+                                    new_entity_data->myIntVars["stat_body"] = char_getbody;
+                                    new_entity_data->myIntVars["stat_job"] = char_getjob;
+                                    new_entity_data->myIntVars["stat_jobprev"] = char_getjobprev;
+                                    new_entity_data->myIntVars["stat_guild"] = char_getguild;
+                                    new_entity_data->myIntVars["stat_lang_main"] = char_getlang_main;
+                                    new_entity_data->myIntVars["stat_lang_alt"] = char_getlang_alt;
+                                    new_entity_data->myIntVars["stat_age"] = char_getage;
+
+                                    //invisible to others, due to arrival shuttle
+                                    entity* arrival_shuttle_data = entityLibrary::entity_template_library("obj_puppet_arrivalshuttle",10,10,0,0,false,-1);
+                                    int entity_arivalshuttle = serverObj.entity_add( arrival_shuttle_data);
+
+                                    new_entity_data->myStringVars["inside_of_id"] = entity_arivalshuttle;
+                                    arrival_shuttle_data->myStringVars["inside_of_id"] = new_player_entity; //hide inside self till loaded!
+
+                                    //store player inside the shuttle
+                                    serverObj.entity_storeEntity( new_player_entity, entity_arivalshuttle);
+
+                                    //add starting toolkit to player inventory
+                                    ///TODO! create toolkit definitions!
+                                    /*
+                                    var new_startitem_entity = scr_toolkit_template_library( global.job_mod[ char_getjob, enum_job_stat.stat_startkit], item_storage_pos, item_storage_pos, 0, 0, false, new_player_entity);
+                                    storage_map[? string(new_startitem_entity)] = new_startitem_entity;
+                                    */
+
+                                    //lock the socket
+                                    client.myPlayerEntity = new_player_entity;
+
+                                    //send final connection packet
+                                    std::cout << " -Locked player entity to: " << new_player_entity << std::endl;
+                                    client_transmission_packets::cpacket_character_lock( client, new_player_entity); //will put me in the arrival shuttle automatically
+
+                                    //update client with security
+                                    new_entity_data->entity_securityUpdate();
+
+                                    //done!
+                                    ///TODO flag map for downloading!
+
+                                }
+                            break;
 
                             case server_recieving_packets::character_loaded:
                                 {
@@ -251,6 +317,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     ///TODO flag map for downloading!
                                 }
                             break;
+
                             //player entity
                             case server_recieving_packets::player_object_request:
                                 {
@@ -342,8 +409,11 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                             break;
 
                             case server_recieving_packets::entity_store: break;
+
                             case server_recieving_packets::entity_throw: break; //flows into place
+                            case server_recieving_packets::entity_construct: break;
                             case server_recieving_packets::entity_place: break;
+
                             case server_recieving_packets::entity_drop:
                                 {
                                     //flag the entity as something not loaded!
@@ -356,8 +426,9 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     serverObj.set_update_flag( entity_number, client.myNumber, true);
                                 }
                             break; //not placing, unloading an entity from client inputs!
-                            case server_recieving_packets::entity_construct: break;
+
                             case server_recieving_packets::entity_deconstruct: break;
+
                             case server_recieving_packets::entity_inventory_request: break;
 
                             /*******************************

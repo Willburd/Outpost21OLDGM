@@ -52,7 +52,7 @@ namespace client_transmission_packets {
     //map_door_open,
     //map_door_security_reply,
     ///character locking
-    //character_locked,
+    int cpacket_character_lock(client_struct& inputClient, int input_EntityNumber);
     //player_entity_return,
     //player_security_reply,
     //movement_location_sync,
@@ -63,7 +63,7 @@ namespace client_transmission_packets {
     //entity_activate,
     //entity_grab_update,
     ///misc
-    //force_reset,
+    int cpacket_force_reset( client_struct& inputClient, std::string errorString);
     //failed_action, //just when normal things like being unable to fill a cup because it is full!
     int cpacket_server_alive(client_struct& inputClient);
     ///inventory

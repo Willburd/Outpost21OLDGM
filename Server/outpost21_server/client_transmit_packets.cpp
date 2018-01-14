@@ -57,7 +57,18 @@ int client_transmission_packets::cpacket_character_transmit_data(client_struct& 
 //map_door_open,
 //map_door_security_reply,
 ///character locking
-//character_locked,
+int client_transmission_packets::cpacket_character_lock(client_struct& inputClient, int input_EntityNumber) {
+    //construct buffer to send data
+    byte_buffer send_buffer;
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
+
+    send_buffer.buffer_write_u8( inputClient.myNumber); //client number
+    send_buffer.buffer_write_u16( client_transmission_packets::character_locked);
+    send_buffer.buffer_write_u32( input_EntityNumber);
+
+    //transmit
+    return inputClient.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());
+}
 //player_entity_return,
 //player_security_reply,
 //movement_location_sync,
@@ -81,7 +92,15 @@ int client_transmission_packets::cpacket_entity_drop(client_struct& inputClient,
 //entity_activate,
 //entity_grab_update,
 ///misc
-//force_reset,
+int client_transmission_packets::cpacket_force_reset( client_struct& inputClient, std::string errorString) {
+    byte_buffer send_buffer;
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
+
+    send_buffer.buffer_write_u8( inputClient.myNumber );
+    send_buffer.buffer_write_u16( client_transmission_packets::force_reset);
+    send_buffer.buffer_write_string( errorString);
+}
+
 //failed_action, //just when normal things like being unable to fill a cup because it is full!
 
 int client_transmission_packets::cpacket_server_alive(client_struct& inputClient) {

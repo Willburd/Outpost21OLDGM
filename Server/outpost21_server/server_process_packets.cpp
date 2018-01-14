@@ -151,7 +151,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                         if(check_entity != nullptr) {
                                             //check if entity had player data and send it
                                             if(check_entity->entity_getObjectIndex() == "obj_puppet_player"
-                                            || check_entity->myStringVars["player_name"] == user_getname) {
+                                            && check_entity->myStringVars["player_name"] == user_getname) {
                                                 //debug out
                                                 std::cout << " ---sent entity: " << it->first << std::endl;
                                                 std::cout << " -char name: " << check_entity->myStringVars["player_nickname"] << std::endl;
@@ -183,7 +183,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
 
                                             //check if entity had player data and send it
                                             if(check_entity->entity_getObjectIndex() == "obj_puppet_player"
-                                            || check_entity->myStringVars["player_nickname"] == char_getname) {
+                                            && check_entity->myStringVars["player_nickname"] == char_getname) {
                                                 //debug out
                                                 std::cout << " ---sent entity: " << it->first << std::endl;
                                                 std::cout << " -char name: " << check_entity->myStringVars["player_nickname"] << std::endl;
@@ -202,7 +202,39 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                 current_packet->buffer_debug();
                             break;
 
-                            case server_recieving_packets::character_loaded: break;
+                            case server_recieving_packets::character_loaded:
+                                {
+                                    std::cout << "===character loaded" << std::endl;
+
+                                     //use the entity we passed it before!
+                                    unsigned int player_entity = current_packet->buffer_read_u32();
+
+                                    //store the list reference number!
+                                    client.myPlayerEntity = player_entity; //player list stores a reference to the player entity id
+
+                                    //setup entity itself
+                                    entity* ply_entity = serverObj.entity_map[ player_entity];
+                                    if(ply_entity != nullptr) {
+                                        ply_entity->myIntVars["stasis"] = false; //take player out of stasis
+                                        ply_entity->myIntVars["player_socket"] = client.myNumber;
+
+                                        //send final connection packet
+                                        std::cout << " -Locked player entity to: " + player_entity << std::endl;
+                                        client_transmission_packets::cpacket_character_lock( client, player_entity);
+
+                                        //update client with security
+                                        ply_entity->entity_securityUpdate();
+                                    }
+                                    else
+                                    {
+                                        //somehow... we lost it...
+                                        client_transmission_packets::cpacket_force_reset( client," -Character was lost before loading could be finished.");
+                                    }
+
+                                    //flag as done
+                                    ///TODO flag map for downloading!
+                                }
+                            break;
                             //player entity
                             case server_recieving_packets::player_object_request: break;
                             case server_recieving_packets::player_release_grab: break;

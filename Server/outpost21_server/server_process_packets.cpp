@@ -176,19 +176,19 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     //loop through all entities
                                     std::map<unsigned int, entity*>::iterator it;
                                     for (it = serverObj.entity_map.begin(); it != serverObj.entity_map.end(); it++) {
-                                        entity* check_entity = it->second;
+                                        entity* entity_data = it->second;
 
                                         //if the slot exists at all
-                                        if(check_entity != nullptr) {
+                                        if(entity_data != nullptr) {
 
                                             //check if entity had player data and send it
-                                            if(check_entity->entity_getObjectIndex() == "obj_puppet_player"
-                                            && check_entity->myStringVars["player_nickname"] == char_getname) {
+                                            if(entity_data->entity_getObjectIndex() == "obj_puppet_player"
+                                            && entity_data->myStringVars["player_nickname"] == char_getname) {
                                                 //debug out
                                                 std::cout << " ---sent entity: " << it->first << std::endl;
-                                                std::cout << " -char name: " << check_entity->myStringVars["player_nickname"] << std::endl;
+                                                std::cout << " -char name: " << entity_data->myStringVars["player_nickname"] << std::endl;
                                                 //construct a string to transmit
-                                                std::string transmit_string = serverObj.entityJsonEncode( check_entity);
+                                                std::string transmit_string = serverObj.entityJsonEncode( entity_data);
                                                 std::string base64_transmit = base64_encode(reinterpret_cast<unsigned const char*>(transmit_string.c_str()),(unsigned int)transmit_string.length());
                                                 //send data to player
                                                 client_transmission_packets::cpacket_character_transmit_data( client, base64_transmit);
@@ -211,19 +211,20 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
 
                                     //store the list reference number!
                                     client.myPlayerEntity = player_entity; //player list stores a reference to the player entity id
+                                    std::cout << " -client's player entity set to: " << player_entity << std::endl;
 
                                     //setup entity itself
-                                    entity* ply_entity = serverObj.entity_map[ player_entity];
-                                    if(ply_entity != nullptr) {
-                                        ply_entity->myIntVars["stasis"] = false; //take player out of stasis
-                                        ply_entity->myIntVars["player_socket"] = client.myNumber;
+                                    entity* ply_data = serverObj.entity_map[ player_entity];
+                                    if(ply_data != nullptr) {
+                                        ply_data->myIntVars["stasis"] = false; //take player out of stasis
+                                        ply_data->myIntVars["player_socket"] = client.myNumber;
 
                                         //send final connection packet
-                                        std::cout << " -Locked player entity to: " + player_entity << std::endl;
+                                        std::cout << " -Locked player entity to: " << player_entity << std::endl;
                                         client_transmission_packets::cpacket_character_lock( client, player_entity);
 
                                         //update client with security
-                                        ply_entity->entity_securityUpdate();
+                                        ply_data->entity_securityUpdate();
                                     }
                                     else
                                     {
@@ -236,7 +237,56 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                 }
                             break;
                             //player entity
-                            case server_recieving_packets::player_object_request: break;
+                            case server_recieving_packets::player_object_request:
+                                {
+                                    std::cout << "===Player " << client.myNumber << " requested their entity number, and object." << std::endl;
+                                    int player_entity = client.myPlayerEntity;
+                                    bool hide_ent = false;
+
+                                    entity* ply_data = serverObj.entity_map[ player_entity];
+
+                                    if(ply_data != nullptr) {
+                                        if(ply_data->inside_of_id != -1) {
+                                            //send entity number of entity we are inside of!!
+
+                                            //certain objects hide their puppets to specific clients.
+                                            hide_ent = false;
+
+                                            //backup filter
+                                            entity* check_data = serverObj.entity_map[ player_entity];
+
+                                            if(check_data != nullptr) {
+                                                //update player entity to send
+                                                player_entity = ply_data->inside_of_id;
+                                                entity* ply_data = serverObj.entity_map[ player_entity];
+
+                                                std::cout << " -returned CONTAINER entity " << player_entity << " is object: " << ply_data->entity_getObjectIndex() << std::endl;
+                                            }
+                                            else
+                                            {
+                                                std::cout << " -returned BACKUP entity " << player_entity << " is object: " << ply_data->entity_getObjectIndex() << std::endl;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //send entity number!
+                                            std::cout << " -returned entity " << player_entity << " is object: " << ply_data->entity_getObjectIndex() << std::endl;
+
+                                            //certain objects hide their puppets to specific clients.
+                                            hide_ent = true;
+                                        }
+
+                                        //transmit!
+                                        client_transmission_packets::cpacket_playerentity_return( client, player_entity, serverObj.getIndexOfAsset((ply_data->entity_getObjectIndex())), ply_data->x, ply_data->y, hide_ent);
+                                    }
+                                    else
+                                    {
+                                        //somehow... we lost it...
+                                        client_transmission_packets::cpacket_force_reset( client," -Character entity data was not found.");
+                                    }
+                                }
+                            break;
+
                             case server_recieving_packets::player_release_grab: break;
                             case server_recieving_packets::map_request_whole: break;
                             case server_recieving_packets::client_map_preloaded: break;

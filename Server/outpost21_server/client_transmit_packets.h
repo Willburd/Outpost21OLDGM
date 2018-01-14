@@ -53,7 +53,7 @@ namespace client_transmission_packets {
     //map_door_security_reply,
     ///character locking
     int cpacket_character_lock(client_struct& inputClient, int input_EntityNumber);
-    //player_entity_return,
+    int cpacket_playerentity_return( client_struct& inputClient, int input_EntityNumber, int get_object_index, double get_x, double get_y, bool get_hide);
     //player_security_reply,
     //movement_location_sync,
     ///entities

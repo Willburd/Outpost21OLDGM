@@ -167,7 +167,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                         //if the slot exists at all
                                         if(check_entity != nullptr) {
                                             //check if entity had player data and send it
-                                            if(check_entity->entity_getObjectIndex() == "obj_puppet_player"
+                                            if(check_entity->entityIsPlayer()
                                             && check_entity->myStringVars["player_name"] == user_getname) {
                                                 //debug out
                                                 std::cout << " ---sent entity: " << it->first << std::endl;
@@ -199,7 +199,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                         if(entity_data != nullptr) {
 
                                             //check if entity had player data and send it
-                                            if(entity_data->entity_getObjectIndex() == "obj_puppet_player"
+                                            if(entity_data->entityIsPlayer()
                                             && entity_data->myStringVars["player_nickname"] == char_getname) {
                                                 //debug out
                                                 std::cout << " ---sent entity: " << it->first << std::endl;
@@ -298,7 +298,6 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     entity* ply_data = serverObj.entity_map[ player_entity];
                                     if(ply_data != nullptr) {
                                         ply_data->myIntVars["stasis"] = false; //take player out of stasis
-                                        ply_data->myIntVars["player_socket"] = client.myNumber;
 
                                         //send final connection packet
                                         std::cout << " -Locked player entity to: " << player_entity << std::endl;
@@ -369,7 +368,6 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                 }
                             break;
 
-                            case server_recieving_packets::player_release_grab: break;
                             case server_recieving_packets::map_request_whole: break;
                             case server_recieving_packets::client_map_preloaded: break;
                             case server_recieving_packets::client_ready_for_map_download: break;
@@ -408,7 +406,111 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                 }
                             break;
 
-                            case server_recieving_packets::entity_store: break;
+                            case server_recieving_packets::entity_store:
+                                {
+                                    //item being stored!
+                                    int entity_number  = current_packet->buffer_read_u32();
+                                    entity* found_data = serverObj.entity_map[entity_number];
+
+                                    //box to put it in (any entity supports this!
+                                    int storagebox_entity_number  = current_packet->buffer_read_u32();
+                                    entity* storagebox_data = serverObj.entity_map[storagebox_entity_number];
+
+                                    //check if we can even access these!
+                                    if(found_data != nullptr && storagebox_data != nullptr) {
+                                        if(entity_number != storagebox_entity_number) {
+
+                                            //decide if pickup is valid!
+                                            if(found_data->entity_getItemSize() > storagebox_data->entity_getInventoryItemSizeMax() //too big to store in inventory, so we grab
+                                            && storagebox_data->entityIsPlayer()
+                                            && client.myPlayerEntity == storagebox_entity_number) { //storagebox is the player that requested a grab (otherwise it's a place into inventory check)
+                                                //pickup and store inside!
+                                                std::cout << "===entity: " << entity_number << " Grabbed by: " << storagebox_entity_number << std::endl;
+
+                                                if(found_data->entity_getConstructed() == false) {
+                                                    //GRABBING HOLD OF ENTITY!
+                                                    if(found_data->entity_getItemSize() >= entityLibrary::itemdata::huge) {
+                                                        std::cout << " -too big to move" << std::endl;
+                                                        client_transmission_packets::cpacket_failed_action( client,"Too big to move.");
+                                                    }
+                                                    else
+                                                    {
+                                                        std::cout << " -success!" << std::endl;
+                                                        //grab the entity!
+                                                        storagebox_data->entity_setGrabbed(entity_number);
+                                                        client_transmission_packets::cpacket_entity_grab_update( client,entity_number);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    //entity bolted down
+                                                    std::cout << " -entity is constructed" << std::endl;
+                                                    client_transmission_packets::cpacket_failed_action( client,"Object is bolted down!");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //pickup and store inside!
+                                                std::cout << "===entity: " + entity_number << " placed in inventory of: " << storagebox_entity_number << std::endl;
+
+
+                                                //storage can only happen if the inventory for it is capable!
+                                                bool allow_storage = true;
+
+
+                                                //limit by sizes, huge cannot fit in anything unless done by unique means
+                                                if(found_data->entity_getItemSize() > storagebox_data->entity_getInventoryItemSizeMax()) {
+                                                    allow_storage = false;
+                                                    std::cout << " -too big to store" << std::endl;
+                                                    client_transmission_packets::cpacket_failed_action( client,"Container is too small to store this!");
+                                                }
+
+                                                //certain things cannot store liquids
+                                                if(found_data->entity_getItemIsLiquid() == true and storagebox_data->entity_getInventoryAllowLiquids() == false) {
+                                                    allow_storage = false;
+                                                    std::cout << " -Cannot store liquids with this container!" << std::endl;
+                                                    client_transmission_packets::cpacket_failed_action( client,"Cannot store liquids with this container!");
+                                                }
+
+                                                //cannot store in itself
+                                                if(storagebox_data == found_data) {
+                                                    allow_storage = false;
+                                                    std::cout << " -same item as container" << std::endl;
+                                                    client_transmission_packets::cpacket_failed_action( client,"Cannot store a container inside itself!");
+                                                }
+
+                                                //check class compatability
+                                                bool allow_class_storage = serverObj.entity_classStorageCheck( found_data->entity_getItemClass(), storagebox_data->entity_getInventoryItemClassAllowed(), client);
+
+
+                                                //if storage is possible allow you to put it safely away
+                                                if(allow_storage == true && allow_class_storage == true) {
+                                                    if(storagebox_data->contains_vector.size() < storagebox_data->entity_getInventoryMaxSize()) { //is inventory full?
+                                                        //add to the inventory of the other object!
+                                                        serverObj.entity_storeEntity(entity_number,storagebox_entity_number);
+
+                                                        //update all players of this action
+                                                        ///TODO storagebox update for all players
+
+                                                    }
+                                                    else
+                                                    {
+                                                        std::cout << " -container full" << std::endl;
+                                                        client_transmission_packets::cpacket_failed_action( client,"Container is full!");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            std::cout << " -Cannot place an object inside itself!" << std::endl;
+                                            client_transmission_packets::cpacket_failed_action( client,"Cannot place an object inside itself!");
+                                        }
+                                    }
+                                }
+                            break;
+
+                            case server_recieving_packets::player_release_grab: break;
 
                             case server_recieving_packets::entity_throw: break; //flows into place
                             case server_recieving_packets::entity_construct: break;

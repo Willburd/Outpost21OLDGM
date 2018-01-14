@@ -71,7 +71,7 @@ class serverCore {
 
     //entities
     int entity_process_cycle = 0;
-
+    bool entity_classStorageCheck( uint16_t input_item_class, uint16_t storage_class_allowed, client_struct& inputClient);
 
     //file paths
     const std::string serverdata_file_path = "server_data.ini";
@@ -89,8 +89,9 @@ class serverCore {
     void entity_set(entity* entityToAdd, unsigned int entityNumberToAssign); //forcibly set the new entity to a specific index, used for file loading
     void entity_remove(int entityNumberToRemove);
     void entity_storeEntity(int entityToStore,int storageBoxEntity);
-    void entity_releaseEntity(int entityToStore,int storageBoxEntity, double inx, double iny);
+    void entity_releaseEntity(int entityToRelease, double inx, double iny);
     void set_update_flag( int entityNumberToUpdate, int clientNumber, bool updateFlag);
+    void set_update_flagALL( int entityNumberToUpdate, bool updateFlag);
 
     bool gameMapLoad(std::string mapFilePath);
     //sub functions of map loads
@@ -178,6 +179,8 @@ class entity {
     void entity_setGrabbed(unsigned int entityNumber);
     void entity_setConstructed(bool setCon);
     void entity_setIndestructable(bool input);
+
+    bool entityIsPlayer();
 
     virtual void entity_personal_step();
 };

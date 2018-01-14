@@ -121,7 +121,19 @@ int client_transmission_packets::cpacket_entity_drop(client_struct& inputClient,
 
 //entity_reply,
 //entity_activate,
-//entity_grab_update,
+int client_transmission_packets::cpacket_entity_grab_update(client_struct& inputClient, int input_EntityNumber) {
+    //construct buffer to send data
+    byte_buffer send_buffer;
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
+    send_buffer.buffer_write_u8( inputClient.myNumber );
+
+    send_buffer.buffer_write_u16( client_transmission_packets::entity_grab_update);
+    send_buffer.buffer_write_u32( input_EntityNumber );
+
+    //transmit
+    return inputClient.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());
+}
+
 ///misc
 int client_transmission_packets::cpacket_force_reset( client_struct& inputClient, std::string errorString) {
     byte_buffer send_buffer;
@@ -135,7 +147,17 @@ int client_transmission_packets::cpacket_force_reset( client_struct& inputClient
     return inputClient.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());
 }
 
-//failed_action, //just when normal things like being unable to fill a cup because it is full!
+int client_transmission_packets::cpacket_failed_action( client_struct& inputClient, std::string errorString) { //just when normal things like being unable to fill a cup because it is full!
+    byte_buffer send_buffer;
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
+    send_buffer.buffer_write_u8( inputClient.myNumber );
+
+    send_buffer.buffer_write_u16( client_transmission_packets::failed_action);
+    send_buffer.buffer_write_string( errorString);
+
+    //transmit
+    return inputClient.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());
+}
 
 int client_transmission_packets::cpacket_server_alive(client_struct& inputClient) {
     std::cout << "-Heartbeat" << std::endl;

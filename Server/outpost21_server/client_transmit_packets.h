@@ -61,10 +61,10 @@ namespace client_transmission_packets {
     int cpacket_entity_drop(client_struct& inputClient, int input_EntityNumber);
     //entity_reply,
     //entity_activate,
-    //entity_grab_update,
+    int cpacket_entity_grab_update(client_struct& inputClient, int input_EntityNumber);
     ///misc
     int cpacket_force_reset( client_struct& inputClient, std::string errorString);
-    //failed_action, //just when normal things like being unable to fill a cup because it is full!
+    int cpacket_failed_action( client_struct& inputClient, std::string errorString); //just when normal things like being unable to fill a cup because it is full!
     int cpacket_server_alive(client_struct& inputClient);
     ///inventory
     //inventory_update,

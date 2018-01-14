@@ -147,12 +147,14 @@ void serverCore::entity_storeEntity( int entityToStore, int storageBoxEntity) {
     ///DIRECT storage, has NO safeties! NO inventory check limits! Can even store inside itself!
     //push storing entity into storagebox
     entity* getStorageEntity = entity_map[storageBoxEntity];
+    entity* oldStorageEntity = nullptr;
     getStorageEntity->contains_vector.push_back(entityToStore);
+
 
     //remove storing entity from old inventory!
     entity* getStoredEntity = entity_map[entityToStore];
     if(getStoredEntity->inside_of_id != -1) {
-        entity* oldStorageEntity = entity_map[getStoredEntity->inside_of_id];
+        oldStorageEntity = entity_map[getStoredEntity->inside_of_id];
 
         for(std::vector<int>::iterator it = oldStorageEntity->contains_vector.begin(); it != oldStorageEntity->contains_vector.end();) {
             if(*it == entityToStore) {
@@ -169,17 +171,38 @@ void serverCore::entity_storeEntity( int entityToStore, int storageBoxEntity) {
     getStoredEntity->inside_of_id = storageBoxEntity;
     getStoredEntity->x = entity_item_storage;
     getStoredEntity->y = entity_item_storage;
+    getStoredEntity->dir = 0;
+    getStoredEntity->spd = 0;
+    getStoredEntity->entity_setConstructed(false);
+
+    //security updates
+    if(getStoredEntity->entity_getObjectIndex() == "obj_puppet_securitycard") {
+        //update both as needed!
+        getStoredEntity->entity_securityUpdate();
+        getStorageEntity->entity_securityUpdate();
+        if(oldStorageEntity != nullptr) oldStorageEntity->entity_securityUpdate();
+    }
+
+    //drop and load updates for clients
+    serverObj.set_update_flagALL(entityToStore,true);
+    serverObj.set_update_flagALL(storageBoxEntity,true);
+    if(oldStorageEntity != nullptr) serverObj.set_update_flagALL(oldStorageEntity->entity_number,true);
+
+    //send storagebox updates to clients to close inventory windows as needed
+    ///TODO storagebox update function
 }
 
-void serverCore::entity_releaseEntity( int entityToStore, int storageBoxEntity, double inx, double iny) {
+void serverCore::entity_releaseEntity( int entityToRelease, double inx, double iny) {
     ///DIRECT inventory release! NO SAFETIES!
     //remove storing entity from old inventory!
-    entity* getStoredEntity = entity_map[entityToStore];
+    entity* oldStorageEntity = nullptr;
+    entity* getStoredEntity = entity_map[entityToRelease];
+
     if(getStoredEntity->inside_of_id != -1) {
-        entity* oldStorageEntity = entity_map[getStoredEntity->inside_of_id];
+        oldStorageEntity = entity_map[getStoredEntity->inside_of_id];
 
         for(std::vector<int>::iterator it = oldStorageEntity->contains_vector.begin(); it != oldStorageEntity->contains_vector.end();) {
-            if(*it == entityToStore) {
+            if(*it == entityToRelease) {
                 it = oldStorageEntity->contains_vector.erase(it);
                 break;
             }
@@ -189,10 +212,92 @@ void serverCore::entity_releaseEntity( int entityToStore, int storageBoxEntity, 
             }
         }
     }
+
     //tell storing entity to put itself inside storagebox
     getStoredEntity->inside_of_id = -1;
     getStoredEntity->x = inx;
     getStoredEntity->y = iny;
+
+    //security updates
+    if(getStoredEntity->entity_getObjectIndex() == "obj_puppet_securitycard") {
+        //update both as needed!
+        getStoredEntity->entity_securityUpdate();
+        oldStorageEntity->entity_securityUpdate();
+    }
+}
+
+
+bool serverCore::entity_classStorageCheck( uint16_t input_item_class, uint16_t storage_class_allowed, client_struct& inputClient) {
+    bool allow_item = false;
+
+    switch(storage_class_allowed) {
+        case entityLibrary::itemdata::generic:
+        case entityLibrary::itemdata::ship:
+            //allows all classes inside!
+            allow_item = true;
+        break;
+
+        case entityLibrary::itemdata::tools:
+            //only tools and related allowed
+            if(input_item_class == entityLibrary::itemdata::tools) allow_item = true;
+
+            if(allow_item == false) {
+                client_transmission_packets::cpacket_failed_action( inputClient, "Object can only hold tools.");
+            }
+        break;
+
+        case entityLibrary::itemdata::sheets:
+            if(input_item_class == entityLibrary::itemdata::sheets) allow_item = true;
+
+            if(allow_item == false) {
+                client_transmission_packets::cpacket_failed_action( inputClient, "Object can only hold sheets.");
+            }
+        break;
+
+        case entityLibrary::itemdata::food:
+            if(input_item_class == entityLibrary::itemdata::food) allow_item = true;
+
+            if(allow_item == false) {
+                client_transmission_packets::cpacket_failed_action( inputClient, "Object can only hold food.");
+            }
+        break;
+
+        case entityLibrary::itemdata::machines:
+            if(input_item_class == entityLibrary::itemdata::machines) allow_item = true;
+
+            if(allow_item == false) {
+                client_transmission_packets::cpacket_failed_action( inputClient, "Object can only hold machines.");
+            }
+        break;
+
+        case entityLibrary::itemdata::machine_parts:
+            if(input_item_class == entityLibrary::itemdata::machine_parts) allow_item = true;
+
+            if(allow_item == false) {
+                client_transmission_packets::cpacket_failed_action( inputClient, "Object can only hold machine parts.");
+            }
+        break;
+
+        case entityLibrary::itemdata::clothing:
+            if(input_item_class == entityLibrary::itemdata::clothing) allow_item = true;
+
+            if(allow_item == false) {
+                client_transmission_packets::cpacket_failed_action( inputClient, "Object can only hold clothing.");
+            }
+        break;
+
+        case entityLibrary::itemdata::rifle:
+            if(input_item_class == entityLibrary::itemdata::rifle) allow_item = true;
+        case entityLibrary::itemdata::pistol:
+            if(input_item_class == entityLibrary::itemdata::pistol) allow_item = true;
+
+            if(allow_item == false) {
+                client_transmission_packets::cpacket_failed_action( inputClient, "Object can only hold firearms.");
+            }
+        break;
+    }
+
+    return allow_item;
 }
 
 
@@ -203,6 +308,10 @@ void serverCore::set_update_flag( int entityNumberToUpdate, int clientNumber, bo
         entity* get_ent = entity_map[entityNumberToUpdate];
         get_ent->needs_update[ clientNumber] = updateFlag;
     }
+}
+
+void serverCore::set_update_flagALL( int entityNumberToUpdate, bool updateFlag) {
+    ///TODO code to update all clients with flags set!
 }
 
 
@@ -587,6 +696,9 @@ entity::entity(std::string set_object_index,double set_x,double set_y, float set
 entity::~entity(){
 }
 
+bool entity::entityIsPlayer() {
+    return ( entity_getObjectIndex() == "obj_puppet_player" );
+}
 
 void entity::entity_set_inventorylimits( int inventory_size, int max_storeable_item_size, int item_size, bool is_a_liquid, bool contains_a_liquid, int item_class, int inventory_storage_class) {
     is_liquid = is_a_liquid;

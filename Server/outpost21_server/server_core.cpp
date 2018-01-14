@@ -20,6 +20,61 @@ int serverCore::getIndexOfAsset(std::string inputAstIndex) {
     return object_index[inputAstIndex];
 }
 
+//accounts
+void serverCore::userAccountAdd( std::string name, std::string passHash) {
+    userAccount* getNewAccount = new userAccount;
+    getNewAccount->userName = name;
+    getNewAccount->userHash = passHash;
+
+    userAccountVector.push_back(getNewAccount);
+}
+
+bool serverCore::userAccountLogin( std::string name, std::string passHash) {
+    bool getLogin = false;
+
+    for(std::vector<userAccount*>::iterator it = userAccountVector.begin(); it != userAccountVector.end(); ++it) {
+        userAccount* getAcc = *it;
+
+        if(getAcc->userName == name) {
+            if(getAcc->userHash == passHash) {
+                //password confirmed. deleting
+                getLogin = true;
+                break;
+            }
+        }
+    }
+
+    return getLogin;
+}
+
+bool serverCore::userAccountExists( std::string name) {
+    bool userExists = false;
+
+    for(std::vector<userAccount*>::iterator it = userAccountVector.begin(); it != userAccountVector.end(); ++it) {
+        userAccount* getAcc = *it;
+
+        if(getAcc->userName == name) {
+            userExists = true;
+            break;
+        }
+    }
+
+    return userExists;
+}
+
+void serverCore::userAccountRemove( std::string name, std::string passHash) { //inputs are used to confirm delete
+    for(std::vector<userAccount*>::iterator it = userAccountVector.begin(); it != userAccountVector.end(); ++it) {
+        userAccount* getAcc = *it;
+
+        if(getAcc->userName == name) {
+            if(getAcc->userHash == passHash) {
+                //password confirmed. deleting
+                delete getAcc;
+            }
+        }
+    }
+}
+
 
 void serverCore::securityLevelAdd( unsigned int index, std::string inputName, int inputColor) {
 
@@ -92,6 +147,13 @@ void serverCore::set_update_flag( int entityNumberToUpdate, int clientNumber, bo
     }
 }
 
+
+void serverCore::userdataLoad(nlohmann::json u) {
+    for (nlohmann::json::iterator it = u.begin(); it != u.end(); ++it) {
+        //add all current logins!
+        serverObj.userAccountAdd(it.key(),it.value());
+    }
+}
 
 
 void serverCore::securityMapLoad(nlohmann::json j) {
@@ -423,6 +485,9 @@ bool serverCore::gameMapLoad(std::string mapFilePath) {
         nlohmann::json jsonData;
         inputFile >> jsonData;
 
+        //load userdata
+        userdataLoad(jsonData["UserData"]);
+
         //extract security data first!
         securityMapLoad(jsonData["Security"]);
 
@@ -431,6 +496,8 @@ bool serverCore::gameMapLoad(std::string mapFilePath) {
 
         //finally the map's walls!
     }
+
+
 
     return finishedLoading;
 }

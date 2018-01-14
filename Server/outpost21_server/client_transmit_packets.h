@@ -42,7 +42,7 @@ namespace client_transmission_packets {
     };
 
     int cPacket_request_seen(client_struct& inputClient);
-    //login_newuser,
+    int cpacket_login_newuser(client_struct& inputClient, std::string nameUsed, std::string hashUsed);
     int cPacket_login_failed(client_struct& inputClient, std::string nameUsed);
     int cPacket_login_success(client_struct& inputClient, std::string nameUsed);
     int cpacket_character_transmit_data(client_struct& inputClient, std::string jsonStringOfEntity);

@@ -13,6 +13,12 @@
 class entity;
 
 
+struct userAccount {
+    std::string userName = "";
+    std::string userHash = "";
+};
+
+
 struct securityLevel {
     std::string name = "";
     unsigned int color = 0;
@@ -24,6 +30,8 @@ class serverCore {
     //create asset index list
     std::map <std::string, int> object_index;
     std::map <int, std::string> asset_index;
+    //user account list
+    std::vector<userAccount*> userAccountVector;
 
     public:
     //entity list
@@ -68,6 +76,12 @@ class serverCore {
     //file paths
     const std::string serverdata_file_path = "server_data.ini";
 
+    //accounts
+    void userAccountAdd( std::string name, std::string passHash);
+    bool userAccountExists( std::string name);
+    bool userAccountLogin( std::string name, std::string passHash);
+    void userAccountRemove( std::string name, std::string passHash); //inputs are used to confirm delete
+
     //add entity
     void securityLevelAdd( unsigned int index,std::string inputName, int inputColor);
     void securityLevelRemove( unsigned int index);
@@ -78,6 +92,7 @@ class serverCore {
 
     bool gameMapLoad(std::string mapFilePath);
     //sub functions of map loads
+    void userdataLoad(nlohmann::json u);
     void securityMapLoad(nlohmann::json j);
     void entityMapLoad(nlohmann::json e);
     entity* entityJsonDecode(nlohmann::json a);

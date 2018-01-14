@@ -33,7 +33,12 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
         client.myNumber = threadId;
         client_transmission_packets::cPacket_request_seen( client);
 
+        //create thread locking mutex, look into each packet opcode to see when they use this.
+        pthread_mutex_t *mutex;
+        const pthread_mutexattr_t *attr;
+        pthread_mutex_init(mutex, attr);
 
+        //main client processing loop,ALWAYS respond to packets ASAP compared to the server's tick rate
         bool quit = false;
         while(quit == false) {
             // TCP socket:
@@ -60,6 +65,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                     }
                     else
                     {
+
                         //found packet, next time we check it we'll be looking for magic numbers
                         foundPacket = false;
                         //extract packet's opcode!
@@ -78,42 +84,21 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     std::cout << " Login name: " << buffer_login_name << "|" << std::endl;
                                     std::cout << " passhash  : " << buffer_login_passhash << "|" << std::endl;
 
-                                    //confirmed password
-                                    bool password_accepted = false;
-                                    std::string get_pass_data = "";
-
-                                    //load user data
-                                    INIReader reader( serverObj.serverdata_file_path);
-                                    if (reader.ParseError() < 0) {
-                                        std::cout << "Can't load '" << serverObj.serverdata_file_path << "'" << std::endl;
-                                        get_pass_data = "";
-                                        password_accepted = false;
-                                    }
-                                    else
-                                    {
-                                        std::cout << "Config loaded from '" << serverObj.serverdata_file_path << "'" << std::endl;
-
-                                        //get passhash from server data
-                                        get_pass_data = reader.Get("UserData", buffer_login_name,"");
-                                        password_accepted = true;
-                                    }
-
-                                    //extracted passhash
-                                    std::cout << " E-hash    : " << get_pass_data << "|" << std::endl;
+                                    //check login
+                                    bool user_exists = serverObj.userAccountExists( buffer_login_name);
+                                    bool password_accepted = serverObj.userAccountLogin( buffer_login_name, buffer_login_passhash);
 
                                     //login checks
-                                    if(get_pass_data.length() > 0) {
-                                        if(password_accepted == false) {
+                                    if(buffer_login_name.length() > 0 && buffer_login_passhash.length() ) {
+                                        if(user_exists == false) {
                                             //send new user confirmations!
                                             std::cout << "New user signup" << std::endl;
+                                            client_transmission_packets::cpacket_login_newuser( client, buffer_login_name, buffer_login_passhash);
                                         }
-                                        else if(password_accepted == true)
+                                        else
                                         {
                                             //confirm loaded password
-                                            bool login_success = (get_pass_data == buffer_login_passhash);
-
-
-                                            if(login_success == true) {
+                                            if(password_accepted == true) {
                                                 std::cout << "Login correct!" << std::endl;
                                                 client_transmission_packets::cPacket_login_success( client, buffer_login_name);
                                             }
@@ -133,7 +118,39 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                 }
                             break;
 
-                            case server_recieving_packets::login_newuser: break;
+                            case server_recieving_packets::login_newuser:
+                                {
+                                    std::cout << "===Login details created!" << std::endl;
+                                    //login attempt!
+                                    std::string buffer_login_name      = current_packet->buffer_read_string(); //stores length and ignores null terminator!
+                                    std::string buffer_login_passhash  = current_packet->buffer_read_string(); //stores length and ignores null terminator!
+
+                                    std::cout << "user: " << buffer_login_name << std::endl;
+                                    std::cout << "hash: " << buffer_login_passhash << std::endl;
+                                    std::string get_pass_data = "";
+
+
+                                    //load user data
+                                    std::cout << "Config loaded from '" << serverObj.serverdata_file_path << "'" << std::endl;
+
+                                    //check login
+                                    bool user_exists = serverObj.userAccountExists( buffer_login_name);
+
+                                    //get passhash from server data
+                                    if(buffer_login_name.length() > 0 && buffer_login_passhash.length() ) {
+                                        if(user_exists == true) {
+                                            std::cout << " -a user tried to register the same name twice. This is not possible." << std::endl;
+                                        }
+                                        else
+                                        {
+                                            //reader.MakeKey("UserData",buffer_login_name,buffer_login_passhash);
+                                            //auto login!
+                                            client_transmission_packets::cPacket_login_success( client, buffer_login_name);
+                                        }
+                                    }
+                                }
+                            break;
+
                             //character acquisition
                             case server_recieving_packets::character_get_all_owned:
                                 {
@@ -198,9 +215,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                 }
                             break;
 
-                            case server_recieving_packets::character_created:
-                                current_packet->buffer_debug();
-                            break;
+                            case server_recieving_packets::character_created: break;
 
                             case server_recieving_packets::character_loaded:
                                 {
@@ -312,6 +327,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     serverObj.entity_add(make_entity); //add to main list//make a test entity
                                 }
                             break;
+
                             case server_recieving_packets::entity_create_direction:
                                 {
                                     double buffer_getx = current_packet->buffer_read_f32();
@@ -324,6 +340,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     serverObj.entity_add(make_entity); //add to main list//make a test entity
                                 }
                             break;
+
                             case server_recieving_packets::entity_store: break;
                             case server_recieving_packets::entity_throw: break; //flows into place
                             case server_recieving_packets::entity_place: break;
@@ -342,6 +359,16 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                             case server_recieving_packets::entity_construct: break;
                             case server_recieving_packets::entity_deconstruct: break;
                             case server_recieving_packets::entity_inventory_request: break;
+
+                            /*******************************
+
+                                This next section is
+                                EXTREMELY context based,
+                                mostly by the objects
+                                calling it.
+
+                            *******************************/
+
                             case server_recieving_packets::entity_interact: break;
                             //security tool editing doors
                             case server_recieving_packets::security_tool_requestdoor: break;

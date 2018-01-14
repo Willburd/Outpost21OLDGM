@@ -13,7 +13,19 @@ int client_transmission_packets::cPacket_request_seen(client_struct& inputClient
     return inputClient.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());
 }
 
-//login_newuser,
+int client_transmission_packets::cpacket_login_newuser(client_struct& inputClient, std::string nameUsed, std::string hashUsed) {
+    //construct buffer to send data
+    byte_buffer send_buffer;
+    send_buffer.buffer_write_u8( 210); //packetstart magic number
+    send_buffer.buffer_write_u8( inputClient.myNumber); //client number
+
+    send_buffer.buffer_write_u16( client_transmission_packets::login_newuser); //opcode
+    send_buffer.buffer_write_string( nameUsed);
+    send_buffer.buffer_write_string( hashUsed);
+
+    //transmit
+    return inputClient.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());
+}
 
 int client_transmission_packets::cPacket_login_failed(client_struct& inputClient, std::string nameUsed) {
     //construct buffer to send data
@@ -22,6 +34,7 @@ int client_transmission_packets::cPacket_login_failed(client_struct& inputClient
     send_buffer.buffer_write_u8( inputClient.myNumber); //client number
 
     send_buffer.buffer_write_u16( client_transmission_packets::login_failed); //opcode
+    send_buffer.buffer_write_string( nameUsed);
 
     //transmit
     return inputClient.mySocket.send(send_buffer.data, send_buffer.buffer_get_pos());

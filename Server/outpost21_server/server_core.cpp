@@ -311,7 +311,13 @@ void serverCore::set_update_flag( int entityNumberToUpdate, int clientNumber, bo
 }
 
 void serverCore::set_update_flagALL( int entityNumberToUpdate, bool updateFlag) {
-    ///TODO code to update all clients with flags set!
+    if(entityNumberToUpdate >= 0
+    && entity_map[entityNumberToUpdate] != nullptr) {
+        for (std::map<unsigned int,client_struct*>::iterator it = serverObj.clientNumberMap.begin(); it != serverObj.clientNumberMap.end(); it++ )
+        {
+            set_update_flag( entityNumberToUpdate, it->first, updateFlag);
+        }
+    }
 }
 
 
@@ -429,6 +435,8 @@ entity* serverCore::entityJsonDecode(nlohmann::json a) {
     std::map <std::string, int> get_myIntVars;
     std::map <std::string, std::string> get_myStringVars;
 
+    std::vector<int> collectedInventory;
+
     std::cout << "====Loading entity====" << std::endl;
     for (nlohmann::json::iterator it = a.begin(); it != a.end(); ++it) {
         //itterate through entity's properties
@@ -436,7 +444,6 @@ entity* serverCore::entityJsonDecode(nlohmann::json a) {
         //and the soft item specific values
         std::string jsonKey = it.key();
 
-        ///TODO add the rest of these entity assembly things. And then the generic case of personal vars!
         if(jsonKey == "entity_number") {
             getEntityNumber = a.at(jsonKey).get<int>();
             std::cout << " |------entityID: " << getEntityNumber << std::endl;
@@ -530,7 +537,16 @@ entity* serverCore::entityJsonDecode(nlohmann::json a) {
             std::cout << " |---contain_max: " << get_containsmax << std::endl;
         }
         else if(jsonKey == "contains_map") {
-            ///TODO inventory extraction
+            nlohmann::json inv_json = a.at(jsonKey);
+
+            std::cout << " |------Extracting inventory!" << std::endl;
+            for (nlohmann::json::iterator it = inv_json.begin(); it != inv_json.end(); ++it) {
+                //add all current logins!
+                collectedInventory.push_back((int)*it);
+
+                std::cout << "|-------->>" << (int)*it << std::endl;
+            }
+
         }
         else if(jsonKey == "contains_size") {
             get_containssize = a.at(jsonKey).get<int>();
@@ -592,7 +608,7 @@ entity* serverCore::entityJsonDecode(nlohmann::json a) {
     }
 
     //call entity create to make the base entity
-    entity* make_entity = entityLibrary::entity_template_library(get_objectindex,getx,gety,getdir,getspd,getindestruct,getinsideof);
+    entity* make_entity = entityLibrary::entity_template_library(get_objectindex,getx,gety,getdir,getspd,getindestruct);
     make_entity->entity_number = getEntityNumber; ///EXTREMELY IMPORTANT!
 
     make_entity->entity_set_inventorylimits(get_containsmax,get_containssize,get_issize,get_isliquid,get_containsliquid,get_isclass,get_containsclass);
@@ -608,6 +624,11 @@ entity* serverCore::entityJsonDecode(nlohmann::json a) {
     make_entity->SS_collision_ignores_walls = get_SS_ignorewalls;
     make_entity->SS_bouncyness = get_SS_bouncyness;
     make_entity->SS_decelerator = get_SS_decelerator;
+
+    //manual storage stuff here, because the entity we want to be store inside might not even be loaded yet!!
+    make_entity->contains_vector.clear();
+    make_entity->contains_vector.swap(collectedInventory); //swap these two, the other will get dumped at function end.
+    make_entity->inside_of_id = getinsideof;
 
     make_entity->myIntVars.clear();
     make_entity->myIntVars.insert(get_myIntVars.begin(), get_myIntVars.end());
@@ -673,7 +694,7 @@ bool serverCore::gameMapLoad(std::string mapFilePath) {
 
 
 ///ENTITY
-entity::entity(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid) {
+entity::entity(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable) {
     //constructor
     object_index = set_object_index;
     entity_number = -1; //index in entity vector
@@ -683,7 +704,6 @@ entity::entity(std::string set_object_index,double set_x,double set_y, float set
     last_update_y = set_y;
     dir = set_dir;
     spd = set_spd;
-    inside_of_id = set_insideid;
     indestructable = set_indestructable;
 
     //set all update flags

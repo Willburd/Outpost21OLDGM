@@ -34,6 +34,9 @@ class serverCore {
     std::vector<userAccount*> userAccountVector;
 
     public:
+    //client list
+    std::map< unsigned int, client_struct*> clientNumberMap;
+
     //entity list
     std::map< unsigned int, entity*> entity_map;
 
@@ -155,7 +158,7 @@ class entity {
     std::map <unsigned int,bool> entitySecurityLevels;
 
     ///functions
-    entity(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+    entity(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
     virtual ~entity();
     void entity_set_inventorylimits( int inventory_size, int max_storeable_item_size, int item_size, bool is_a_liquid, bool contains_a_liquid, int item_class, int inventory_storage_class);
     void entity_step(); //physics calc

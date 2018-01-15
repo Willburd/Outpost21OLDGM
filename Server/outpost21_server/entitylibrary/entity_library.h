@@ -70,12 +70,6 @@ namespace entityLibrary {
     };
 
     namespace jobs {
-        enum enum_job_stat : uint16_t {
-            stat_name,
-            stat_desc,
-            stat_startkit,
-        };
-
         enum enum_jobs : uint16_t {
             assistant,
             cargo,
@@ -109,7 +103,7 @@ namespace entityLibrary {
     class entity_generic : public entity {
 
         public:
-        entity_generic(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+        entity_generic(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
 
         using entity::entity_set_inventorylimits;
         using entity::entity_securityInit;
@@ -125,7 +119,7 @@ namespace entityLibrary {
         double SS_decelerator = 1; //no slowdown!
 
         public:
-        entity_arrivalshuttle(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+        entity_arrivalshuttle(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
         using entity::entity_set_inventorylimits;
         using entity::entity_securityInit;
 
@@ -135,7 +129,7 @@ namespace entityLibrary {
 
     class entity_player : public entity {
         public:
-        entity_player(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+        entity_player(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
         using entity::entity_set_inventorylimits;
         using entity::entity_securityInit;
 
@@ -149,7 +143,7 @@ namespace entityLibrary {
 
 
         public:
-        entity_borb(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+        entity_borb(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
         using entity::entity_set_inventorylimits;
         using entity::entity_securityInit;
 
@@ -160,7 +154,7 @@ namespace entityLibrary {
     class entity_laserpoint : public entity {
 
         public:
-        entity_laserpoint(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+        entity_laserpoint(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
         using entity::entity_set_inventorylimits;
         using entity::entity_securityInit;
 
@@ -170,7 +164,7 @@ namespace entityLibrary {
 
     class entity_coffee : public entity {
         public:
-        entity_coffee(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+        entity_coffee(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
         using entity::entity_set_inventorylimits;
         using entity::entity_securityInit;
 
@@ -180,7 +174,7 @@ namespace entityLibrary {
 
     class entity_powercell : public entity {
         public:
-        entity_powercell(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+        entity_powercell(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
         using entity::entity_set_inventorylimits;
         using entity::entity_securityInit;
 
@@ -190,7 +184,7 @@ namespace entityLibrary {
 
     class entity_securitycard : public entity {
         public:
-        entity_securitycard(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+        entity_securitycard(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
         using entity::entity_set_inventorylimits;
         using entity::entity_securityInit;
 
@@ -201,7 +195,7 @@ namespace entityLibrary {
 
     class entity_machine : public entity {
         public:
-        entity_machine(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+        entity_machine(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
         using entity::entity_set_inventorylimits;
         using entity::entity_securityInit;
 
@@ -226,7 +220,9 @@ namespace entityLibrary {
     */
 
     void entity_template_creation();
-    entity* entity_template_library(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid);
+    entity* entity_template_library(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
+    int toolkit_template_library( std::string set_object_index, double set_x, double set_y, float set_dir, double set_spd, bool set_indestructable);
+    std::string job_getStartToolkit( uint16_t jobEnum); //request toolkit based on the job a player starts as
 };
 
 

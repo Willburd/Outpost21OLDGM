@@ -1,8 +1,8 @@
 #include "entity_library.h"
 
 
-entityLibrary::entity_generic::entity_generic(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid)
-: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable, set_insideid) {
+entityLibrary::entity_generic::entity_generic(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
+: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
 }
 void entityLibrary::entity_generic::entity_personal_step() {
     ///personal actions go here
@@ -10,8 +10,8 @@ void entityLibrary::entity_generic::entity_personal_step() {
 
 
 
-entityLibrary::entity_arrivalshuttle::entity_arrivalshuttle(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid)
-: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable, set_insideid) {
+entityLibrary::entity_arrivalshuttle::entity_arrivalshuttle(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
+: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
     myIntVars["dest_x"] = set_x;
     myIntVars["dest_y"] = set_y;
     myIntVars["dropoff_padEntityId"] = -1;
@@ -27,8 +27,8 @@ void entityLibrary::entity_arrivalshuttle::entity_personal_step() {
 
 
 
-entityLibrary::entity_player::entity_player(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid)
-: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable, set_insideid) {
+entityLibrary::entity_player::entity_player(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
+: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
     myIntVars["stat_str"] = 10;
     myIntVars["stat_int"] = 10;
     myIntVars["stat_dex"] = 10;
@@ -53,8 +53,8 @@ void entityLibrary::entity_player::entity_personal_step() {
 
 
 
-entityLibrary::entity_borb::entity_borb(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid)
-: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable, set_insideid) {
+entityLibrary::entity_borb::entity_borb(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
+: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
 }
 void entityLibrary::entity_borb::entity_personal_step() {
     ///personal actions go here
@@ -63,8 +63,8 @@ void entityLibrary::entity_borb::entity_personal_step() {
 
 
 
-entityLibrary::entity_laserpoint::entity_laserpoint(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid)
-: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable, set_insideid) {
+entityLibrary::entity_laserpoint::entity_laserpoint(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
+: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
     myIntVars["firetime"] = 5;
 }
 void entityLibrary::entity_laserpoint::entity_personal_step() {
@@ -80,8 +80,8 @@ void entityLibrary::entity_laserpoint::entity_personal_step() {
 }
 
 
-entityLibrary::entity_coffee::entity_coffee(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid)
-: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable, set_insideid) {
+entityLibrary::entity_coffee::entity_coffee(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
+: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
     myIntVars["coffee_hot"] = 15000;
 }
 void entityLibrary::entity_coffee::entity_personal_step() {
@@ -98,8 +98,8 @@ void entityLibrary::entity_coffee::entity_personal_step() {
 
 
 
-entityLibrary::entity_powercell::entity_powercell(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid)
-: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable, set_insideid) {
+entityLibrary::entity_powercell::entity_powercell(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
+: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
     myIntVars["charge"] = 0;
 }
 void entityLibrary::entity_powercell::entity_personal_step() {
@@ -116,8 +116,8 @@ void entityLibrary::entity_powercell::entity_personal_step() {
 
 
 
-entityLibrary::entity_securitycard::entity_securitycard(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid)
-: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable, set_insideid) {
+entityLibrary::entity_securitycard::entity_securitycard(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
+: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
 }
 void entityLibrary::entity_securitycard::entity_personal_step() {
     ///personal actions go here
@@ -126,8 +126,8 @@ void entityLibrary::entity_securitycard::entity_personal_step() {
 
 
 
-entityLibrary::entity_machine::entity_machine(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid)
-: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable, set_insideid) {
+entityLibrary::entity_machine::entity_machine(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
+: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
     myIntVars["machine_has_power"] = 0;
 }
 void entityLibrary::entity_machine::entity_personal_step() {
@@ -138,6 +138,62 @@ void entityLibrary::entity_machine::entity_personal_step() {
 
 
 
+///initial job workkits
+std::string entityLibrary::job_getStartToolkit( uint16_t jobEnum) {
+    switch(jobEnum) {
+        case jobs::assistant:
+            return "obj_puppet_assistbox";
+        break;
+
+        case jobs::cargo:
+            return "obj_puppet_cargobox";
+        break;
+
+        case jobs::comms:
+            return "obj_puppet_commsbox";
+        break;
+
+        case jobs::weather:
+            return "obj_puppet_weatherbox";
+        break;
+
+        case jobs::science:
+            return "obj_puppet_labbox";
+        break;
+
+        case jobs::medical:
+            return "obj_puppet_medicbox";
+        break;
+
+        case jobs::engineering:
+            return "obj_puppet_toolbox";
+        break;
+
+        case jobs::mining:
+            return "obj_puppet_minebox";
+        break;
+
+        case jobs::security:
+            return "obj_puppet_secbox";
+        break;
+
+        case jobs::atmo:
+            return "obj_puppet_atmobox";
+        break;
+
+        case jobs::hydrophonics:
+            return "obj_puppet_hydrobox";
+        break;
+
+        case jobs::filtration:
+            return "obj_puppet_janibox";
+        break;
+
+        default:
+            return "";
+        break;
+    }
+}
 
 
 
@@ -304,7 +360,7 @@ void entityLibrary::entity_template_creation() {
 }
 
 
-entity* entityLibrary::entity_template_library(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable, int set_insideid) {
+entity* entityLibrary::entity_template_library(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable) {
     ///this function is largely for GM compatibility
     entity* returnPointer;
 
@@ -312,44 +368,44 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
     ///living entities
     if(set_object_index == "obj_puppet_arrivalshuttle") {
-        returnPointer = new entity_arrivalshuttle( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_arrivalshuttle( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits(1, itemdata::huge, itemdata::large, false, false, itemdata::ship, itemdata::generic);
     }
     else if(set_object_index == "obj_puppet_player") {
-        returnPointer = new entity_player( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_player( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits(12, itemdata::large, itemdata::medium, false, false, itemdata::body, itemdata::generic);
         returnPointer->entity_securityInit();
     }
     else if(set_object_index == "obj_puppet_borb") {
-        returnPointer = new entity_borb( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_borb( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, true, false, itemdata::body, itemdata::generic);
     }
     else if(set_object_index == "obj_puppet_laserpoint") {
-        returnPointer = new entity_laserpoint( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_laserpoint( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     ///food
     else if(set_object_index == "obj_puppet_cup") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 1, itemdata::smal , itemdata::tiny, false, true, itemdata::generic, itemdata::generic );
     }
     else if(set_object_index == "obj_puppet_coffeepack") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::tiny, false, true, itemdata::generic, itemdata::generic);
     }
     else if(set_object_index == "obj_puppet_coffee_hot") {
-        returnPointer = new entity_coffee( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_coffee( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         //returnPointer->coffee_hot = 15000;
         returnPointer->entity_set_inventorylimits(0, itemdata::tiny, itemdata::none, true, false, itemdata::food, itemdata::generic);
     }
     else if(set_object_index == "obj_puppet_coffee_microwaved") {
-        returnPointer = new entity_coffee( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_coffee( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
        // returnPointer->coffee_hot = 11000;
         returnPointer->entity_set_inventorylimits(0, itemdata::tiny, itemdata::none, true, false, itemdata::food, itemdata::generic);
     }
     else if(set_object_index == "obj_puppet_coffee_cold") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits(0, itemdata::tiny, itemdata::none, true, false, itemdata::food, itemdata::generic);
     }
 
@@ -357,356 +413,373 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
     else if(set_object_index == "obj_puppet_toolbelt"
     || set_object_index == "obj_puppet_secbelt"
     || set_object_index == "obj_puppet_medbelt") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 5, itemdata::medium, itemdata::smal, false, false, itemdata::generic, itemdata::tools);
     }
 
 
     else if(set_object_index == "obj_puppet_hazardvest") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_hardhat") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::medium, itemdata::smal, false, true, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_sechelmet") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::medium, itemdata::smal, false, true, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_firehelmet") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_firesuit") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_secgasmask") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_gasmask") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_secarmor") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_riotarmor") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_bombarmor") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_weldgogs") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_goggles") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_nitrogloves") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_sterilmask") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_cleansuit_helmet") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_cleansuit_body") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_sunglasses") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_glasses_perscrip") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::clothing, itemdata::generic);
     }
 
     //tools
     else if(set_object_index == "obj_puppet_crowbar") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_wirecutter") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_screwdriver") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_weldtool") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_wrench") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_laserrifle") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::medium, itemdata::smal, false, false, itemdata::rifle, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_powercell") {
-        returnPointer = new entity_powercell( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_powercell( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::generic, itemdata::generic);
         //returnPointer->Charge = 0;
     }
 
     else if(set_object_index == "obj_puppet_securitycard") {
-        returnPointer = new entity_securitycard( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_securitycard( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
         returnPointer->entity_securityInit();
     }
 
     else if(set_object_index == "obj_puppet_securitytool") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::smal, itemdata::tiny, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_flashlight") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::smal, itemdata::smal, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_flare") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_radioA") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::smal, itemdata::smal, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_umbrella") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_paper") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::sheets, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_pen") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_pencil") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_bucket") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 4, itemdata::medium, itemdata::smal, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_mop") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::medium, itemdata::none, false, true, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_fireex") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_fireaxe") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_stunbaton") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_pepperspray") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_taser") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::pistol, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_flashbang") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_emp") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_handcuffs") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_secflashlight") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         returnPointer->entity_set_inventorylimits( 1,itemdata::smal, itemdata::smal, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_fluidspec") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_stethoscope") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_bandaid_box") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 10, itemdata::smal, itemdata::tiny, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_bandaid") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_burnointment") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+
+                                           );
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_disinfectant") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_antitoxin") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_epinephrine") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_syringe") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::tiny, itemdata::none, false, true, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_hypoinject") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_beaker") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         returnPointer->entity_set_inventorylimits( 2, itemdata::smal, itemdata::none, false, true, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_pillbottle") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         returnPointer->entity_set_inventorylimits( 10, itemdata::smal, itemdata::tiny, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_scalpel") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_hemostat") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_sutures") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::tiny, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_surgerysaw") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::medium, itemdata::smal, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_surgerydrill") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::smal, itemdata::smal, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_cauterytool") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::smal, itemdata::smal, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_cryobeaker") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 2, itemdata::smal, itemdata::none, false, true, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_gps") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0,itemdata::smal, itemdata::smal, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_labeler") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 2, itemdata::smal, itemdata::smal, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_ducttape") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_cautiontape") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::tools, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_clipboard") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 5, itemdata::smal, itemdata::tiny, false, false, itemdata::generic, itemdata::sheets);
     }
 
@@ -715,13 +788,13 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
     //furniture
     else if(set_object_index == "obj_furniture_stool") {
         //pop out generic item...
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_furniture_table") {
         //pop out generic item...
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 1,itemdata::large, itemdata::medium, false, false, itemdata::generic, itemdata::generic);
         returnPointer->contains_display = true;
         returnPointer->contains_display_x = 0;
@@ -730,32 +803,32 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
     }
 
     else if(set_object_index == "obj_furniture_locker") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 20, itemdata::large, itemdata::large, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_furniture_trashbin") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 20, itemdata::large, itemdata::large, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_janitorcart") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 8, itemdata::service_cart, itemdata::large, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_microwave") {
         //pop out generic item...
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 2, itemdata::medium, itemdata::smal, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_coffeemaker") {
         //pop out generic item...
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 3, itemdata::medium, itemdata::smal, false, false, itemdata::generic, itemdata::generic);
     }
 
@@ -764,7 +837,7 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
     //constructables and blueprints
     else if(set_object_index == "obj_puppet_conduit") {
         //pop out generic item...
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::medium, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
@@ -772,7 +845,7 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
     else if(set_object_index == "obj_machine_STC") {
         //pop out generic item...
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 10, itemdata::medium, itemdata::medium, false, false, itemdata::machines, itemdata::machine_parts);
         returnPointer->myIntVars["object_building"] = -1;
     }
@@ -780,7 +853,8 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
 
     else if(set_object_index == "obj_puppet_blueprint") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }
@@ -789,13 +863,17 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
 
     else if(set_object_index == "obj_puppet_blueprint_genorator") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }
     else if(set_object_index == "obj_machine_genorator") {
         //pop out generic item...
-        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         returnPointer->entity_set_inventorylimits( 0, itemdata::huge, itemdata::none, false, false, itemdata::machines, itemdata::generic);
         returnPointer->myIntVars["machine_has_power"] = false;
     }
@@ -803,13 +881,16 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
 
     else if(set_object_index == "obj_puppet_blueprint_outdoorlamp") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }
     else if(set_object_index == "obj_machine_outdoorlamp") {
         //pop out generic item...
-        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         returnPointer->entity_set_inventorylimits( 0, itemdata::huge, itemdata::none, false, false, itemdata::machines, itemdata::generic);
         returnPointer->myIntVars["machine_has_power"] = false;
     }
@@ -818,20 +899,24 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
     else if(set_object_index == "obj_machine_indoorlamp") {
         //pop out generic item...
-        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         returnPointer->entity_set_inventorylimits( 1,itemdata::medium, itemdata::smal, false, false, itemdata::machine_parts, itemdata::generic);
         returnPointer->myIntVars["machine_has_power"] = false;
     }
 
 
     else if(set_object_index == "obj_puppet_blueprint_printer") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }
     else if(set_object_index == "obj_machine_blueprinter") {
         //pop out generic item...
-        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         returnPointer->entity_set_inventorylimits( 6, itemdata::huge, itemdata::smal, false, false, itemdata::machines, itemdata::generic);
         returnPointer->myIntVars["machine_has_power"] = false;
     }
@@ -839,13 +924,17 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
 
     else if(set_object_index == "obj_puppet_blueprint_chargingstation") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }
     else if(set_object_index == "obj_machine_chargingstation") {
         //pop out generic item...
-        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         returnPointer->entity_set_inventorylimits( 6, itemdata::huge, itemdata::smal, false, false, itemdata::machines, itemdata::generic);
         returnPointer->myIntVars["machine_has_power"] = false;
     }
@@ -853,13 +942,15 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
 
     else if(set_object_index == "obj_puppet_blueprint_fabricator") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }
     else if(set_object_index == "obj_machine_fabricator") {
         //pop out generic item...
-        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         returnPointer->entity_set_inventorylimits( 10, itemdata::huge, itemdata::smal, false, false, itemdata::machines, itemdata::generic);
         returnPointer->myIntVars["machine_has_power"] = false;
     }
@@ -867,13 +958,15 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
 
     else if(set_object_index == "obj_puppet_blueprint_elecassem") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }
     else if(set_object_index == "obj_machine_elecassem") {
         //pop out generic item...
-        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         returnPointer->entity_set_inventorylimits( 10, itemdata::huge, itemdata::smal, false, false, itemdata::machines, itemdata::generic);
         returnPointer->myIntVars["machine_has_power"] = false;
     }
@@ -881,44 +974,52 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
     //resources and parts
     else if(set_object_index == "obj_puppet_plastic_rod") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_metal_ingot") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::generic, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_metal_plates") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::machine_parts, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_metal_cable") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::machine_parts, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_metal_frames") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
+
+                                           );
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::machine_parts, itemdata::generic);
     }
 
 
     else if(set_object_index == "obj_puppet_parts_fabarray") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::machine_parts, itemdata::generic);
     }
 
     else if(set_object_index == "obj_puppet_parts_wires") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, false, itemdata::machine_parts, itemdata::generic);
     }
@@ -938,7 +1039,7 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
     || "obj_puppet_hydrobox"
     || "obj_puppet_janibox") {
         //these kits are setup from another function that spawns the kits and fills them!
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 10, itemdata::medium, itemdata::smal, false, false, itemdata::generic, itemdata::generic);
     }
 
@@ -949,8 +1050,334 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
     else
     {
         //Backup, object_index missing
-        returnPointer = new entity_generic( "obj_puppet_generic",set_x,set_y,set_dir,set_spd,set_indestructable,set_insideid);
+        returnPointer = new entity_generic( "obj_puppet_generic",set_x,set_y,set_dir,set_spd,set_indestructable);
     }
 
     return returnPointer;
 };
+
+
+
+int entityLibrary::toolkit_template_library( std::string set_object_index, double set_x, double set_y, float set_dir, double set_spd, bool set_indestructable) {
+    int new_entity = -1;
+
+    if(set_object_index == "obj_puppet_assistbox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight", -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask", -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_powercell", -1, -1, 0, 0, false);
+            sub_data->myStringVars["Charge"] = 100;
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_clipboard", -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_pen", -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_cargobox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+     }
+    else if(set_object_index == "obj_puppet_commsbox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_weatherbox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_labbox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_medicbox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_bandaid_box",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_toolbox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_wrench",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_crowbar",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_screwdriver",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_minebox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_wrench",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_crowbar",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_screwdriver",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_secbox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_secflashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_atmobox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_hydrobox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_janibox") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            int sub_entity = toolkit_template_library( "obj_puppet_flashlight",  -1, -1, 0, 0, false);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_gasmask",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+
+
+
+        //NONE TOOLKIT BOXES
+    else if(set_object_index == "obj_puppet_bandaid_box") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        for (int i=0; i<(get_data->entity_getInventoryMaxSize() - 2); i++) { //fill inventory!
+            entity* sub_data = entity_template_library( "obj_puppet_bandaid",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_burnointment",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_disinfectant",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_flashlight"
+    || set_object_index == "obj_puppet_secflashlight") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        {
+            entity* sub_data = entity_template_library( "obj_puppet_powercell",  -1, -1, 0, 0, false);
+            sub_data->myIntVars["Charge"] = 100;
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+    else if(set_object_index == "obj_puppet_clipboard") {
+        //these kits are setup from another function that spawns the kits and fills them!
+        entity* get_data = entity_template_library( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
+        new_entity = serverObj.entity_add(get_data);
+
+        //add items!
+        for (int i=0; i<(get_data->entity_getInventoryMaxSize()); i++) { //fill inventory!
+            entity* sub_data = entity_template_library( "obj_puppet_paper",  -1, -1, 0, 0, false);
+            int sub_entity = serverObj.entity_add(sub_data);
+            serverObj.entity_storeEntity(sub_entity,new_entity);
+        }
+    }
+
+    return new_entity;
+}

@@ -32,6 +32,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
 
         client.myNumber = threadId;
         client_transmission_packets::cPacket_request_seen( client);
+        serverObj.clientNumberMap[threadId] = &client;
 
         //create thread locking mutex, look into each packet opcode to see when they use this.
         pthread_mutex_t *mutex;
@@ -233,7 +234,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     unsigned int char_getage       = current_packet->buffer_read_u16();
 
                                     //a NEW player joined!
-                                    entity* new_entity_data = entityLibrary::entity_template_library("obj_puppet_player",serverObj.entity_item_storage,serverObj.entity_item_storage,0,0,true,-1);
+                                    entity* new_entity_data = entityLibrary::entity_template_library("obj_puppet_player",serverObj.entity_item_storage,serverObj.entity_item_storage,0,0,true);
                                     new_entity_data->myIntVars["stasis"] = 1; //start in stasis
                                     int new_player_entity = serverObj.entity_add( new_entity_data); //add to main list
 
@@ -251,21 +252,15 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     new_entity_data->myIntVars["stat_age"] = char_getage;
 
                                     //invisible to others, due to arrival shuttle
-                                    entity* arrival_shuttle_data = entityLibrary::entity_template_library("obj_puppet_arrivalshuttle",10,10,0,0,false,-1);
+                                    entity* arrival_shuttle_data = entityLibrary::entity_template_library("obj_puppet_arrivalshuttle",10,10,0,0,false);
                                     int entity_arivalshuttle = serverObj.entity_add( arrival_shuttle_data);
-
-                                    new_entity_data->myStringVars["inside_of_id"] = entity_arivalshuttle;
-                                    arrival_shuttle_data->myStringVars["inside_of_id"] = new_player_entity; //hide inside self till loaded!
 
                                     //store player inside the shuttle
                                     serverObj.entity_storeEntity( new_player_entity, entity_arivalshuttle);
 
                                     //add starting toolkit to player inventory
-                                    ///TODO! create toolkit definitions!
-                                    /*
-                                    var new_startitem_entity = scr_toolkit_template_library( global.job_mod[ char_getjob, enum_job_stat.stat_startkit], item_storage_pos, item_storage_pos, 0, 0, false, new_player_entity);
-                                    storage_map[? string(new_startitem_entity)] = new_startitem_entity;
-                                    */
+                                    int new_startitem_entity = entityLibrary::toolkit_template_library( entityLibrary::job_getStartToolkit(char_getjob), serverObj.entity_item_storage, serverObj.entity_item_storage, 0, 0, false);
+                                    serverObj.entity_storeEntity( new_startitem_entity, new_player_entity);
 
                                     //lock the socket
                                     client.myPlayerEntity = new_player_entity;
@@ -388,7 +383,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     std::string buffer_get_objectindex = serverObj.getAssetOfIndex( current_packet->buffer_read_u16() );
 
                                     std::cout << "Server created entity: " << buffer_get_objectindex << std::endl;
-                                    entity* make_entity = entityLibrary::entity_template_library(  buffer_get_objectindex,buffer_getx,buffer_gety,0,0,false,-1);
+                                    entity* make_entity = entityLibrary::entity_template_library(  buffer_get_objectindex,buffer_getx,buffer_gety,0,0,false);
                                     serverObj.entity_add(make_entity); //add to main list//make a test entity
                                 }
                             break;
@@ -401,7 +396,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     float buffer_getdirection = (current_packet->buffer_read_u16() / 65534) * 360;
 
                                     std::cout << "Server created entity, with direction: " << buffer_get_objectindex << std::endl;
-                                    entity* make_entity = entityLibrary::entity_template_library(buffer_get_objectindex,buffer_getx,buffer_gety,buffer_getdirection,0,false,-1);
+                                    entity* make_entity = entityLibrary::entity_template_library(buffer_get_objectindex,buffer_getx,buffer_gety,buffer_getdirection,0,false);
                                     serverObj.entity_add(make_entity); //add to main list//make a test entity
                                 }
                             break;
@@ -559,6 +554,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
 
 
         //thread finished!
+        serverObj.clientNumberMap.erase(threadId);
         delete serverObj.SocketThreads[threadId];
         serverObj.SocketThreads[threadId] = nullptr;
         pthread_exit(NULL);

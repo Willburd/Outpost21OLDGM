@@ -429,7 +429,7 @@ enum enum_server_packets {
     player_object_request,
     player_release_grab,
     map_request_whole,
-    client_map_preloaded,
+    client_map_preloaded, //10
     client_ready_for_map_download,
     map_object_create,
     map_object_destroy,
@@ -441,7 +441,7 @@ enum enum_server_packets {
     //inventory
     entity_request_all,
     entity_create,
-    entity_create_direction,
+    entity_create_direction, //20
     entity_store,
     entity_throw, //flows into place
     entity_place,

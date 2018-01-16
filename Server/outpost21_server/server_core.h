@@ -1,17 +1,37 @@
 #ifndef SERVERCORE_H
 #define SERVERCORE_H
 
-#include "client_transmit_packets.h"
-#include "json/json.hpp"
+//=================================
+// forward declared dependencies
+class entity;
+struct mapConstruction;
+struct byte_buffer;
+
+//=================================
+// included dependencies
 #include <SFML/Network.hpp>
 #include <pthread.h>
 #include <vector>
+#include <queue>
 #include <map>
+#include <fstream>
+#include <iostream>
+#include "json/json.hpp"
 
 
 
-class entity;
 
+
+struct client_struct {
+    sf::TcpSocket mySocket;
+    int myNumber = -1;
+    int myPlayerEntity = -1;
+
+    int mapDownloadAllow = 0; ///0 is locked, 1 is unlocked, 2 is pending unlock next tick
+    std::deque<mapConstruction*> mapDownloadQueue;
+    int ByteTotalMTU = 0; //sent bytes this loop
+    std::deque<byte_buffer*> packetQueue;
+};
 
 struct userAccount {
     std::string userName = "";
@@ -24,18 +44,32 @@ struct securityLevel {
     unsigned int color = 0;
 };
 
+struct mapConstruction {
+    float angle = 0;
+    int health = 100;
+    unsigned int map_entity = 0;
+    std::string obj = "obj_road";
+    bool remove_flag = false;
+    double x = 0;
+    double y = 0;
+};
+
 
 class serverCore {
     //object_index list
     //create asset index list
     std::map <std::string, int> object_index;
     std::map <int, std::string> asset_index;
+
     //user account list
     std::vector<userAccount*> userAccountVector;
 
     public:
     //client list
     std::map< unsigned int, client_struct*> clientNumberMap;
+
+    //construction list
+    std::map< unsigned int, mapConstruction*> construction_map;
 
     //entity list
     std::map< unsigned int, entity*> entity_map;
@@ -45,12 +79,17 @@ class serverCore {
 
     //This function populates the asset and object indexs for reverse lookup of each!
     void CreateObjectAndAssetIndex(std::string inputAssetIndex);
+    int assetIndex_currentEntry = 0;
     std::string getAssetOfIndex(int inputObjIndex);
     int getIndexOfAsset(std::string inputAstIndex);
 
     sf::TcpListener listener;
     int server_port = 0;
     int server_tickrate = 60; //ticks per second
+    int MaxByteslMTU = 256;
+    bool showMapLoad = false;
+    bool showEntityLoad = false;
+    bool showSecurityLoad = false;
 
     //unique x and y locations
     const double entity_deletion_abyss = -4000;
@@ -101,11 +140,10 @@ class serverCore {
     void userdataLoad(nlohmann::json u);
     void securityMapLoad(nlohmann::json j);
     void entityMapLoad(nlohmann::json e);
+    void entityConstructLoad(nlohmann::json c);
     entity* entityJsonDecode(nlohmann::json a);
     std::string entityJsonEncode( entity* inputEntity);
 };
-
-
 extern serverCore serverObj;
 
 
@@ -119,7 +157,7 @@ class entity {
     int is_size = 0; //item is a physical size of
     //self inventory
     int grabbing_entity = -1;
-    int contains_max = 0; //inventory max size
+    unsigned int contains_max = 0; //inventory max size
     bool contains_type_liquid = false;
     int contains_size = 0; //item physical size that can be held
     int contains_class = 0; //item physical size that can be held
@@ -167,7 +205,7 @@ class entity {
 
     //get only
     std::string entity_getObjectIndex();
-    int entity_getInventoryMaxSize();
+    unsigned int entity_getInventoryMaxSize();
     int entity_getInventoryItemSizeMax();
     bool entity_getInventoryAllowLiquids();
     int entity_getInventoryItemClassAllowed();
@@ -187,8 +225,6 @@ class entity {
 
     virtual void entity_personal_step();
 };
-
-
 
 
 #endif

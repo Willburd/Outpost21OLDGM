@@ -28,6 +28,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-Wall" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -39,6 +40,20 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-Wshadow" />
+			<Add option="-Winit-self" />
+			<Add option="-Wredundant-decls" />
+			<Add option="-Wcast-align" />
+			<Add option="-Wundef" />
+			<Add option="-Wfloat-equal" />
+			<Add option="-Winline" />
+			<Add option="-Wunreachable-code" />
+			<Add option="-Wmissing-declarations" />
+			<Add option="-Wmissing-include-dirs" />
+			<Add option="-Wswitch-default" />
+			<Add option="-Wzero-as-null-pointer-constant" />
+			<Add option="-pedantic" />
+			<Add option="-Wextra" />
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 			<Add option="-DSFML_STATIC" />
@@ -52,8 +67,6 @@
 		<Unit filename="base64/base64.h" />
 		<Unit filename="byte_buffer.cpp" />
 		<Unit filename="byte_buffer.h" />
-		<Unit filename="client_structure.cpp" />
-		<Unit filename="client_structure.h" />
 		<Unit filename="client_transmit_packets.cpp" />
 		<Unit filename="client_transmit_packets.h" />
 		<Unit filename="entitylibrary/entity_library.cpp" />
@@ -71,6 +84,8 @@
 		<Unit filename="server_core.h" />
 		<Unit filename="server_process_packets.cpp" />
 		<Unit filename="server_process_packets.h" />
+		<Unit filename="toolbox/toolbox.cpp" />
+		<Unit filename="toolbox/toolbox.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

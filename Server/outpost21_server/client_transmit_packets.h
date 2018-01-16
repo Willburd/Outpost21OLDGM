@@ -1,10 +1,14 @@
 #ifndef CLIENTTRANSMIT_H
 #define CLIENTTRANSMIT_H
 
-#include <cstring>
-#include "client_structure.h"
-#include "byte_buffer.h"
+//=================================
+// forward declared dependencies
+struct client_struct;
+class mapConstruction;
 
+//=================================
+// included dependencies
+#include <cstring>
 
 namespace client_transmission_packets {
     ///NOTICE this needs to match the enum in the game maker side client!
@@ -46,8 +50,8 @@ namespace client_transmission_packets {
     int cPacket_login_failed(client_struct& inputClient, std::string nameUsed);
     int cPacket_login_success(client_struct& inputClient, std::string nameUsed);
     int cpacket_character_transmit_data(client_struct& inputClient, std::string jsonStringOfEntity);
-    //map_object_load,
-    //map_object_drop,
+    int cpacket_map_object_load(client_struct& inputClient,mapConstruction* inputConstruction);
+    int cpacket_map_object_drop(client_struct& inputClient,mapConstruction* inputConstruction);
     //map_security_reply,
     //map_door_open,
     //map_door_security_reply,
@@ -69,6 +73,6 @@ namespace client_transmission_packets {
     ///inventory
     //inventory_update,
     //storagebox_object_update,
-};
+}
 
 #endif

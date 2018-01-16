@@ -1,15 +1,17 @@
-#include "server_core.h"
 #include "json/json.hpp"
+#include "client_transmit_packets.h"
 #include "entitylibrary/entity_library.h"
-#include <fstream>
+#include "server_core.h"
+
 
 ///SERVER CORE
 void serverCore::CreateObjectAndAssetIndex(std::string inputAssetIndex) {
-    int get_last_index = object_index.size();
-
     //add latest index!
-    object_index[inputAssetIndex] = get_last_index;
-    asset_index[get_last_index] = inputAssetIndex;
+    object_index[inputAssetIndex] = assetIndex_currentEntry;
+    asset_index[assetIndex_currentEntry] = inputAssetIndex;
+
+    //increment
+    assetIndex_currentEntry += 1;
 }
 
 
@@ -20,6 +22,7 @@ int serverCore::getIndexOfAsset(std::string inputAstIndex) {
     return object_index[inputAstIndex];
 }
 
+
 //accounts
 void serverCore::userAccountAdd( std::string name, std::string passHash) {
     userAccount* getNewAccount = new userAccount;
@@ -28,6 +31,7 @@ void serverCore::userAccountAdd( std::string name, std::string passHash) {
 
     userAccountVector.push_back(getNewAccount);
 }
+
 
 bool serverCore::userAccountLogin( std::string name, std::string passHash) {
     bool getLogin = false;
@@ -47,6 +51,7 @@ bool serverCore::userAccountLogin( std::string name, std::string passHash) {
     return getLogin;
 }
 
+
 bool serverCore::userAccountExists( std::string name) {
     bool userExists = false;
 
@@ -61,6 +66,7 @@ bool serverCore::userAccountExists( std::string name) {
 
     return userExists;
 }
+
 
 void serverCore::userAccountRemove( std::string name, std::string passHash) { //inputs are used to confirm delete
     for(std::vector<userAccount*>::iterator it = userAccountVector.begin(); it != userAccountVector.end(); ++it) {
@@ -86,6 +92,7 @@ void serverCore::securityLevelAdd( unsigned int index, std::string inputName, in
     mapSecurityLevels[index] = newSec;
 }
 
+
 void serverCore::securityLevelRemove( unsigned int index) {
     //remove security level from map.
     if(mapSecurityLevels[index] == nullptr) {
@@ -106,7 +113,7 @@ int serverCore::entity_add(entity* entityToAdd) {
         if(i == entity_map.size()
         || entity_map[i] == nullptr) {
 
-            std::cout << "Assigning entity number: " << i << std::endl;
+            //std::cout << "Assigning entity number: " << i << std::endl;
 
             ///add at the end of list, or if a blank space is found
             entity_map[i] = entityToAdd;
@@ -117,19 +124,19 @@ int serverCore::entity_add(entity* entityToAdd) {
     }
 
     return returnEnt;
-};
+}
 
 
 void serverCore::entity_set(entity* entityToAdd, unsigned int entityNumberToAssign) {
     if(entityNumberToAssign >= entity_map.size() || entity_map[entityNumberToAssign] == nullptr) {
 
-        std::cout << "Assigning entity number: " << entityNumberToAssign << std::endl;
+        //std::cout << "Assigning entity number: " << entityNumberToAssign << std::endl;
 
         ///add at the end of list, or if a blank space is found
         entity_map[entityNumberToAssign] = entityToAdd;
         entityToAdd->entity_number = entityNumberToAssign;
     }
-};
+}
 
 
 void serverCore::entity_remove(int entityNumberToRemove) {
@@ -140,7 +147,7 @@ void serverCore::entity_remove(int entityNumberToRemove) {
         get_ent->x = serverObj.entity_deletion_abyss;
         get_ent->y = serverObj.entity_deletion_abyss;
     }
-};
+}
 
 
 void serverCore::entity_storeEntity( int entityToStore, int storageBoxEntity) {
@@ -330,21 +337,22 @@ void serverCore::userdataLoad(nlohmann::json u) {
 
 
 void serverCore::securityMapLoad(nlohmann::json j) {
+    bool get_ShowMessages = serverObj.showSecurityLoad;
     for (nlohmann::json::iterator it = j.begin(); it != j.end(); ++it) {
         nlohmann::json jsonSecurity = (nlohmann::json)*it;
 
         if(jsonSecurity.is_object()) {
             //add security level to vector
-            std::cout << "====Loading Security level: " << std::endl;
+            if(get_ShowMessages) std::cout << "====Loading Security level: " << std::endl;
 
             unsigned int getIndex = jsonSecurity.at("index").get<int>();
-            std::cout << " |---------index: " << getIndex << std::endl;
+            if(get_ShowMessages) std::cout << " |---------index: " << getIndex << std::endl;
 
             std::string getName = jsonSecurity.at("name").get<std::string>();
-            std::cout << " |----------name: " << getName << std::endl;
+            if(get_ShowMessages) std::cout << " |----------name: " << getName << std::endl;
 
             unsigned int getColor = jsonSecurity.at("color").get<int>();
-            std::cout << " |---------color: " << getColor << std::endl;
+            if(get_ShowMessages) std::cout << " |---------color: " << getColor << std::endl;
 
             securityLevelAdd(getIndex,getName,getColor);
         }
@@ -404,6 +412,8 @@ std::string serverCore::entityJsonEncode( entity* inputEntity) {
 entity* serverCore::entityJsonDecode(nlohmann::json a) {
     //this takes all build in variables and assigns them, leaving the others to be picked up by
     //the entity's personal variables
+    bool get_ShowMessages = serverObj.showEntityLoad;
+
     int getEntityNumber = -1;
     std::string get_objectindex = "";
     double getx = 0;
@@ -437,171 +447,171 @@ entity* serverCore::entityJsonDecode(nlohmann::json a) {
 
     std::vector<int> collectedInventory;
 
-    std::cout << "====Loading entity====" << std::endl;
-    for (nlohmann::json::iterator it = a.begin(); it != a.end(); ++it) {
+    if(get_ShowMessages) std::cout << "====Loading entity====" << std::endl;
+    for (nlohmann::json::iterator itm = a.begin(); itm != a.end(); ++itm) {
         //itterate through entity's properties
         //allows us to set the hard internal values
         //and the soft item specific values
-        std::string jsonKey = it.key();
+        std::string jsonKey = itm.key();
 
         if(jsonKey == "entity_number") {
             getEntityNumber = a.at(jsonKey).get<int>();
-            std::cout << " |------entityID: " << getEntityNumber << std::endl;
+            if(get_ShowMessages) std::cout << " |------entityID: " << getEntityNumber << std::endl;
         }
         else if(jsonKey == "object_index") {
             get_objectindex = a.at(jsonKey).get<std::string>();
-            std::cout << " |-----obj index: " << get_objectindex << std::endl;
+            if(get_ShowMessages) std::cout << " |-----obj index: " << get_objectindex << std::endl;
         }
         else if(jsonKey == "x") {
             getx = a.at(jsonKey).get<double>();
-            std::cout << " |-------------x: " << getx << std::endl;
+            if(get_ShowMessages) std::cout << " |-------------x: " << getx << std::endl;
         }
         else if(jsonKey == "y") {
             gety = a.at(jsonKey).get<double>();
-            std::cout << " |-------------y: " << gety << std::endl;
+            if(get_ShowMessages) std::cout << " |-------------y: " << gety << std::endl;
         }
         else if(jsonKey == "last_update_x") {
             //ignore this,
-            std::cout << " |----------prvX: DYNAMIC SET..." << std::endl;
+            if(get_ShowMessages) std::cout << " |----------prvX: DYNAMIC SET..." << std::endl;
         }
         else if(jsonKey == "last_update_y") {
             //ignore this,
-            std::cout << " |----------prvY: DYNAMIC SET..." << std::endl;
+            if(get_ShowMessages) std::cout << " |----------prvY: DYNAMIC SET..." << std::endl;
         }
         else if(jsonKey == "needs_update") {
             //ignore this,
-            std::cout << " |---user_update: DEPRICATED" << std::endl;
+            if(get_ShowMessages) std::cout << " |---user_update: DEPRICATED" << std::endl;
         }
         else if(jsonKey == "entity_last_process_cycle") {
             //ignore this,
-            std::cout << " |----last_cycle: DEPRICATED" << std::endl;
+            if(get_ShowMessages) std::cout << " |----last_cycle: DEPRICATED" << std::endl;
         }
         else if(jsonKey == "dir") {
             getdir = a.at(jsonKey).get<float>();
-            std::cout << " |-----------dir: " << getdir << std::endl;
+            if(get_ShowMessages) std::cout << " |-----------dir: " << getdir << std::endl;
         }
         else if(jsonKey == "spd") {
             getspd = a.at(jsonKey).get<double>();
-            std::cout << " |-----------spd: " << getspd << std::endl;
+            if(get_ShowMessages) std::cout << " |-----------spd: " << getspd << std::endl;
         }
         else if(jsonKey == "indestructable") {
             getindestruct = (bool)a.at(jsonKey).get<int>();
-            std::cout << " |----indestruct: " << getindestruct << std::endl;
+            if(get_ShowMessages) std::cout << " |----indestruct: " << getindestruct << std::endl;
         }
         else if(jsonKey == "inside_of_id") {
             getinsideof = a.at(jsonKey).get<int>();
-            std::cout << " |-----insideent: " << getinsideof << std::endl;
+            if(get_ShowMessages) std::cout << " |-----insideent: " << getinsideof << std::endl;
         }
         else if(jsonKey == "grabbing_entity") {
             getgrabbing_entity = a.at(jsonKey).get<int>();
-            std::cout << " |---grabbingent: " << getgrabbing_entity << std::endl;
+            if(get_ShowMessages) std::cout << " |---grabbingent: " << getgrabbing_entity << std::endl;
         }
         else if(jsonKey == "constructed") {
             getconstructed = (bool)a.at(jsonKey).get<int>();
-            std::cout << " |---constructed: " << getconstructed << std::endl;
+            if(get_ShowMessages) std::cout << " |---constructed: " << getconstructed << std::endl;
         }
         else if(jsonKey == "SS_collision") {
             //ignore this,
-            std::cout << " |----SS_coldata: DYNAMIC SET..." << std::endl;
+            if(get_ShowMessages) std::cout << " |----SS_coldata: DYNAMIC SET..." << std::endl;
         }
         else if(jsonKey == "SS_collision_ignores_walls") {
             get_SS_ignorewalls = (bool)a.at(jsonKey).get<int>();
-            std::cout << " |---SS_ignwalls: " << get_SS_ignorewalls << std::endl;
+            if(get_ShowMessages) std::cout << " |---SS_ignwalls: " << get_SS_ignorewalls << std::endl;
         }
         else if(jsonKey == "SS_bouncyness") {
             get_SS_ignorewalls = a.at(jsonKey).get<double>();
-            std::cout << " |---SS_bouncyns: " << get_SS_bouncyness << std::endl;
+            if(get_ShowMessages) std::cout << " |---SS_bouncyns: " << get_SS_bouncyness << std::endl;
         }
         else if(jsonKey == "SS_decelerator") {
             get_SS_ignorewalls = a.at(jsonKey).get<double>();
-            std::cout << " |---SS_decelera: " << get_SS_decelerator << std::endl;
+            if(get_ShowMessages) std::cout << " |---SS_decelera: " << get_SS_decelerator << std::endl;
         }
         else if(jsonKey == "contains_display") {
             get_disp = (bool)a.at(jsonKey).get<int>();
-            std::cout << " |-------display: " << get_disp << std::endl;
+            if(get_ShowMessages) std::cout << " |-------display: " << get_disp << std::endl;
         }
         else if(jsonKey == "contains_display_d") {
             get_disp_d = a.at(jsonKey).get<int>();
-            std::cout << " |---display_dep: " << get_disp_d  << std::endl;
+            if(get_ShowMessages) std::cout << " |---display_dep: " << get_disp_d  << std::endl;
         }
         else if(jsonKey == "contains_display_x") {
             get_disp_x = a.at(jsonKey).get<double>();
-            std::cout << " |-----display_x: " << get_disp_x << std::endl;
+            if(get_ShowMessages) std::cout << " |-----display_x: " << get_disp_x << std::endl;
         }
         else if(jsonKey == "contains_display_y") {
             get_disp_y = a.at(jsonKey).get<double>();
-            std::cout << " |-----display_y: " << get_disp_y << std::endl;
+            if(get_ShowMessages) std::cout << " |-----display_y: " << get_disp_y << std::endl;
         }
         else if(jsonKey == "contains_max") {
             get_containsmax = a.at(jsonKey).get<int>();
-            std::cout << " |---contain_max: " << get_containsmax << std::endl;
+            if(get_ShowMessages) std::cout << " |---contain_max: " << get_containsmax << std::endl;
         }
         else if(jsonKey == "contains_map") {
             nlohmann::json inv_json = a.at(jsonKey);
 
-            std::cout << " |------Extracting inventory!" << std::endl;
+            if(get_ShowMessages) std::cout << " |------Extracting inventory!" << std::endl;
             for (nlohmann::json::iterator it = inv_json.begin(); it != inv_json.end(); ++it) {
                 //add all current logins!
                 collectedInventory.push_back((int)*it);
 
-                std::cout << "|-------->>" << (int)*it << std::endl;
+                if(get_ShowMessages) std::cout << "|-------->>" << (int)*it << std::endl;
             }
 
         }
         else if(jsonKey == "contains_size") {
             get_containssize = a.at(jsonKey).get<int>();
-            std::cout << " |--contain_size: " << get_containssize << std::endl;
+            if(get_ShowMessages) std::cout << " |--contain_size: " << get_containssize << std::endl;
         }
         else if(jsonKey == "contains_type_liquid") {
             get_containsliquid = (bool)a.at(jsonKey).get<int>();
-            std::cout << " |-contain_liqud: " << get_containsliquid << std::endl;
+            if(get_ShowMessages) std::cout << " |-contain_liqud: " << get_containsliquid << std::endl;
         }
         else if(jsonKey == "contains_class") {
             get_containsclass = a.at(jsonKey).get<int>();
-            std::cout << " |-contain_class: " << get_containsclass << std::endl;
+            if(get_ShowMessages) std::cout << " |-contain_class: " << get_containsclass << std::endl;
         }
         else if(jsonKey == "is_class") {
             get_isclass = a.at(jsonKey).get<int>();
-            std::cout << " |-------isclass: " << get_isclass << std::endl;
+            if(get_ShowMessages) std::cout << " |-------isclass: " << get_isclass << std::endl;
         }
         else if(jsonKey == "is_size") {
             get_issize = a.at(jsonKey).get<int>();
-            std::cout << " |--------issize: " << get_issize << std::endl;
+            if(get_ShowMessages) std::cout << " |--------issize: " << get_issize << std::endl;
         }
         else if(jsonKey == "is_liquid") {
             get_isliquid = (bool)a.at(jsonKey).get<int>();
-            std::cout << " |-------isliqud: " << get_isliquid << std::endl;
+            if(get_ShowMessages) std::cout << " |-------isliqud: " << get_isliquid << std::endl;
         }
         else if(jsonKey == "security_clearance") {
             ///THIS IS FOR SECURITY CARDS! Stores the security level to set to objects
-            std::cout << " |------secClear: " << std::endl;
+            if(get_ShowMessages) std::cout << " |------secClear: " << std::endl;
 
             ///TODO! need to add security data to security cards.
         }
         else if(jsonKey == "security_levels") {
             ///This is for the object's current security status (for doors to check!)
             //ignored. This is manually updated
-            std::cout << " |------secLevel: DYNAMIC SET..." << std::endl;
+            if(get_ShowMessages) std::cout << " |------secLevel: DYNAMIC SET..." << std::endl;
         }
         else
         {
-            nlohmann::json jsonEntry = (nlohmann::json)*it;
+            nlohmann::json jsonEntry = (nlohmann::json)*itm;
 
-            std::cout << " |--Personal key: " << jsonKey;
+            if(get_ShowMessages) std::cout << " |--Personal key: " << jsonKey;
 
             if(jsonEntry.is_object()) {
-                std::cout << " ::objects not supported for custom variable loading" << std::endl;
+                if(get_ShowMessages) std::cout << " ::objects not supported for custom variable loading" << std::endl;
             }
             else
             {
                 if(jsonEntry.is_string()) {
                     get_myStringVars[jsonKey] = jsonEntry.get<std::string>();
-                    std::cout << " ::string: " << get_myStringVars[jsonKey] << std::endl;
+                    if(get_ShowMessages) std::cout << " ::string: " << get_myStringVars[jsonKey] << std::endl;
                 }
                 else
                 {
                     get_myIntVars[jsonKey] = jsonEntry.get<int>();
-                    std::cout << " ::int: " << get_myIntVars[jsonKey] << std::endl;
+                    if(get_ShowMessages) std::cout << " ::int: " << get_myIntVars[jsonKey] << std::endl;
                 }
             }
         }
@@ -656,6 +666,72 @@ void serverCore::entityMapLoad(nlohmann::json e) {
     }
 }
 
+//map constructions
+void serverCore::entityConstructLoad(nlohmann::json c) {
+    bool get_ShowMessages = serverObj.showMapLoad;
+
+    for (nlohmann::json::iterator itm = c.begin(); itm != c.end(); ++itm) {
+        nlohmann::json jsonConstruction = (nlohmann::json)*itm;
+
+        int get_mapEntity = 0;
+        double get_x = 0;
+        double get_y = 0;
+        float get_angle = 0;
+        int get_health = 0;
+        bool get_removeFlag = false;
+        std::string get_obj = "";
+
+        if(jsonConstruction.is_object()) {
+            if(get_ShowMessages) std::cout << "====Loading construction====" << std::endl;
+            for (nlohmann::json::iterator it = jsonConstruction.begin(); it != jsonConstruction.end(); ++it) {
+                //itterate through constructions properties
+                std::string jsonKey = it.key();
+
+                if(jsonKey == "map_entity") {
+                    get_mapEntity = (int)it.value();
+                    if(get_ShowMessages) std::cout << " |---------mapID: " << get_mapEntity << std::endl;
+                }
+                else if(jsonKey == "x") {
+                    get_x = (double)it.value();
+                    if(get_ShowMessages) std::cout << " |-------------x: " << get_x << std::endl;
+                }
+                else if(jsonKey == "y") {
+                    get_y = (double)it.value();
+                    if(get_ShowMessages) std::cout << " |-------------y: " << get_y << std::endl;
+                }
+                else if(jsonKey == "angle") {
+                    get_angle = (float)it.value();
+                    if(get_ShowMessages) std::cout << " |---------angle: " << get_angle << std::endl;
+                }
+                else if(jsonKey == "health") {
+                    get_health = (int)it.value();
+                    if(get_ShowMessages) std::cout << " |--------health: " << get_health << std::endl;
+                }
+                else if(jsonKey == "remove_flag") {
+                    get_removeFlag = (int)it.value();
+                    if(get_ShowMessages) std::cout << " |----removeFlag: " << get_removeFlag << std::endl;
+                }
+                else if(jsonKey == "obj") {
+                    get_obj = it.value();
+                    if(get_ShowMessages) std::cout << " |-----------obj: " << get_obj << std::endl;
+                }
+            }
+        }
+
+        //add construction to map!
+        mapConstruction* newConstruction = new mapConstruction;
+        serverObj.construction_map[get_mapEntity] = newConstruction; //add to list!
+
+        //populate construction with data
+        newConstruction->map_entity = get_mapEntity;
+        newConstruction->x = get_x;
+        newConstruction->y = get_y;
+        newConstruction->angle = get_angle;
+        newConstruction->health = get_health;
+        newConstruction->remove_flag = (get_removeFlag > 0);
+        newConstruction->obj = get_obj;
+    }
+}
 
 
 bool serverCore::gameMapLoad(std::string mapFilePath) {
@@ -670,6 +746,8 @@ bool serverCore::gameMapLoad(std::string mapFilePath) {
     }
     else
     {
+        std::cout << "Loading Map file '" << mapFilePath <<"'." << std::endl;
+
         nlohmann::json jsonData;
         inputFile >> jsonData;
 
@@ -679,13 +757,14 @@ bool serverCore::gameMapLoad(std::string mapFilePath) {
         //extract security data first!
         securityMapLoad(jsonData["Security"]);
 
+        //map constructions
+        entityConstructLoad(jsonData["MapConstructions"]);
+
         //now for the entities!
         entityMapLoad(jsonData["Entities"]);
 
-        //finally the map's walls!
+        finishedLoading = true;
     }
-
-
 
     return finishedLoading;
 }
@@ -780,7 +859,7 @@ std::string entity::entity_getObjectIndex() {
     return object_index;
 }
 
-int entity::entity_getInventoryMaxSize() {
+unsigned int entity::entity_getInventoryMaxSize() {
     return contains_max;
 }
 

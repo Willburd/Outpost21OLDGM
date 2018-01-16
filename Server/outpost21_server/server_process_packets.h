@@ -1,9 +1,20 @@
 #ifndef SERVERPROCESS_H
 #define SERVERPROCESS_H
 
-#include "client_transmit_packets.h"
+//=================================
+// forward declared dependencies
+
+//=================================
+// included dependencies
 #include <SFML/Network.hpp>
 #include <pthread.h>
+#include <map>
+#include "base64/base64.h"
+#include "byte_buffer.h"
+#include "client_transmit_packets.h"
+#include "entitylibrary/entity_library.h"
+#include "inih/cpp/INIReader.h"
+
 
 namespace server_recieving_packets {
     ///NOTICE this needs to match the enum in the game maker side client!
@@ -48,6 +59,6 @@ namespace server_recieving_packets {
     };
 
     void* serverProcessLoop(void *threadid);
-};
+}
 
 #endif

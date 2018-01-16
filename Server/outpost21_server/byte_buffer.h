@@ -1,6 +1,11 @@
 #ifndef BYTEBUFFER_H
 #define BYTEBUFFER_H
 
+//=================================
+// forward declared dependencies
+
+//=================================
+// included dependencies
 #include <iostream>
 #include <string.h>
 #include <cstring>

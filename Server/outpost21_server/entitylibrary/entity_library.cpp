@@ -207,6 +207,16 @@ std::string entityLibrary::job_getStartToolkit( uint16_t jobEnum) {
 */
 
 void entityLibrary::entity_template_creation() {
+    /***************************
+        IMPORTANT NOTICE!
+        THESE MUST MATCH ON GM'S END!
+        packets send an INDEX not a string
+        so it must send the right number to the client!
+    ***************************/
+
+    ///push up past the client end's internal stuff.
+    serverObj.assetIndex_currentEntry = 53;
+
     ///living entities
     serverObj.CreateObjectAndAssetIndex("obj_puppet_arrivalshuttle");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_player");
@@ -357,6 +367,23 @@ void entityLibrary::entity_template_creation() {
     serverObj.CreateObjectAndAssetIndex("obj_puppet_atmobox");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_hydrobox");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_janibox");
+
+
+    ///CONSTRUCTIONS!
+    serverObj.CreateObjectAndAssetIndex("obj_construction");
+    serverObj.CreateObjectAndAssetIndex("obj_wall");
+    serverObj.CreateObjectAndAssetIndex("obj_wall_tunnel");
+    serverObj.CreateObjectAndAssetIndex("obj_door");
+    serverObj.CreateObjectAndAssetIndex("obj_doorcontroller");
+    serverObj.CreateObjectAndAssetIndex("obj_window");
+    serverObj.CreateObjectAndAssetIndex("obj_fence");
+    serverObj.CreateObjectAndAssetIndex("obj_road");
+    serverObj.CreateObjectAndAssetIndex("obj_landingpad");
+    serverObj.CreateObjectAndAssetIndex("obj_construction_floor_parent");
+    serverObj.CreateObjectAndAssetIndex("obj_floor");
+    serverObj.CreateObjectAndAssetIndex("obj_floor_tunnel");
+    serverObj.CreateObjectAndAssetIndex("obj_railwayvert");
+    serverObj.CreateObjectAndAssetIndex("obj_railwayhor");
 }
 
 
@@ -1054,7 +1081,7 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
     }
 
     return returnPointer;
-};
+}
 
 
 
@@ -1334,7 +1361,7 @@ int entityLibrary::toolkit_template_library( std::string set_object_index, doubl
         new_entity = serverObj.entity_add(get_data);
 
         //add items!
-        for (int i=0; i<(get_data->entity_getInventoryMaxSize() - 2); i++) { //fill inventory!
+        for (unsigned int i=0; i<(get_data->entity_getInventoryMaxSize() - 2); i++) { //fill inventory!
             entity* sub_data = entity_template_library( "obj_puppet_bandaid",  -1, -1, 0, 0, false);
             int sub_entity = serverObj.entity_add(sub_data);
             serverObj.entity_storeEntity(sub_entity,new_entity);
@@ -1372,7 +1399,7 @@ int entityLibrary::toolkit_template_library( std::string set_object_index, doubl
         new_entity = serverObj.entity_add(get_data);
 
         //add items!
-        for (int i=0; i<(get_data->entity_getInventoryMaxSize()); i++) { //fill inventory!
+        for (unsigned int i=0; i<(get_data->entity_getInventoryMaxSize()); i++) { //fill inventory!
             entity* sub_data = entity_template_library( "obj_puppet_paper",  -1, -1, 0, 0, false);
             int sub_entity = serverObj.entity_add(sub_data);
             serverObj.entity_storeEntity(sub_entity,new_entity);

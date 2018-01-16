@@ -30,7 +30,7 @@ namespace entityLibrary {
             pistol,
             ship,
         };
-    };
+    }
 
     namespace guilds {
         enum enum_guilds : uint16_t {
@@ -39,7 +39,7 @@ namespace entityLibrary {
             unitedfed,
             western_front,
         };
-    };
+    }
 
     namespace races {
         enum enum_races : uint16_t {
@@ -47,7 +47,7 @@ namespace entityLibrary {
             nevrean,
             valekin,
         };
-    };
+    }
 
     namespace homeworlds {
         enum enum_homeworlds : uint16_t {
@@ -57,7 +57,7 @@ namespace entityLibrary {
             offworld,
             not_set,
         };
-    };
+    }
 
     namespace archetype {
         enum enum_archetype : uint16_t {
@@ -67,7 +67,7 @@ namespace entityLibrary {
             iron,
             every,
         };
-    };
+    }
 
     namespace jobs {
         enum enum_jobs : uint16_t {
@@ -84,7 +84,7 @@ namespace entityLibrary {
             hydrophonics,
             filtration,
         };
-    };
+    }
 
     namespace language {
         enum enum_language : uint16_t {
@@ -94,7 +94,7 @@ namespace entityLibrary {
             pipperine,
             eltin,
         };
-    };
+    }
 
 
 
@@ -223,7 +223,7 @@ namespace entityLibrary {
     entity* entity_template_library(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
     int toolkit_template_library( std::string set_object_index, double set_x, double set_y, float set_dir, double set_spd, bool set_indestructable);
     std::string job_getStartToolkit( uint16_t jobEnum); //request toolkit based on the job a player starts as
-};
+}
 
 
 

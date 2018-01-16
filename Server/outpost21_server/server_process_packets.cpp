@@ -1,11 +1,21 @@
-#include "server_core.h"
-#include "base64/base64.h"
 #include "server_process_packets.h"
-#include "byte_buffer.h"
-#include "client_structure.h"
-#include "entitylibrary/entity_library.h"
-#include "inih/cpp/INIReader.h"
-#include <map>
+#include "toolbox/toolbox.h"
+#include <queue>
+
+
+//extremely limited user tools for sorting the range a wall is from the player for map preloading.
+namespace mapDownloadRangeSort {
+    class sortClass {
+
+        public:
+        mapConstruction* mapCon;
+        double disToPlayer = 0;
+    };
+
+    bool sortByRange(const sortClass* lhs, const sortClass* rhs) {
+        return lhs->disToPlayer < rhs->disToPlayer;
+    };
+}
 
 
 
@@ -74,6 +84,10 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                         std::cout << "=====Packet Opcode " << packetOpcode << " Inside thread: " << threadId << std::endl;
 
                         switch(packetOpcode) {
+                            default:
+                                std::cout << "BAD OPCODE" << std::endl;
+                            break;
+
                             case server_recieving_packets::login_requested:
                                 {
                                     std::cout << "-Login requested" << std::endl;
@@ -334,7 +348,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                             if(check_data != nullptr) {
                                                 //update player entity to send
                                                 player_entity = ply_data->inside_of_id;
-                                                entity* ply_data = serverObj.entity_map[ player_entity];
+                                                ply_data = serverObj.entity_map[ player_entity];
 
                                                 std::cout << " -returned CONTAINER entity " << player_entity << " is object: " << ply_data->entity_getObjectIndex() << std::endl;
                                             }
@@ -363,7 +377,78 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                 }
                             break;
 
-                            case server_recieving_packets::map_request_whole: break;
+                            case server_recieving_packets::map_request_whole:
+                                {
+                                    std::cout << "===Player " << client.myNumber << " requested a map download." << std::endl;
+
+                                    //clear map loading queue, and set flag as waiting
+                                    client.mapDownloadQueue.clear();
+                                    client.mapDownloadAllow = false; //lock download
+
+
+
+                                    int player_entity = client.myPlayerEntity;
+
+                                    if( serverObj.entity_map[player_entity] != nullptr ) {
+                                        //get player location
+                                        entity* ply_data = serverObj.entity_map[player_entity];
+                                        double plx = ply_data->x;
+                                        double ply = ply_data->y;
+
+                                        //load from containing object!
+                                        int storage_ent = ply_data->inside_of_id;
+                                        if(storage_ent != -1) {
+                                            if( serverObj.entity_map[storage_ent] != nullptr ) {
+                                                entity* storageent_data = serverObj.entity_map[storage_ent];
+
+                                                if(storageent_data->entity_getObjectIndex() == "obj_puppet_arrivalshuttle") {
+                                                    //load in from the start shuttle! (middle loads)
+                                                    plx = serverObj.map_max_xlimit/2;
+                                                    ply = serverObj.map_max_ylimit/2;
+                                                }
+                                                else
+                                                {
+                                                    //load in from an actual entity!
+                                                    plx = storageent_data->x;
+                                                    ply = storageent_data->y;
+                                                }
+                                            }
+                                        }
+
+                                        //make a vector of all map constructions
+                                        std::vector<mapDownloadRangeSort::sortClass*> downloadVector;
+
+                                        //loop through every map object, and check the distance to the player's location to sort them
+                                        for (std::map<unsigned int, mapConstruction*>::iterator it1 = serverObj.construction_map.begin(); it1 != serverObj.construction_map.end(); it1++) {
+                                            mapConstruction* get_map = it1->second;
+
+                                            //get the distance to player and store the map structure in it
+                                            mapDownloadRangeSort::sortClass* newSort = new mapDownloadRangeSort::sortClass;
+                                            newSort->mapCon = get_map;
+                                            newSort->disToPlayer = toolbox::pointDistance(get_map->x,get_map->y,plx,ply);
+
+                                            //push it into the vector
+                                            downloadVector.push_back(newSort);
+                                        }
+
+                                        //sort vector!
+                                        sort( downloadVector.begin(), downloadVector.end(), mapDownloadRangeSort::sortByRange);
+
+
+                                        //store em in the queue in that order!!
+                                        for (unsigned int i = 0; i < downloadVector.size(); i++ ) {
+                                            mapDownloadRangeSort::sortClass* getStruct = downloadVector.at(i);
+
+                                            //push sorted map objects into download queue!
+                                            client.mapDownloadQueue.push_back(getStruct->mapCon);
+
+                                            //remove old data
+                                            delete getStruct;
+                                        }
+                                    }
+                                }
+                            break;
+
                             case server_recieving_packets::client_map_preloaded: break;
                             case server_recieving_packets::client_ready_for_map_download: break;
                             case server_recieving_packets::map_object_create: break;

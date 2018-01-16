@@ -4,7 +4,7 @@
 #include <math.h>
 
 
-int client_transmission_packets::cPacket_request_seen(client_struct& inputClient) {
+byte_buffer* client_transmission_packets::cPacket_request_seen(client_struct& inputClient) {
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
@@ -14,9 +14,10 @@ int client_transmission_packets::cPacket_request_seen(client_struct& inputClient
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
-int client_transmission_packets::cpacket_login_newuser(client_struct& inputClient, std::string nameUsed, std::string hashUsed) {
+byte_buffer* client_transmission_packets::cpacket_login_newuser(client_struct& inputClient, std::string nameUsed, std::string hashUsed) {
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
@@ -28,9 +29,10 @@ int client_transmission_packets::cpacket_login_newuser(client_struct& inputClien
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
-int client_transmission_packets::cPacket_login_failed(client_struct& inputClient, std::string nameUsed) {
+byte_buffer* client_transmission_packets::cPacket_login_failed(client_struct& inputClient, std::string nameUsed) {
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
@@ -41,9 +43,10 @@ int client_transmission_packets::cPacket_login_failed(client_struct& inputClient
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
-int client_transmission_packets::cPacket_login_success(client_struct& inputClient, std::string nameUsed) {
+byte_buffer* client_transmission_packets::cPacket_login_success(client_struct& inputClient, std::string nameUsed) {
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
@@ -54,9 +57,10 @@ int client_transmission_packets::cPacket_login_success(client_struct& inputClien
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
-int client_transmission_packets::cpacket_character_transmit_data(client_struct& inputClient, std::string jsonStringOfEntity) {
+byte_buffer* client_transmission_packets::cpacket_character_transmit_data(client_struct& inputClient, std::string jsonStringOfEntity) {
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
@@ -67,9 +71,10 @@ int client_transmission_packets::cpacket_character_transmit_data(client_struct& 
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
-int client_transmission_packets::cpacket_map_object_load(client_struct& inputClient,mapConstruction* inputConstruction){
+byte_buffer* client_transmission_packets::cpacket_map_object_load(client_struct& inputClient,mapConstruction* inputConstruction){
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
@@ -86,9 +91,10 @@ int client_transmission_packets::cpacket_map_object_load(client_struct& inputCli
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
-int client_transmission_packets::cpacket_map_object_drop(client_struct& inputClient,mapConstruction* inputConstruction){
+byte_buffer* client_transmission_packets::cpacket_map_object_drop(client_struct& inputClient,mapConstruction* inputConstruction){
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
@@ -101,13 +107,14 @@ int client_transmission_packets::cpacket_map_object_drop(client_struct& inputCli
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
 //map_security_reply,
 //map_door_open,
 //map_door_security_reply,
 ///character locking
-int client_transmission_packets::cpacket_character_lock(client_struct& inputClient, int input_EntityNumber) {
+byte_buffer* client_transmission_packets::cpacket_character_lock(client_struct& inputClient, int input_EntityNumber) {
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
@@ -118,9 +125,10 @@ int client_transmission_packets::cpacket_character_lock(client_struct& inputClie
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
-int client_transmission_packets::cpacket_playerentity_return( client_struct& inputClient, int input_EntityNumber, int get_object_index, double get_x, double get_y, bool get_hide) {
+byte_buffer* client_transmission_packets::cpacket_playerentity_return( client_struct& inputClient, int input_EntityNumber, int get_object_index, double get_x, double get_y, bool get_hide) {
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
     send_buffer->buffer_write_u8( inputClient.myNumber); //client number
@@ -134,6 +142,7 @@ int client_transmission_packets::cpacket_playerentity_return( client_struct& inp
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
 //player_security_reply,
@@ -141,7 +150,7 @@ int client_transmission_packets::cpacket_playerentity_return( client_struct& inp
 ///entities
 //entity_load,
 
-int client_transmission_packets::cpacket_entity_drop(client_struct& inputClient, int input_EntityNumber) {
+byte_buffer* client_transmission_packets::cpacket_entity_drop(client_struct& inputClient, int input_EntityNumber) {
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
@@ -152,11 +161,12 @@ int client_transmission_packets::cpacket_entity_drop(client_struct& inputClient,
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
 //entity_reply,
 //entity_activate,
-int client_transmission_packets::cpacket_entity_grab_update(client_struct& inputClient, int input_EntityNumber) {
+byte_buffer* client_transmission_packets::cpacket_entity_grab_update(client_struct& inputClient, int input_EntityNumber) {
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
@@ -167,10 +177,11 @@ int client_transmission_packets::cpacket_entity_grab_update(client_struct& input
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
 ///misc
-int client_transmission_packets::cpacket_force_reset( client_struct& inputClient, std::string errorString) {
+byte_buffer* client_transmission_packets::cpacket_force_reset( client_struct& inputClient, std::string errorString) {
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
     send_buffer->buffer_write_u8( inputClient.myNumber );
@@ -180,9 +191,10 @@ int client_transmission_packets::cpacket_force_reset( client_struct& inputClient
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
-int client_transmission_packets::cpacket_failed_action( client_struct& inputClient, std::string errorString) { //just when normal things like being unable to fill a cup because it is full!
+byte_buffer* client_transmission_packets::cpacket_failed_action( client_struct& inputClient, std::string errorString) { //just when normal things like being unable to fill a cup because it is full!
     byte_buffer* send_buffer = new byte_buffer;
     send_buffer->buffer_write_u8( 210); //packetstart magic number
     send_buffer->buffer_write_u8( inputClient.myNumber );
@@ -192,9 +204,10 @@ int client_transmission_packets::cpacket_failed_action( client_struct& inputClie
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
-int client_transmission_packets::cpacket_server_alive(client_struct& inputClient) {
+byte_buffer* client_transmission_packets::cpacket_server_alive(client_struct& inputClient) {
     std::cout << "-Heartbeat" << std::endl;
     //construct buffer to send data
     byte_buffer* send_buffer = new byte_buffer;
@@ -205,6 +218,7 @@ int client_transmission_packets::cpacket_server_alive(client_struct& inputClient
 
     //transmit
     inputClient.packetQueue.push_back(send_buffer);
+    return send_buffer;
 }
 
 ///inventory

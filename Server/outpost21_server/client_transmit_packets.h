@@ -4,6 +4,7 @@
 //=================================
 // forward declared dependencies
 struct client_struct;
+class entity;
 class mapConstruction;
 struct byte_buffer;
 
@@ -62,9 +63,9 @@ namespace client_transmission_packets {
     //player_security_reply,
     //movement_location_sync,
     ///entities
-    //entity_load,
+    byte_buffer* cpacket_entity_load(client_struct& inputClient, int input_EntityNumber, int send_object_index, double send_x, double send_y, float send_direction, double send_speed, bool send_constructflag , int send_depth_modifier);
     byte_buffer* cpacket_entity_drop(client_struct& inputClient, int input_EntityNumber);
-    //entity_reply,
+    byte_buffer* cpacket_entity_reply(client_struct& inputClient, int input_EntityNumber, int resend_instance_id, std::string replyDataString, unsigned int mode_flag, bool is_object_else_is_index);
     //entity_activate,
     byte_buffer* cpacket_entity_grab_update(client_struct& inputClient, int input_EntityNumber);
     ///misc

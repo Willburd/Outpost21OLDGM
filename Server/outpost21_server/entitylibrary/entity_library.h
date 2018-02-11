@@ -203,7 +203,14 @@ namespace entityLibrary {
     };
 
 
+    class entity_machine_indoorlight : public entity {
+        public:
+        entity_machine_indoorlight(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable);
+        using entity::entity_set_inventorylimits;
+        using entity::entity_securityInit;
 
+        void entity_personal_step();
+    };
 
 
 

@@ -1,4 +1,6 @@
 #include "entity_library.h"
+#include "../base64/base64.h"
+#include "../client_transmit_packets.h"
 
 
 entityLibrary::entity_generic::entity_generic(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
@@ -45,7 +47,7 @@ entityLibrary::entity_player::entity_player(std::string set_object_index,double 
     myIntVars["stat_age"] = 21;
 
     myIntVars["stasis"] = true;
-
+    myIntVars["player_socket"] = -1; ///clientMap index
 }
 void entityLibrary::entity_player::entity_personal_step() {
     ///personal actions go here
@@ -76,6 +78,7 @@ void entityLibrary::entity_laserpoint::entity_personal_step() {
     else
     {
         //delete me
+        serverObj.entity_remove(entity_number);
     }
 }
 
@@ -115,15 +118,12 @@ void entityLibrary::entity_powercell::entity_personal_step() {
 }
 
 
-
 entityLibrary::entity_securitycard::entity_securitycard(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
 : entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
 }
 void entityLibrary::entity_securitycard::entity_personal_step() {
     ///personal actions go here
 }
-
-
 
 
 entityLibrary::entity_machine::entity_machine(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
@@ -135,10 +135,79 @@ void entityLibrary::entity_machine::entity_personal_step() {
 }
 
 
+entityLibrary::entity_machine_indoorlight::entity_machine_indoorlight(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable)
+: entity( set_object_index, set_x, set_y, set_dir, set_spd, set_indestructable) {
+    myIntVars["machine_has_power"] = 0;
+    myIntVars["light_charge"] = 0;
+}
+void entityLibrary::entity_machine_indoorlight::entity_personal_step() {
+    ///personal actions go here
+    if(myIntVars["light_charge"] > 0) {
+        myIntVars["light_charge"] -= 1;
+    }
+    else
+    {
+        //refill light!
+        myIntVars["light_charge"] = 10; //personal check loop, refills to 10 so we recheck in 10 steps
+
+        //find batteries to drain!
+        for(std::vector<int>::iterator it = contains_vector.begin(); it != contains_vector.end(); ++it) {
+
+            entity* getInvEnt = serverObj.entity_map[ *it];
+
+            if(getInvEnt != nullptr) {
+                //discharge and cook something, once the client end is done trigger again and cook!
+                if(getInvEnt->entity_getAssetIndex() == "obj_puppet_powercell") {
+                    if( myIntVars["charge"] > 0 ) {
+                        //discharge
+                        myIntVars["charge"] -= 1;
+
+                        //refill light!
+                        myIntVars["light_charge"] = 6480; //overwrites the personal timing!
+                        myIntVars["machine_has_power"] = true;
+
+                        //update players to turn on their lights
+                        ///TODO scr_server_storagebox_object_update_all_players(current_key,argument0);
+
+                        //break outta loop we found power
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    //disable transmission
+    if(myIntVars["machine_has_power"] == true) {
+        //was powered last check, but not this time!
+        if(myIntVars["light_charge"] == 10) {
+            //we are no longer powered.
+            myIntVars["machine_has_power"] = false;
+
+            //construct a string to transmit
+            nlohmann::json transmission_json = {
+                {"transmission",{0}}
+            };
+
+            std::string transmit_string = transmission_json.dump();
+            std::string base64_transmit = base64_encode(reinterpret_cast<unsigned const char*>(transmit_string.c_str()),(unsigned int)transmit_string.length());
+
+            //update players to turn off their lights
+            for(std::map<unsigned int, client_struct*>::iterator it = serverObj.clientNumberMap.begin(); it != serverObj.clientNumberMap.end(); it++ ) {
+                client_struct* getClient = it->second;
+                client_transmission_packets::cpacket_entity_reply( *getClient, entity_number, serverObj.getIndexOfAsset("obj_machine_indoorlamp"), base64_transmit, 0, true);
+            }
+        }
+    }
+}
 
 
 
-///initial job workkits
+
+
+
+
+///initial job work kits
 std::string entityLibrary::job_getStartToolkit( uint16_t jobEnum) {
     switch(jobEnum) {
         case jobs::assistant:
@@ -215,11 +284,14 @@ void entityLibrary::entity_template_creation() {
     ***************************/
 
     ///push up past the client end's internal stuff.
-    serverObj.assetIndex_currentEntry = 53;
+    serverObj.assetIndex_currentEntry = 55;
+    serverObj.CreateObjectAndAssetIndex("obj_puppet");
+    serverObj.CreateObjectAndAssetIndex("obj_puppet_physics");
+    serverObj.CreateObjectAndAssetIndex("obj_puppet_genericitem");
 
     ///living entities
-    serverObj.CreateObjectAndAssetIndex("obj_puppet_arrivalshuttle");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_player");
+    serverObj.CreateObjectAndAssetIndex("obj_puppet_arrivalshuttle");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_borb");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_laserpoint");
 
@@ -232,12 +304,12 @@ void entityLibrary::entity_template_creation() {
 
     ///clothing equipment
     serverObj.CreateObjectAndAssetIndex("obj_puppet_toolbelt");
-    serverObj.CreateObjectAndAssetIndex("obj_puppet_secbelt");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_medbelt");
+    serverObj.CreateObjectAndAssetIndex("obj_puppet_secbelt");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_hazardvest");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_hardhat");
-    serverObj.CreateObjectAndAssetIndex("obj_puppet_sechelmet");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_firehelmet");
+    serverObj.CreateObjectAndAssetIndex("obj_puppet_sechelmet");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_firesuit");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_secgasmask");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_gasmask");
@@ -252,6 +324,8 @@ void entityLibrary::entity_template_creation() {
     serverObj.CreateObjectAndAssetIndex("obj_puppet_cleansuit_body");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_sunglasses");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_glasses_perscrip");
+
+    ///tools
     serverObj.CreateObjectAndAssetIndex("obj_puppet_crowbar");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_wirecutter");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_screwdriver");
@@ -299,30 +373,29 @@ void entityLibrary::entity_template_creation() {
     serverObj.CreateObjectAndAssetIndex("obj_puppet_cauterytool");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_cryobeaker");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_gps");
-
     serverObj.CreateObjectAndAssetIndex("obj_puppet_labeler");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_ducttape");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_cautiontape");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_clipboard");
 
-
     //furniture
+    serverObj.CreateObjectAndAssetIndex("obj_furniture_parent");
     serverObj.CreateObjectAndAssetIndex("obj_furniture_stool");
     serverObj.CreateObjectAndAssetIndex("obj_furniture_table");
     serverObj.CreateObjectAndAssetIndex("obj_furniture_locker");
     serverObj.CreateObjectAndAssetIndex("obj_furniture_trashbin");
-
     serverObj.CreateObjectAndAssetIndex("obj_puppet_janitorcart");
-
     serverObj.CreateObjectAndAssetIndex("obj_puppet_microwave");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_coffeemaker");
 
     //constructables and blueprints
-    serverObj.CreateObjectAndAssetIndex("obj_puppet_conduit");
-
-    serverObj.CreateObjectAndAssetIndex("obj_machine_STC");
-
+    serverObj.CreateObjectAndAssetIndex("obj_floormounted_parent");
+    serverObj.CreateObjectAndAssetIndex("obj_machine_parent");
+    serverObj.CreateObjectAndAssetIndex("obj_blueprint_parent");
+    serverObj.CreateObjectAndAssetIndex("obj_machine_light_parent");
     serverObj.CreateObjectAndAssetIndex("obj_puppet_blueprint");
+    serverObj.CreateObjectAndAssetIndex("obj_puppet_conduit");
+    serverObj.CreateObjectAndAssetIndex("obj_machine_STC");
 
     serverObj.CreateObjectAndAssetIndex("obj_puppet_blueprint_genorator");
     serverObj.CreateObjectAndAssetIndex("obj_machine_genorator");
@@ -880,8 +953,7 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
 
     else if(set_object_index == "obj_puppet_blueprint") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
-                                           );
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }
@@ -890,17 +962,13 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
 
     else if(set_object_index == "obj_puppet_blueprint_genorator") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
-
-                                           );
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }
     else if(set_object_index == "obj_machine_genorator") {
         //pop out generic item...
-        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
-
-                                           );
+        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::huge, itemdata::none, false, false, itemdata::machines, itemdata::generic);
         returnPointer->myIntVars["machine_has_power"] = false;
     }
@@ -908,16 +976,13 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
 
     else if(set_object_index == "obj_puppet_blueprint_outdoorlamp") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
-                                           );
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }
     else if(set_object_index == "obj_machine_outdoorlamp") {
         //pop out generic item...
-        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
-
-                                           );
+        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 0, itemdata::huge, itemdata::none, false, false, itemdata::machines, itemdata::generic);
         returnPointer->myIntVars["machine_has_power"] = false;
     }
@@ -926,17 +991,14 @@ entity* entityLibrary::entity_template_library(std::string set_object_index,doub
 
     else if(set_object_index == "obj_machine_indoorlamp") {
         //pop out generic item...
-        returnPointer = new entity_machine( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
-
-                                           );
+        returnPointer = new entity_machine_indoorlight( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         returnPointer->entity_set_inventorylimits( 1,itemdata::medium, itemdata::smal, false, false, itemdata::machine_parts, itemdata::generic);
         returnPointer->myIntVars["machine_has_power"] = false;
     }
 
 
     else if(set_object_index == "obj_puppet_blueprint_printer") {
-        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable
-                                           );
+        returnPointer = new entity_generic( set_object_index,set_x,set_y,set_dir,set_spd,set_indestructable);
         //setup a default inventory for the cup! it can store one object!
         returnPointer->entity_set_inventorylimits( 0, itemdata::smal, itemdata::none, false, true, itemdata::machine_parts, itemdata::generic);
     }

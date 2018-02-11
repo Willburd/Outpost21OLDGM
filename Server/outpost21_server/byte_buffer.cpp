@@ -30,6 +30,12 @@ uint8_t  byte_buffer::buffer_read_u8() {
     return collected;
 }
 
+int8_t  byte_buffer::buffer_read_s8() {
+    int8_t collected = data[buffer_place];
+    buffer_place += 1;
+    return collected;
+}
+
 uint16_t byte_buffer::buffer_read_u16() {
     uint16_t collected;
 
@@ -40,8 +46,28 @@ uint16_t byte_buffer::buffer_read_u16() {
     return collected;
 }
 
+int16_t byte_buffer::buffer_read_s16() {
+    int16_t collected;
+
+    char b[] = {data[buffer_place],data[buffer_place+1]};
+    memcpy(&collected, &b, 2);
+    buffer_place += 2;
+
+    return collected;
+}
+
 uint32_t byte_buffer::buffer_read_u32() {
     uint32_t collected;
+
+    char b[] = {data[buffer_place],data[buffer_place+1],data[buffer_place+2],data[buffer_place+3]};
+    memcpy(&collected, &b, 4);
+    buffer_place += 4;
+
+    return collected;
+}
+
+int32_t byte_buffer::buffer_read_s32() {
+    int32_t collected;
 
     char b[] = {data[buffer_place],data[buffer_place+1],data[buffer_place+2],data[buffer_place+3]};
     memcpy(&collected, &b, 4);
@@ -101,6 +127,12 @@ void  byte_buffer::buffer_write_u8(uint8_t input) {
     received += 1;
 }
 
+void  byte_buffer::buffer_write_s8(int8_t input) {
+    data[buffer_place] = input;
+    buffer_place += 1;
+    received += 1;
+}
+
 void byte_buffer::buffer_write_u16(uint16_t input) {
     data[buffer_place  ] = (char)(input & 0xFF);
     data[buffer_place+1] = (char)((input >> 8) & 0xFF);
@@ -108,7 +140,23 @@ void byte_buffer::buffer_write_u16(uint16_t input) {
     received += 2;
 }
 
+void byte_buffer::buffer_write_s16(int16_t input) {
+    data[buffer_place  ] = (char)(input & 0xFF);
+    data[buffer_place+1] = (char)((input >> 8) & 0xFF);
+    buffer_place += 2;
+    received += 2;
+}
+
 void byte_buffer::buffer_write_u32(uint32_t input) {
+    data[buffer_place] = (char)(input & 0xFF);
+    data[buffer_place+1] = (char)((input >> 8) & 0xFF);
+    data[buffer_place+2] = (char)((input >> 16) & 0xFF);
+    data[buffer_place+3] = (char)((input >> 24) & 0xFF);
+    buffer_place += 4;
+    received += 4;
+}
+
+void byte_buffer::buffer_write_s32(int32_t input) {
     data[buffer_place] = (char)(input & 0xFF);
     data[buffer_place+1] = (char)((input >> 8) & 0xFF);
     data[buffer_place+2] = (char)((input >> 16) & 0xFF);

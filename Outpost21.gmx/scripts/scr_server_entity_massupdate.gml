@@ -344,12 +344,7 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
                                     //refill light!
                                     get_map[? "light_charge"] = 6480; //overwrites the personal timing!
                                     get_map[? "machine_has_power"] = true;
-                                    //transmit data to clients
-                                    var transmission_list = ds_list_create();
-                                    transmission_list[| 0] = get_map[? "light_charge"] * 200; //compensates for batch size timings in the alarm
-                                    var TXstring = ds_list_write(transmission_list);
-                                    var TXbase64 = base64_encode(TXstring);
-                                    ds_list_destroy(transmission_list);
+                                    
                                     //update players to turn on their lights
                                     scr_server_storagebox_object_update_all_players(current_key,argument0);
                                     
@@ -375,9 +370,12 @@ if scr_ds_map_verify(get_map) and is_undefined(get_map[? "object_index"]) == fal
                                 //transmit data to clients
                                 var transmission_list = ds_list_create();
                                 transmission_list[| 0] = 0; 
-                                var TXstring = ds_list_write(transmission_list);
+                                var transmission_container = ds_map_create();
+                                ds_map_add_list(transmission_container,"transmission",transmission_list);
+                                var TXstring = json_encode(transmission_container);
                                 var TXbase64 = base64_encode(TXstring);
-                                ds_list_destroy(transmission_list);
+                                ds_map_destroy(transmission_container);
+                                
                                 //update players to turn off their lights
                                 var t = 0;
                                 while t < global.max_server_players {

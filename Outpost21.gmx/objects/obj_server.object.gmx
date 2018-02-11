@@ -1961,13 +1961,15 @@ if async_load[? "type"] == network_type_data {
                             break;
                         }
                         
-                        //transmit data
-                        var TXstring = ds_list_write(transmission_list);
+                        //transmit data to clients
+                        var transmission_container = ds_map_create();
+                        ds_map_add_list(transmission_container,"transmission",transmission_list);
+                        var TXstring = json_encode(transmission_container);
                         var TXbase64 = base64_encode(TXstring);
                         scr_cpacket_entity_reply(connection_id,entity_number,instance_id_requesting,TXbase64,input_control_states,return_instance_or_object);
                         
                         //cleanup
-                        ds_list_destroy(transmission_list);
+                        ds_map_destroy(transmission_container);
                         
                         //set the object as needing to update when it can
                         scr_item_set_update_flag(entity_number, list_sockets[| connection_id], true);
@@ -2002,12 +2004,14 @@ if async_load[? "type"] == network_type_data {
                     }
                     
                     //transmit data, christ this is gonna be a weird packet...
-                    var TXstring = ds_list_write(transmission_list);
+                    var transmission_container = ds_map_create();
+                    ds_map_add_list(transmission_container,"transmission",transmission_list);
+                    var TXstring = json_encode(transmission_container);
                     var TXbase64 = base64_encode(TXstring);
                     scr_cpacket_entity_reply(connection_id, get_mapentity, obj_puppet_securitytool, TXbase64, 1, enum_entity_reply.is_object);
                     
                     //cleanup
-                    ds_list_destroy(transmission_list);
+                    ds_map_destroy(transmission_container);
                 break;
                 
                 
@@ -2062,12 +2066,14 @@ if async_load[? "type"] == network_type_data {
                     }
                     
                     //transmit data, christ this is gonna be a weird packet...
-                    var TXstring = ds_list_write(transmission_list);
+                    var transmission_container = ds_map_create();
+                    ds_map_add_list(transmission_container,"transmission",transmission_list);
+                    var TXstring = json_encode(transmission_container);
                     var TXbase64 = base64_encode(TXstring);
                     scr_cpacket_entity_reply(connection_id, get_mapentity, instance_id_requesting, TXbase64, flipbit, enum_entity_reply.is_entity);
                     
                     //cleanup
-                    ds_list_destroy(transmission_list);
+                    ds_map_destroy(transmission_container);
                 break;
                 
                 default:

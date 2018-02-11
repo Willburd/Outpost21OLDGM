@@ -253,6 +253,8 @@ alarm[0] = player_update_timer;
     is_object,   
 }
 
+show_debug_message("BEGIN PACKET CHECK");
+
     //packet disassembly and processing
 while ds_queue_size(client_packet_queue) &gt; 0 {
     //scr_consoleout("Client has received packet: ");
@@ -316,6 +318,7 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
                 
                     
                     case  enum_client_packets.login_newuser:
+                        show_debug_message("newuser login");
                         //confirm make new user?
                         var char_getname = buffer_read(connection_buffer,buffer_string);
                         var char_getpass = buffer_read(connection_buffer,buffer_string);
@@ -330,6 +333,7 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
                     
                     
                     case  enum_client_packets.login_failed:
+                        show_debug_message("login failed");
                         var char_getname = buffer_read(connection_buffer,buffer_string);
                         scr_consoleout("Login failed! user: " + string(char_getname));
                         
@@ -384,6 +388,7 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
                     
                     
                     case enum_client_packets.map_object_load:
+                        show_debug_message("map object load");
                         var get_map_entity = buffer_read(connection_buffer,buffer_u16); //map object id
                         var get_objectindex = buffer_read(connection_buffer,buffer_u16);
                         global.max_map_load_entities = buffer_read(connection_buffer,buffer_u16);
@@ -403,6 +408,8 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
                                 instance_destroy();
                             }
                         }
+                        
+                        show_debug_message("make map obj_dir: " + string(getdir));
                         
                         //add loaded wall
                         with instance_create(getx,gety,get_objectindex) {
@@ -431,6 +438,7 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
                     
                     
                     case enum_client_packets.map_object_drop:
+                        show_debug_message("map object drop");
                         var get_map_entity = buffer_read(connection_buffer,buffer_u16); //map object id
                         var getx = buffer_read(connection_buffer,buffer_f32);
                         var gety = buffer_read(connection_buffer,buffer_f32);
@@ -578,7 +586,7 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
                         if is_undefined(list_entity_cache[| entity_num]) or instance_exists(list_entity_cache[| entity_num]) == false {
                             //it is up to the object itself to retrieve valid data of itself!
                             scr_consoleout("entity loaded: " + string(entity_num));
-                            scr_consoleout(" -new instance created");
+                            scr_consoleout(" -new instance created " + string( object_get_name(get_object) ));
                             list_entity_cache[| entity_num] = instance_create(getx,gety,get_object);
                         }
                         
@@ -761,10 +769,13 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
                         var mode_type_instance_or_object = buffer_read(connection_buffer,buffer_u8);
                         
                         var extract_string = base64_decode(datacollected);
+                        var extract_map = ds_list_create();
                         var extract_list = ds_list_create();
-                        ds_list_read(extract_list,extract_string);
+                        extract_map = json_decode(extract_string);
+                        extract_list = extract_map[? "transmission"];
                         
                         scr_consoleout("entity used reply: " + string(entity_num));
+                        
                         
                         if is_undefined(instanceid) == false {
                             if mode_type_instance_or_object == enum_entity_reply.is_entity and instance_exists(instanceid) { //if using an instance!
@@ -980,6 +991,7 @@ while ds_queue_size(client_packet_queue) &gt; 0 {
                         
                         //remove list
                         ds_list_destroy(extract_list);
+                        ds_map_destroy(extract_map);
                     break;
                     
                     

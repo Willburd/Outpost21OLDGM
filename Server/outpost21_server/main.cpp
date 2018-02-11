@@ -20,6 +20,8 @@ int main()
     int get_securityLoadShow = 0;
     int get_mtu = 256;
 
+    int mapDownloadLimited = 0;
+
     INIReader reader( serverObj.serverdata_file_path);
     if (reader.ParseError() < 0) {
         std::cout << "Can't load '" << serverObj.serverdata_file_path << "'" << std::endl;
@@ -49,7 +51,6 @@ int main()
 
     ///set update rate
     serverObj.server_tickrate = get_tickRate;
-    serverObj.MaxByteslMTU = get_mtu;
 
     ///set if loading should give data
     serverObj.showMapLoad = (get_mapLoadShow > 0);
@@ -116,106 +117,90 @@ int main()
                 }
             }
 
-            //process entity personal steps!
-            for(std::map<unsigned int, entity*>::iterator it = serverObj.entity_map.begin(); it != serverObj.entity_map.end(); it++ ) {
-                entity* getEnt = it->second;
-
-                if(getEnt != nullptr) {
-                    if(getEnt->x == serverObj.entity_deletion_abyss || getEnt->y == serverObj.entity_deletion_abyss) {
-                        //drag up to item abyss if y is wrong.
-                        getEnt->y = serverObj.entity_deletion_abyss;
-
-                        if( getEnt->x > serverObj.entity_deletion_abyss-5 ) {
-                            //repeatedly send unloads to all clients
-                            getEnt->x -= 1;
-                        }
-                        else
-                        {
-                            //force destruction of entity
-                            serverObj.entity_map[getEnt->entity_number] = nullptr;
-                            delete getEnt;
-                        }
-                    }
-                    else
-                    {
-                        getEnt->entity_step();
-                    }
-                }
-            }
-
             //handle server processing
-
+            serverObj.gameUpdate();
 
             //increment cycle counter
             serverObj.entity_process_cycle += 1;
 
+            if(mapDownloadLimited > 0) {
+                mapDownloadLimited -= 1;
+            }
+            else
+            {
+                mapDownloadLimited = 50; //delay between the next download pulse
 
-            //keep track of map entities to drop at the end of the loop.
-            std::map<unsigned int, mapConstruction*> MapConstruction_RemoveList;
-            //send maps out to clients
-            for(std::map<unsigned int, client_struct*>::iterator it = serverObj.clientNumberMap.begin(); it != serverObj.clientNumberMap.end(); it++ ) {
-                client_struct* getClient = it->second;
+                int map_downloadRate = mapDownloadLimited*0.80; //constructions to send this frame
+                while(map_downloadRate > 0) {
+                    //keep track of map entities to drop at the end of the loop.
+                    std::map<unsigned int, mapConstruction*> MapConstruction_RemoveList;
+                    //send maps out to clients
+                    for(std::map<unsigned int, client_struct*>::iterator it = serverObj.clientNumberMap.begin(); it != serverObj.clientNumberMap.end(); it++ ) {
+                        client_struct* getClient = it->second;
 
-                if(getClient->mapDownloadQueue.size() > 0) {
-                    //if the queue is any value other then 0, send the map tile at the top!
-                    mapConstruction* currentConstruction = getClient->mapDownloadQueue.front();
+                        if(getClient->mapDownloadQueue.size() > 0) {
+                            //if the queue is any value other then 0, send the map tile at the top!
+                            mapConstruction* currentConstruction = getClient->mapDownloadQueue.front();
 
-                    if(currentConstruction != nullptr) {
-                        //conditions if we load or unload
-                        if(currentConstruction->remove_flag == false) {
-                            //transmit it to the client
-                            client_transmission_packets::cpacket_map_object_load( *getClient, currentConstruction);
-                        }
-                        else
-                        {
-                            //transmit it to the client
-                            client_transmission_packets::cpacket_map_object_drop( *getClient, currentConstruction);
+                            if(currentConstruction != nullptr) {
+                                //conditions if we load or unload
+                                if(currentConstruction->remove_flag == false) {
+                                    //transmit it to the client
+                                    client_transmission_packets::cpacket_map_object_load( *getClient, currentConstruction);
+                                }
+                                else
+                                {
+                                    //transmit it to the client
+                                    client_transmission_packets::cpacket_map_object_drop( *getClient, currentConstruction);
 
-                            //load it up to be removed
-                            MapConstruction_RemoveList[currentConstruction->map_entity] = currentConstruction;
+                                    //load it up to be removed
+                                    MapConstruction_RemoveList[currentConstruction->map_entity] = currentConstruction;
+                                }
+                            }
+
+                            //cleanup
+                            getClient->mapDownloadQueue.pop_front();
                         }
                     }
 
-                    //cleanup
-                    getClient->mapDownloadQueue.pop_front();
+                    //remove map constructions if they were cleared in this loop
+                    for(std::map<unsigned int, mapConstruction*>::iterator it = MapConstruction_RemoveList.begin(); it != MapConstruction_RemoveList.end(); it++ ) {
+                        mapConstruction* getConstruct = it->second;
+
+                        //it's dead Jim
+                        delete getConstruct;
+                    }
+
+                    //count down
+                    map_downloadRate -= 1;
                 }
-            }
-
-            //remove map constructions if they were cleared in this loop
-            for(std::map<unsigned int, mapConstruction*>::iterator it = MapConstruction_RemoveList.begin(); it != MapConstruction_RemoveList.end(); it++ ) {
-                mapConstruction* getConstruct = it->second;
-
-                //it's dead Jim
-                delete getConstruct;
             }
 
             //transmit client packets! Limit under MTU!
             for(std::map<unsigned int, client_struct*>::iterator it = serverObj.clientNumberMap.begin(); it != serverObj.clientNumberMap.end(); it++ ) {
                 client_struct* getClient = it->second;
 
-                while(getClient->ByteTotalMTU < serverObj.MaxByteslMTU ) {
-                    //if we have packets to send!
+                if(getClient->delayCounter <= 0) {
                     if(getClient->packetQueue.size() > 0) {
+                        //std::cout << "queue size " << getClient->packetQueue.size() << std::endl;
+                        //if we have packets to send!
                         byte_buffer* getPacket = getClient->packetQueue.front();
                         getClient->mySocket.send(getPacket->data, getPacket->buffer_get_pos());
 
-                        //increase mtu bytes
-                        getClient->ByteTotalMTU += getPacket->buffer_get_pos();
-
                         //clean up
-                        getClient->packetQueue.pop_front();
                         delete getPacket;
+                        getClient->packetQueue.pop_front();
+
+                        //reset for next loop
+                        getClient->delayCounter = serverObj.clientMaxDelay;
                     }
-                    else
-                    {
-                        break; //endloop
-                    }
+
                 }
-
-                //reset for next loop
-                getClient->ByteTotalMTU = 0;
+                else
+                {
+                    getClient->delayCounter -= 1;
+                }
             }
-
 
             //std::cout << "Time: " << (work_time + sleep_time).count() << std::endl;
         }

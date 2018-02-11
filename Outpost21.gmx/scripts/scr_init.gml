@@ -28,7 +28,6 @@ global.client_grab_entity = -1;
 global.door_opening_duration = 120;
 
 
-
 //serverside landing pad
 enum enum_landingpad_setting {
     public,

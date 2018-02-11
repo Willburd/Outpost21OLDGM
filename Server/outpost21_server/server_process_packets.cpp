@@ -5,6 +5,10 @@
 
 //extremely limited user tools for sorting the range a wall is from the player for map preloading.
 namespace mapDownloadRangeSort {
+
+    class sortClass;
+    bool sortByRange(const sortClass* lhs, const sortClass* rhs);
+
     class sortClass {
 
         public:
@@ -14,7 +18,7 @@ namespace mapDownloadRangeSort {
 
     bool sortByRange(const sortClass* lhs, const sortClass* rhs) {
         return lhs->disToPlayer < rhs->disToPlayer;
-    };
+    }
 }
 
 
@@ -45,9 +49,9 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
         serverObj.clientNumberMap[threadId] = &client;
 
         //create thread locking mutex, look into each packet opcode to see when they use this.
-        pthread_mutex_t *mutex;
-        const pthread_mutexattr_t *attr;
-        pthread_mutex_init(mutex, attr);
+        ///pthread_mutex_t *mutex;
+        ///const pthread_mutexattr_t *attr;
+        ///pthread_mutex_init(mutex, attr);
 
         //main client processing loop,ALWAYS respond to packets ASAP compared to the server's tick rate
         bool quit = false;
@@ -278,6 +282,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
 
                                     //lock the socket
                                     client.myPlayerEntity = new_player_entity;
+                                    new_entity_data->myIntVars["player_socket"] = client.myNumber;
 
                                     //send final connection packet
                                     std::cout << " -Locked player entity to: " << new_player_entity << std::endl;
@@ -299,13 +304,16 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                      //use the entity we passed it before!
                                     unsigned int player_entity = current_packet->buffer_read_u32();
 
-                                    //store the list reference number!
-                                    client.myPlayerEntity = player_entity; //player list stores a reference to the player entity id
-                                    std::cout << " -client's player entity set to: " << player_entity << std::endl;
-
                                     //setup entity itself
                                     entity* ply_data = serverObj.entity_map[ player_entity];
                                     if(ply_data != nullptr) {
+                                        //store the list reference number!
+                                        client.myPlayerEntity = player_entity; //player list stores a reference to the player entity id
+                                        ply_data->myIntVars["player_socket"] = client.myNumber;
+
+                                        //debug output
+                                        std::cout << " -client's player entity set to: " << player_entity << std::endl;
+
                                         ply_data->myIntVars["stasis"] = false; //take player out of stasis
 
                                         //send final connection packet
@@ -367,7 +375,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                         }
 
                                         //transmit!
-                                        client_transmission_packets::cpacket_playerentity_return( client, player_entity, serverObj.getIndexOfAsset((ply_data->entity_getObjectIndex())), ply_data->x, ply_data->y, hide_ent);
+                                        client_transmission_packets::cpacket_playerentity_return( client, player_entity, ply_data->entity_getObjectIndex(), ply_data->x, ply_data->y, hide_ent);
                                     }
                                     else
                                     {
@@ -401,7 +409,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                             if( serverObj.entity_map[storage_ent] != nullptr ) {
                                                 entity* storageent_data = serverObj.entity_map[storage_ent];
 
-                                                if(storageent_data->entity_getObjectIndex() == "obj_puppet_arrivalshuttle") {
+                                                if(storageent_data->entity_getAssetIndex() == "obj_puppet_arrivalshuttle") {
                                                     //load in from the start shuttle! (middle loads)
                                                     plx = serverObj.map_max_xlimit/2;
                                                     ply = serverObj.map_max_ylimit/2;
@@ -605,7 +613,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
                                     //tell client that this entity is also unloaded
                                     client_transmission_packets::cpacket_entity_drop( client, entity_number);
                                     //set the object as needing to update when it can
-                                    serverObj.set_update_flag( entity_number, client.myNumber, true);
+                                    serverObj.set_update_flag( entity_number, &client, true);
                                 }
                             break; //not placing, unloading an entity from client inputs!
 
@@ -642,7 +650,7 @@ void* server_recieving_packets::serverProcessLoop(void *threadid) {
         serverObj.clientNumberMap.erase(threadId);
         delete serverObj.SocketThreads[threadId];
         serverObj.SocketThreads[threadId] = nullptr;
-        pthread_exit(NULL);
+        pthread_exit(nullptr);
     }
 
 

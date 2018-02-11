@@ -1,7 +1,12 @@
 #include "json/json.hpp"
 #include "client_transmit_packets.h"
 #include "entitylibrary/entity_library.h"
+#include "toolbox/toolbox.h"
 #include "server_core.h"
+#include <algorithm>
+
+
+extern serverCore serverObj;
 
 
 ///SERVER CORE
@@ -183,7 +188,7 @@ void serverCore::entity_storeEntity( int entityToStore, int storageBoxEntity) {
     getStoredEntity->entity_setConstructed(false);
 
     //security updates
-    if(getStoredEntity->entity_getObjectIndex() == "obj_puppet_securitycard") {
+    if(getStoredEntity->entity_getAssetIndex() == "obj_puppet_securitycard") {
         //update both as needed!
         getStoredEntity->entity_securityUpdate();
         getStorageEntity->entity_securityUpdate();
@@ -226,7 +231,7 @@ void serverCore::entity_releaseEntity( int entityToRelease, double inx, double i
     getStoredEntity->y = iny;
 
     //security updates
-    if(getStoredEntity->entity_getObjectIndex() == "obj_puppet_securitycard") {
+    if(getStoredEntity->entity_getAssetIndex() == "obj_puppet_securitycard") {
         //update both as needed!
         getStoredEntity->entity_securityUpdate();
         oldStorageEntity->entity_securityUpdate();
@@ -234,10 +239,59 @@ void serverCore::entity_releaseEntity( int entityToRelease, double inx, double i
 }
 
 
+void serverCore::gameUpdate() {
+    for(std::map<unsigned int, entity*>::iterator it = entity_map.begin(); it != entity_map.end(); it++ ) {
+        //entity validation
+        entity* getData = it->second;
+        if(getData != nullptr) {
+            //check if entity is in deletion area, if it is, repeatedly drop it from clients until it is!
+            //this ensures the entity is unloaded fully
+            if(getData->x <= entity_deletion_abyss || getData->y <= entity_deletion_abyss) {
+                //drag up to item abyss if y is wrong.
+                getData->y = entity_deletion_abyss;
+
+                if( getData->x > entity_deletion_abyss-5 ) {
+                    //repeatedly send unloads to all clients
+                    getData->x -= 1;
+                }
+                else
+                {
+                    //force destruction of entity
+                    entity_map[getData->entity_number] = nullptr;
+                    delete getData;
+                }
+            }
+            else
+            {
+                if(getData->entity_checkProcessingCycle()) {
+                    //process physics
+                    getData->entity_step();
+
+                    //process personal data
+                    getData->entity_personal_step();
+
+                    //broadcast updates to clients
+                    getData->entity_update_clients();
+
+                    //prevent update in the same frame somehow
+                    getData->entity_updateProcessingCycle();
+                }
+            }
+        }
+    }
+}
+
+
+
 bool serverCore::entity_classStorageCheck( uint16_t input_item_class, uint16_t storage_class_allowed, client_struct& inputClient) {
     bool allow_item = false;
 
     switch(storage_class_allowed) {
+        default:
+            std::cout << "classStorageCheck definition missing!! storageClass number: " << storage_class_allowed << std::endl;
+            allow_item = false;
+        break;
+
         case entityLibrary::itemdata::generic:
         case entityLibrary::itemdata::ship:
             //allows all classes inside!
@@ -308,12 +362,12 @@ bool serverCore::entity_classStorageCheck( uint16_t input_item_class, uint16_t s
 }
 
 
-void serverCore::set_update_flag( int entityNumberToUpdate, int clientNumber, bool updateFlag) {
+void serverCore::set_update_flag( int entityNumberToUpdate, client_struct* clientInput, bool updateFlag) {
     if(entityNumberToUpdate >= 0
     && entity_map[entityNumberToUpdate] != nullptr) {
         //set the entities updateflag for this client!
         entity* get_ent = entity_map[entityNumberToUpdate];
-        get_ent->needs_update[ clientNumber] = updateFlag;
+        get_ent->needsUpdate_map[ clientInput] = updateFlag;
     }
 }
 
@@ -322,7 +376,7 @@ void serverCore::set_update_flagALL( int entityNumberToUpdate, bool updateFlag) 
     && entity_map[entityNumberToUpdate] != nullptr) {
         for (std::map<unsigned int,client_struct*>::iterator it = serverObj.clientNumberMap.begin(); it != serverObj.clientNumberMap.end(); it++ )
         {
-            set_update_flag( entityNumberToUpdate, it->first, updateFlag);
+            set_update_flag( entityNumberToUpdate, it->second, updateFlag);
         }
     }
 }
@@ -593,6 +647,10 @@ entity* serverCore::entityJsonDecode(nlohmann::json a) {
             //ignored. This is manually updated
             if(get_ShowMessages) std::cout << " |------secLevel: DYNAMIC SET..." << std::endl;
         }
+        else if(jsonKey == "player_socket") {
+            //ignore this,
+            if(get_ShowMessages) std::cout << " |--playerclient: DEPRICATED" << std::endl;
+        }
         else
         {
             nlohmann::json jsonEntry = (nlohmann::json)*itm;
@@ -775,7 +833,7 @@ bool serverCore::gameMapLoad(std::string mapFilePath) {
 ///ENTITY
 entity::entity(std::string set_object_index,double set_x,double set_y, float set_dir, double set_spd, bool set_indestructable) {
     //constructor
-    object_index = set_object_index;
+    asset_index = set_object_index;
     entity_number = -1; //index in entity vector
     x = set_x;
     y = set_y;
@@ -784,19 +842,24 @@ entity::entity(std::string set_object_index,double set_x,double set_y, float set
     dir = set_dir;
     spd = set_spd;
     indestructable = set_indestructable;
-
-    //set all update flags
-    for (int i = 0; i < serverObj.server_maxplayers; i++)
-    {
-        needs_update[i] = true; //is a list of player flags!
-    }
 }
 
 entity::~entity(){
 }
 
 bool entity::entityIsPlayer() {
-    return ( entity_getObjectIndex() == "obj_puppet_player" );
+    return ( entity_getAssetIndex() == "obj_puppet_player" );
+}
+
+client_struct* entity::entity_getPlayerClient() {
+    ///returns -1 if the entity does not have a client, any other index if otherwise.
+    if(entityIsPlayer()) {
+        return serverObj.clientNumberMap[ myIntVars["player_socket"] ];
+    }
+    else
+    {
+        return nullptr; //not a player
+    }
 }
 
 void entity::entity_set_inventorylimits( int inventory_size, int max_storeable_item_size, int item_size, bool is_a_liquid, bool contains_a_liquid, int item_class, int inventory_storage_class) {
@@ -808,6 +871,161 @@ void entity::entity_set_inventorylimits( int inventory_size, int max_storeable_i
     contains_max = inventory_size; //inventory max size
     contains_type_liquid = contains_a_liquid;
     contains_size = max_storeable_item_size; //item physical size that can be held
+}
+
+void entity::entity_update_clients() {
+    std::vector<entity*> PostUpdateVector; //fills with entities that need their updates cleared after the loop!
+
+    //check if inside of an object that can display it!
+    bool inside_a_display_entity = false;
+    bool inside_a_inventory_entity = false;
+
+    //check if we need to set some container flags
+    entity* containerData = nullptr;
+    if( inside_of_id != -1 ) {
+        containerData = serverObj.entity_map[inside_of_id];
+        inside_a_inventory_entity = true;
+        inside_a_display_entity = containerData->contains_display;
+    }
+
+    //central update loop (goes to all players)
+    if(x > serverObj.entity_deletion_abyss || y > serverObj.entity_deletion_abyss || inside_a_display_entity == true) { //if something removed the entity before this, protect entity removal
+
+        //standard update proceedure. see if in range of player, and then update if so!
+        for (std::map<unsigned int,client_struct*>::iterator it = serverObj.clientNumberMap.begin(); it != serverObj.clientNumberMap.end(); it++ ) {
+            client_struct* currentClient = it->second;
+
+            //get if our host object is updating
+            bool host_entity_wants_update = false;
+            if(inside_a_inventory_entity == true) {
+                host_entity_wants_update = containerData->needsUpdate_map[currentClient];
+            }
+
+            //get player entity
+            int player_entity = currentClient->myPlayerEntity;
+            entity* playerData = serverObj.entity_map[player_entity];
+
+            //if the player doesn't exist, or is not set then what are we even doing!?
+            if(playerData != nullptr) {
+                //get if this is the same entity as the player that we are sending it to!
+                bool is_player = (player_entity == entity_number);
+                double plyx = playerData->x;
+                double plyy = playerData->y;
+
+                //if a player is inside another entity then use that entity x and y
+                int get_ply_hostentity = playerData->inside_of_id;
+                if(get_ply_hostentity != -1) {
+                    entity* get_ply_hostdata = serverObj.entity_map[get_ply_hostentity];
+
+                    if(get_ply_hostdata != nullptr) {
+                        plyx = get_ply_hostdata->x;
+                        plyy = get_ply_hostdata->y;
+                    }
+                }
+
+                //check if the object has been marked as recently updated
+                bool update = needsUpdate_map[currentClient];
+
+                //checking the distance does most of the work.
+                int entity_distance;
+                if(inside_a_display_entity == false) {
+                    //not inside a display container
+                    entity_distance = toolbox::pointDistance(plyx,plyy,x,y);
+                }
+                else
+                {
+                    //inside a display container
+                    entity_distance = toolbox::pointDistance(plyx,plyy,containerData->x,containerData->y);
+                }
+
+
+                //ranged activation
+                if(entity_distance < serverObj.entity_activation_range || entity_getConstructed() == true) { //always try to load constructed entityies
+                    //if it can be updated do so!
+                    if(update == true || (host_entity_wants_update == true && inside_a_display_entity == true)) {
+                        //do not send the afterimage of yourself.
+                        if(is_player == false) {
+                            //transmit location!
+                            //show_debug_message("Player: " + string(player_entity) + " Loaded entity: " + string(argument0));
+                            //pretty much anything done to an object flags this.
+                            if(inside_a_display_entity == false) {
+                                //normal entity drawing
+                                ///TODO Find out why proximity loading is spamming, is the update flag being ignored?
+                                /*client_transmission_packets::cpacket_entity_load( *currentClient
+                                                       , entity_number
+                                                       , entity_getObjectIndex()
+                                                       , x
+                                                       , y
+                                                       , dir
+                                                       , spd
+                                                       , entity_getConstructed()
+                                                       , 0);
+                                //set for clearing later, clear flag
+                                PostUpdateVector.push_back(this);*/
+                            }
+                            else
+                            {
+                                //on display in an object
+                                client_transmission_packets::cpacket_entity_load( *currentClient
+                                                       , entity_number
+                                                       , entity_getObjectIndex()
+                                                       , containerData->x + containerData->contains_display_x
+                                                       , containerData->y + containerData->contains_display_y
+                                                       , 0
+                                                       , 0
+                                                       , 0
+                                                       , containerData->contains_display_d);
+                            }
+
+                            //set for clearing later, clear flag
+                            PostUpdateVector.push_back(this);
+                        }
+                        else if(inside_a_inventory_entity == true) {
+                            //this refers to players inside objects, they auto update their clients with the object they are inside of!
+                            if(containerData != nullptr) {
+                                client_transmission_packets::cpacket_entity_load( *currentClient
+                                                       , entity_number
+                                                       , containerData->entity_getObjectIndex()
+                                                       , containerData->x
+                                                       , containerData->y
+                                                       , 0
+                                                       , 0
+                                                       , 0
+                                                       , 0);
+                            }
+                        }
+                    }
+                }
+                else if(inside_a_display_entity == false && inside_of_id != -1 && update == true) { //get_map[? "x"] == item_storage_pos and get_map[? "y"] == item_storage_pos
+                    //in storage, keep out of view from everyone!
+                    //show_debug_message("Player: " + string(player_entity) + " inventory dropped entity: " + string(argument0));
+                    client_transmission_packets::cpacket_entity_drop( *currentClient,entity_number);
+                    //set for clearing later, clear flag
+                    PostUpdateVector.push_back(this);
+                }
+                else
+                {
+                    //hanging out at the edge of the activation range... maybe because unmoved or it's being weird, but it won't update yet.
+                    if((update == false && host_entity_wants_update == false) && (inside_of_id == -1 || inside_a_display_entity == true)) {
+                        serverObj.set_update_flag( entity_number, currentClient, true);
+                    }
+                }
+            }
+            else
+            {
+                //no client load yet, instantiate map with updates!
+                serverObj.set_update_flag( entity_number, currentClient, true);
+            }
+        }
+    }
+
+    //set the entities that updated to not update again unless needed!
+    while(PostUpdateVector.size() > 0) {
+        entity* currentEnt = PostUpdateVector.back();
+        serverObj.set_update_flagALL( currentEnt->entity_number, false);
+
+        PostUpdateVector.pop_back();
+    }
 }
 
 
@@ -835,17 +1053,218 @@ void entity::entity_securityUpdate() {
     //be sure to check if the security level exists, if not forcibly disable it!
 }
 
+bool entity::entity_checkProcessingCycle() {
+    return (entity_last_process_cycle !=  serverObj.entity_process_cycle);
+}
+
+void entity::entity_updateProcessingCycle() {
+    entity_last_process_cycle = serverObj.entity_process_cycle;
+}
+
 
 void entity::entity_step() {
     //std::cout << "entity personal step: " << entity_number << " cycle: " << serverObj.entity_process_cycle << std::endl;
 
     //physics calculation, movement, and collisions
-    if(entity_last_process_cycle != serverObj.entity_process_cycle) {
-        //personal update
-        entity_personal_step();
+    if(x > serverObj.entity_item_storage && y > serverObj.entity_item_storage) {
+        //entities in storage don't need to be updated with physics and collisions
 
-        //prevent update in the same frame somehow
-        entity_last_process_cycle = serverObj.entity_process_cycle;
+        if(entity_getGrabbed() != -1) {
+            //drag entity with me!
+            int grab_entity = entity_getGrabbed();
+            entity* grabData = serverObj.entity_map[grab_entity];
+
+            if(grabData != nullptr) {
+                if( inside_of_id != -1 && grabData->inside_of_id != -1 ) {
+                    //if item storages have not changed (prevents dragging stuff in objects, or dragging while in an object!
+                    //drag around!
+                    double get_dis = toolbox::pointDistance(grabData->x,grabData->y,x,y);
+
+                    if(get_dis > serverObj.place_grab_range) {
+                        //release grab, too far!
+                        std::cout << " Grab was released by: " << entity_getGrabbed() << " was too far away! Dis: " << get_dis << std::endl;
+                        entity_setGrabbed(-1);
+
+                        //inform player of grab change if it's a player!!
+                        client_struct* getClient = entity_getPlayerClient();
+                        if(getClient != nullptr) {
+                            ///TODO scr_cpacket_entity_grab_update( getClient, -1);
+                        }
+                    }
+                    else if(get_dis > 48) {
+                        //pull around!
+                        float dir_to_grab = toolbox::pointDirection(grabData->x,grabData->y,x,y);
+                        ///TODO grabData->x += lengthdir_x(get_dis/2,dir_to_grab);
+                        ///TODO grabData->y += lengthdir_y(get_dis/2,dir_to_grab);
+
+
+                        client_struct* getClient = entity_getPlayerClient();
+                        if(getClient != nullptr) {
+                            //pull player around!
+                            double getx = grabData->x;
+                            double gety = grabData->y;
+                            double getpreviousx = grabData->last_update_x;
+                            double getpreviousy = grabData->last_update_y;
+                            //if distance is big enough
+                            if(toolbox::pointDistance(getx,gety,getpreviousx,getpreviousy) > 3) {
+                                ///TODO scr_cpacket_location_sync( getClient,getx,gety,0,0);
+                            }
+                        }
+                    }
+                    else if(get_dis < 24) {
+                        //pushing around!
+                        float dir_to_grab = toolbox::pointDirection(grabData->x,grabData->y,x,y);
+                        dir_to_grab = round(dir_to_grab/4)*4; //snap directions
+
+                        ///TODO grabData->x += lengthdir_x(get_dis*1.2,dir_to_grab);
+                        ///TODO grabData->y += lengthdir_y(get_dis*1.2,dir_to_grab);
+
+                        client_struct* getClient = entity_getPlayerClient();
+                        if(getClient != nullptr) {
+                            //pull player around!
+                            double getx = grabData->x;
+                            double gety = grabData->y;
+                            double getpreviousx = grabData->last_update_x;
+                            double getpreviousy = grabData->last_update_y;
+                            //if distance is big enough
+                            if(toolbox::pointDistance(getx,gety,getpreviousx,getpreviousy) > 3) {
+                                ///TODO scr_cpacket_location_sync( getClient,getx,gety,0,0);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    //release grab, this was put in an inventory, or the dragger was?!
+                    std::cout << " Grab was released by: " << entity_getGrabbed() << " grab, or grabber, placed into inventory!" << std::endl;
+                    entity_setGrabbed(-1);
+
+                    //inform player of grab change if it's a player!!
+                    client_struct* getClient = entity_getPlayerClient();
+                    if(getClient != nullptr) {
+                        ///TODO scr_cpacket_entity_grab_update( getClient, -1);
+                    }
+                }
+
+                //flag for updoot
+                if(toolbox::pointDistance(grabData->x,grabData->y,grabData->last_update_x,grabData->last_update_y) > 5) {
+                    serverObj.set_update_flagALL(grabData->entity_number, true);
+                }
+            }
+        }
+
+
+        //entity processing cycle
+        std::string object = entity_getAssetIndex();
+        double getx = x;
+        double gety = y;
+        double getpreviousx = last_update_x;
+        double getpreviousy = last_update_x;
+        float getdir = dir;
+
+        double decel = SS_decelerator;
+
+        double maxMove = serverObj.maximum_movement;
+        if(decel == 1) maxMove = 9999999; //decleration of 1 allows weird stuff.
+        double getspd = toolbox::clamp(spd,-maxMove,maxMove);
+
+        //store last location
+        last_update_x = x;
+        last_update_y = y;
+
+        if(entity_getConstructed() == false) {
+            //handle object movement and collisions!
+            ///TODO double forcex = lengthdir_x(getspd, getdir);
+            ///TODO double forcey = lengthdir_y(getspd, getdir);
+            //x = toolbox::clamp(x + forcex, serverObj.map_mix_xlimit, serverObj.map_max_xlimit);
+            //y = toolbox::clamp(y + forcey, serverObj.map_mix_ylimit, serverObj.map_max_ylimit);
+        }
+        else
+        {
+            //constructed entities DO NOT MOVE
+            spd = 0;
+        }
+
+        //update movements
+        if((spd > 1 || toolbox::pointDistance(getx,gety,getpreviousx,getpreviousy) > 0.20)
+        && entity_getConstructed() == false) { //constructed entities cannot move
+            //1 decel likely means it does some fancy shit.
+            if(decel < 1) {
+                //decelerate
+                spd *= decel;
+
+                //stop if needed
+                if(spd < serverObj.forced_movement_minimum_cutoff) spd = 0;
+            }
+
+            //update collision server objects
+            ///TODO handle object and map collisions.
+            /*with get_map[? "SS_collision"] {
+                //we are not in an object
+                sprite_index = spr_serverside_entitycol;
+
+                //update col
+                x = get_map[? "x"];
+                y = get_map[? "y"];
+
+                //get potential collisions
+                if get_map[? "SS_collision_ignores_walls"] == false {
+                    var collision_found = collision_line(get_map[? "last_update_x"],get_map[? "last_update_y"],x,y,obj_serverside_colwall,true,true);
+                    if collision_found == noone {
+                        collision_found = collision_rectangle(x-5,y-5,x+5,y+5,obj_serverside_colwall,true,true);
+                    }
+                }
+                else
+                {
+                    collision_found = noone;
+                }
+
+
+                if collision_found != noone {
+                    //do wall damage calc
+                    var wall_breaks = false;
+
+                    if wall_breaks == true {
+                        //break wall
+
+                    }
+                    else
+                    {
+                        //bounce off!
+                        get_map[? "x"] = get_map[? "last_update_x"]
+                        get_map[? "y"] = get_map[? "last_update_y"]
+                        x = get_map[? "x"];
+                        y = get_map[? "y"];
+
+                        //reflect angle (update this later with some kind of entity type specific thing like EXPLODE instead
+                        var xoffset = lengthdir_x( getspd, getdir);
+                        var yoffset = lengthdir_y( getspd, getdir);
+
+                        if collision_found.image_angle == 0 or collision_found.image_angle == 180 {
+                            xoffset *= -1;
+                            yoffset *=  1;
+                        }
+                        else
+                        {
+                            xoffset *=  1;
+                            yoffset *= -1;
+                        }
+
+                        //set new direction, half speed
+                        get_map[? "dir"] = point_direction(0,0,xoffset,yoffset);
+                        get_map[? "spd"] *= get_map[? "SS_bouncyness"];
+                    }
+                }
+
+                //update col with new data from collision
+                x = get_map[? "x"];
+                y = get_map[? "y"];
+
+            }*/
+
+            //set update flag
+            serverObj.set_update_flagALL( entity_number, true);
+        }
     }
 }
 
@@ -855,8 +1274,12 @@ void entity::entity_personal_step() {
     //for example, coffee cooling down and changing into cold coffee
 }
 
-std::string entity::entity_getObjectIndex() {
-    return object_index;
+std::string entity::entity_getAssetIndex() {
+    return asset_index;
+}
+
+int entity::entity_getObjectIndex() {
+    return serverObj.getIndexOfAsset(asset_index);
 }
 
 unsigned int entity::entity_getInventoryMaxSize() {

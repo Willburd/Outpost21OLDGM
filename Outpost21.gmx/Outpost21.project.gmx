@@ -376,6 +376,7 @@
         <object>objects\obj_puppet_laserrifle</object>
         <object>objects\obj_puppet_powercell</object>
         <object>objects\obj_puppet_securitycard</object>
+        <object>objects\obj_puppet_securitytool</object>
         <object>objects\obj_puppet_flashlight</object>
         <object>objects\obj_puppet_flare</object>
         <object>objects\obj_puppet_radioA</object>
@@ -437,7 +438,6 @@
         <object>objects\obj_puppet_blueprint</object>
         <object>objects\obj_puppet_conduit</object>
         <object>objects\obj_machine_STC</object>
-        <object>objects\obj_puppet_securitytool</object>
         <object>objects\obj_puppet_blueprint_genorator</object>
         <object>objects\obj_machine_genorator</object>
         <object>objects\obj_puppet_blueprint_outdoorlamp</object>

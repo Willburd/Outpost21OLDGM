@@ -6,6 +6,7 @@
 class entity;
 struct mapConstruction;
 struct byte_buffer;
+struct client_struct;
 
 //=================================
 // included dependencies
@@ -29,7 +30,7 @@ struct client_struct {
 
     int mapDownloadAllow = 0; ///0 is locked, 1 is unlocked, 2 is pending unlock next tick
     std::deque<mapConstruction*> mapDownloadQueue;
-    int ByteTotalMTU = 0; //sent bytes this loop
+    int delayCounter = 10; //GM is a huge butt and requires a minimum delay between packets
     std::deque<byte_buffer*> packetQueue;
 };
 
@@ -86,7 +87,7 @@ class serverCore {
     sf::TcpListener listener;
     int server_port = 0;
     int server_tickrate = 60; //ticks per second
-    int MaxByteslMTU = 256;
+    int clientMaxDelay = 0;
     bool showMapLoad = false;
     bool showEntityLoad = false;
     bool showSecurityLoad = false;
@@ -96,7 +97,7 @@ class serverCore {
     const double entity_item_storage = -2000;
 
     //constants
-    static const int server_maxplayers = 16;
+    const int entity_activation_range = 500;
     const double forced_movement_decelerator = 0.925;
     const double forced_movement_minimum_cutoff = 0.30;
     const double maximum_movement = 20;
@@ -107,12 +108,15 @@ class serverCore {
     const int map_max_xlimit = map_size-10;
     const int map_max_ylimit = map_size-10;
 
+    const int place_grab_range = 108;
+
     //socket threads
-    pthread_t* SocketThreads[server_maxplayers];
+    pthread_t* SocketThreads[ 128];
+    int server_maxplayers = 16;
     bool spawn_new_socket = true;
 
     //entities
-    int entity_process_cycle = 0;
+    unsigned long long int entity_process_cycle = 0;
     bool entity_classStorageCheck( uint16_t input_item_class, uint16_t storage_class_allowed, client_struct& inputClient);
 
     //file paths
@@ -132,9 +136,11 @@ class serverCore {
     void entity_remove(int entityNumberToRemove);
     void entity_storeEntity(int entityToStore,int storageBoxEntity);
     void entity_releaseEntity(int entityToRelease, double inx, double iny);
-    void set_update_flag( int entityNumberToUpdate, int clientNumber, bool updateFlag);
+    void set_update_flag( int entityNumberToUpdate, client_struct* clientInput, bool updateFlag);
     void set_update_flagALL( int entityNumberToUpdate, bool updateFlag);
-
+    //main processing function
+    void gameUpdate();
+    //loading
     bool gameMapLoad(std::string mapFilePath);
     //sub functions of map loads
     void userdataLoad(nlohmann::json u);
@@ -149,7 +155,7 @@ extern serverCore serverObj;
 
 class entity {
     entity(const entity& that);
-    std::string object_index = "obj_puppet_generic";
+    std::string asset_index = "obj_puppet_generic";
     bool indestructable = false;
     //external inventory control
     int is_type_class = 0;
@@ -169,7 +175,7 @@ class entity {
     int entity_number = -1; //index in entity vector
     int inside_of_id = -1;
     std::vector<int> contains_vector;
-    bool needs_update[serverObj.server_maxplayers]; //is a list of player flags!
+    std::map< client_struct*, bool > needsUpdate_map; //uses client's to check if it needs to update!
     //entity core
     double x = 0;
     double y = 0;
@@ -200,15 +206,18 @@ class entity {
     virtual ~entity();
     void entity_set_inventorylimits( int inventory_size, int max_storeable_item_size, int item_size, bool is_a_liquid, bool contains_a_liquid, int item_class, int inventory_storage_class);
     void entity_step(); //physics calc
+    void entity_update_clients();
     void entity_securityInit();
     void entity_securityUpdate();
 
     //get only
-    std::string entity_getObjectIndex();
+    int entity_getObjectIndex();
+    std::string entity_getAssetIndex();
     unsigned int entity_getInventoryMaxSize();
     int entity_getInventoryItemSizeMax();
     bool entity_getInventoryAllowLiquids();
     int entity_getInventoryItemClassAllowed();
+    client_struct* entity_getPlayerClient();
 
     unsigned int entity_getGrabbed();
     bool entity_getConstructed();
@@ -220,6 +229,9 @@ class entity {
     void entity_setGrabbed(unsigned int entityNumber);
     void entity_setConstructed(bool setCon);
     void entity_setIndestructable(bool input);
+
+    bool entity_checkProcessingCycle();
+    void entity_updateProcessingCycle();
 
     bool entityIsPlayer();
 

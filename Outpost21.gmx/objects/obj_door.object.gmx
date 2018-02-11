@@ -174,7 +174,7 @@ scr_spacket_map_request_door_security( construction_id);
             <kind>1</kind>
             <string>///map setup for this
 scr_set_depth(y+16,0);
-if image_angle != 0 image_angle = 90;
+if angle_difference(image_angle,0) &gt; 5 image_angle = 90;
 with my_controller { //update my upper half we made in the create event.
     image_angle = other.image_angle;
     my_door = other.id;

@@ -136,7 +136,7 @@ if room == rm_map {
           <argument>
             <kind>1</kind>
             <string>///map setup
-if image_angle != 0 {
+if angle_difference(image_angle,0) &gt; 5 {
     image_angle = 90;
     scr_set_depth(y+5,0);
 }

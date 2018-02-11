@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1516133734 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
+1518337776 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\main.cpp
 	"server_process_packets.h"
 	"inih/cpp/INIReader.h"
 	"server_core.h"
@@ -215,12 +215,12 @@
 	<chrono>
 	<ctime>
 
-1516022181 c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.h
+1516206125 c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.h
 	<iostream>
 	<string.h>
 	<cstring>
 
-1515899019 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.cpp
+1516206141 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\byte_buffer.cpp
 	"byte_buffer.h"
 
 1515683438 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\inih\cpp\inireader.cpp
@@ -252,13 +252,13 @@
 	<queue>
 	"server_core.h"
 
-1516135746 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit_packets.cpp
+1518340059 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit_packets.cpp
 	"server_core.h"
 	"byte_buffer.h"
 	"client_transmit_packets.h"
 	<math.h>
 
-1516135787 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit_packets.h
+1516220842 c:\users\kose\documents\github\outpost21\server\outpost21_server\client_transmit_packets.h
 	<cstring>
 
 1516112601 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_process_packets.h
@@ -271,7 +271,7 @@
 	"entitylibrary/entity_library.h"
 	"inih/cpp/INIReader.h"
 
-1516133656 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
+1518340376 c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.h
 	<SFML/Network.hpp>
 	<pthread.h>
 	<vector>
@@ -281,13 +281,15 @@
 	<iostream>
 	"json/json.hpp"
 
-1516133264 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.cpp
+1518329479 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_core.cpp
 	"json/json.hpp"
 	"client_transmit_packets.h"
 	"entitylibrary/entity_library.h"
+	"toolbox/toolbox.h"
 	"server_core.h"
+	<algorithm>
 
-1516127788 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_process_packets.cpp
+1516216089 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\server_process_packets.cpp
 	"server_process_packets.h"
 	"toolbox/toolbox.h"
 	<queue>
@@ -298,7 +300,7 @@
 1515406129 c:\users\kose\documents\github\outpost21\server\outpost21_server\entity library\entity_library.h
 	"../server_core.h"
 
-1516095436 c:\users\kose\documents\github\outpost21\server\outpost21_server\entitylibrary\entity_library.h
+1516194014 c:\users\kose\documents\github\outpost21\server\outpost21_server\entitylibrary\entity_library.h
 	"../server_core.h"
 
 1515683438 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\base64\base64.cpp
@@ -517,13 +519,18 @@
 	"detail/conversions/from_json.hpp"
 	"detail/conversions/to_json.hpp"
 
-1516133113 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\entitylibrary\entity_library.cpp
+1518334867 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\entitylibrary\entity_library.cpp
 	"entity_library.h"
+	"../base64/base64.h"
+	"../client_transmit_packets.h"
 
-1516099893 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\toolbox\toolbox.cpp
+1516222172 source:c:\users\kose\documents\github\outpost21\server\outpost21_server\toolbox\toolbox.cpp
 	"toolbox.h"
 	<iostream>
+	<math.h>
+	<stdlib.h>
 
-1516039472 c:\users\kose\documents\github\outpost21\server\outpost21_server\toolbox\toolbox.h
+1516192498 c:\users\kose\documents\github\outpost21\server\outpost21_server\toolbox\toolbox.h
 	<cmath>
+	<algorithm>
 
